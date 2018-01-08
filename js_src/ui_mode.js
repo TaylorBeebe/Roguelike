@@ -15,42 +15,59 @@ class UIMode {
     console.log("exiting " + this.constructor.name);
   }
 
-  handleInput(eventType, evt){
-    console.log("handling input for " + this.constructor.name);
-    console.log(`event type is ${eventType}`);
-    console.dir(evt);
-    return false;
-  }
-
-  handleInput(eventType, evt){
-    if (eventType == 'keyup'){
-      this.game.switchMode('play')
-    }
-  }
+  // handleInput(eventType, evt){
+  //   console.log("handling input for " + this.constructor.name);
+  //   console.log(`event type is ${eventType}`);
+  //   console.dir(evt);
+  //   return false;
+  // }
 }
 
 export class StartupMode extends UIMode {
 
-  render(){
-    this.display.drawText(33,4, "Welcome to");
-    this.display.drawText(33,7, "ROGUELIKE GAME NAME");
-    this.display.drawText(33, 1, "Press any key to advance");
-    console.log("rendering StartupMode");
+    render(){
+      this.display.drawText(33,4, "Welcome to");
+      this.display.drawText(33,7, "ROGUELIKE GAME NAME");
+      this.display.drawText(33, 1, "Press any key to advance");
+      console.log("rendering StartupMode");
+    }
+
+    handleInput(inputType,inputData) {
+      if (inputData.charCode !== 0) {
+        this.game.switchMode('play');
+      }
+    }
+}
+
+export class PlayMode extends UIMode{
+    render(){
+      this.display.clear();
+      this.display.drawText(3, 3, "Press w to win and l to lose");
+      console.log("rendering PlayMode");
+    }
+
+    handleInput(eventType, inputData){
+      if(eventType == 'keyup' && inputData.key == 'l' || inputData.key == 'L'){
+      this.game.switchMode('lose');
+    } else if (eventType == 'keyup' && inputData.key == 'w'|| inputData.key == 'W'){
+      this.game.switchMode('win');
     }
   }
 
-export class PlayMode extends UIMode{
-  render(){
-    display.clear();
-    display.drawText(3, 3, "Press w to win and l to lose");
-    console.log("rendering PlayMode");
-  }
 }
 
 export class WinMode extends UIMode{
+  render(){
+    this.display.clear();
+    this.display.drawText(3,3,"You win!");
+  }
 }
 
 export class LoseMode extends UIMode{
+  render(){
+  this.display.clear();
+  this.display.drawText(3,3,"You lose!");
+  }
 }
 
 export class PersistenceMode extends UIMode{

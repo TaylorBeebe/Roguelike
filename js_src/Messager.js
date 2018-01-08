@@ -11,10 +11,11 @@ export class Messager{
 
   send(msg){
     this.message = msg;
+    this.render();
   }
 
   clear(){
-    this.mssage = '';
+    this.message = '';
   }
 }
 

@@ -14884,8 +14884,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.Game = undefined;
 
-var _Game;
-
 var _rotJs = __webpack_require__(125);
 
 var _rotJs2 = _interopRequireDefault(_rotJs);
@@ -14902,9 +14900,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var Game = exports.Game = (_Game = {
+var Game = exports.Game = {
 
   SPACING: 1.1,
 
@@ -14945,10 +14941,8 @@ var Game = exports.Game = (_Game = {
   },
 
   init: function init() {
-    this._randomSeed = 5 + Math.floor(Math.random() * 100000);
-    //this._randomSeed = 76250;
-    console.log("using random seed " + this._randomSeed);
-    _rotJs2.default.RNG.setSeed(this._randomSeed);
+
+    this.setupNewGame();
 
     this.setupDisplays();
     // this.messageHandler.init(this.getDisplay('message'));
@@ -14985,55 +14979,81 @@ var Game = exports.Game = (_Game = {
     if (this.curMode) {
       this.curMode.enter();
     }
-  }
+    this.render();
+  },
 
-}, _defineProperty(_Game, 'getDisplay', function getDisplay(displayId) {
-  if (this.display.hasOwnProperty(displayId)) {
-    return this.display[displayId].o;
-  }
-  return null;
-}), _defineProperty(_Game, 'render', function render() {
-  this.renderMain();
-}), _defineProperty(_Game, 'renderDisplayAvatar', function renderDisplayAvatar() {
-  var d = this.display.avatar.o;
-  d.clear();
-  d.drawText(2, 5, "AVATAR DISPLAY");
-}), _defineProperty(_Game, 'renderDisplayMain', function renderDisplayMain() {
-  this.display.main.o.clear();
-  if (this.curMode === null || this.curMode == '') {
-    return;
-  } else {
-    this.curMode.render();
-  }
-}), _defineProperty(_Game, 'renderDisplayMessage', function renderDisplayMessage() {
-  this.messageHandler.render();
-}), _defineProperty(_Game, 'renderMain', function renderMain() {
-  console.log("renderMain function");
-  this.renderDisplayAvatar();
-  this.renderDisplayMain();
-  //this.renderDisplayMessage();
-}), _defineProperty(_Game, 'bindEvent', function bindEvent(eventType) {
-  var _this = this;
+  setupNewGame: function setupNewGame() {
+    this._randomSeed = 5 + Math.floor(Math.random() * 100000);
+    //this._randomSeed = 76250;
+    console.log("using random seed " + this._randomSeed);
+    _rotJs2.default.RNG.setSeed(this._randomSeed);
+  },
 
-  window.addEventListener(eventType, function (evt) {
-    _this.eventHandler(eventType, evt);
-  });
-}), _defineProperty(_Game, 'eventHandler', function eventHandler(eventType, evt) {
-  //Handle event recieved
-  if (this.curMode !== null && this.curMode != '') {
-    if (this.curMode.handleInput(eventType, evt)) {
-      this.render();
-      //Message.ageMessages();
+
+  render: function render() {
+    this.renderMain();
+  },
+
+  renderDisplayAvatar: function renderDisplayAvatar() {
+    console.log("renderDisplayAvatar");
+    var d = this.display.avatar.o;
+    d.clear();
+    d.drawText(2, 5, "AVATAR DISPLAY");
+  },
+
+  renderDisplayMain: function renderDisplayMain() {
+    console.log("renderDisplayMain");
+    this.display.main.o.clear();
+    if (this.curMode === null || this.curMode == '') {
+      return;
+    } else {
+      this.curMode.render();
     }
+  },
+
+  renderDisplayMessage: function renderDisplayMessage() {
+    console.log("renderDisplayMessage");
+    this.messageHandler.render();
+  },
+
+  renderMain: function renderMain() {
+    console.log("renderMain function");
+    this.renderDisplayAvatar();
+    this.renderDisplayMain();
+    //this.renderDisplayMessage();
+    //messageHandler.send('hello');
+  },
+
+  bindEvent: function bindEvent(eventType) {
+    var _this = this;
+
+    window.addEventListener(eventType, function (evt) {
+      _this.eventHandler(eventType, evt);
+    });
+  },
+
+  eventHandler: function eventHandler(eventType, evt) {
+    //Handle event recieved
+    if (this.curMode !== null && this.curMode != '') {
+      if (this.curMode.handleInput(eventType, evt)) {
+        this.render();
+        //Message.ageMessages();
+      }
+    }
+  },
+
+  toJSON: function toJSON() {
+    var json = '';
+    json = JSON.stringify({ rseed: this._randomSeed });
+    return json;
+  },
+
+  fromJSON: function fromJSON(json) {
+    var state = JSON.parse(json);
+    this._randomSeed = state.rseed;
   }
-}), _defineProperty(_Game, 'toJSON', function toJSON() {
-  var json = '';
-  json = JSON.stringify({ rseed: this._randomSeed });
-  return json;
-}), _defineProperty(_Game, 'fromJSON', function fromJSON(json) {
-  var state = JSON.parse(json);
-  this._randomSeed = state.rseed;
-}), _Game);
+
+};
 
 /***/ }),
 /* 331 */
@@ -15089,21 +15109,14 @@ var UIMode = function () {
     value: function exit() {
       console.log("exiting " + this.constructor.name);
     }
-  }, {
-    key: "handleInput",
-    value: function handleInput(eventType, evt) {
-      console.log("handling input for " + this.constructor.name);
-      console.log("event type is " + eventType);
-      console.dir(evt);
-      return false;
-    }
-  }, {
-    key: "handleInput",
-    value: function handleInput(eventType, evt) {
-      if (eventType == 'keyup') {
-        this.game.switchMode('play');
-      }
-    }
+
+    // handleInput(eventType, evt){
+    //   console.log("handling input for " + this.constructor.name);
+    //   console.log(`event type is ${eventType}`);
+    //   console.dir(evt);
+    //   return false;
+    // }
+
   }]);
 
   return UIMode;
@@ -15126,6 +15139,13 @@ var StartupMode = exports.StartupMode = function (_UIMode) {
       this.display.drawText(33, 1, "Press any key to advance");
       console.log("rendering StartupMode");
     }
+  }, {
+    key: "handleInput",
+    value: function handleInput(inputType, inputData) {
+      if (inputData.charCode !== 0) {
+        this.game.switchMode('play');
+      }
+    }
   }]);
 
   return StartupMode;
@@ -15143,9 +15163,18 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
   _createClass(PlayMode, [{
     key: "render",
     value: function render() {
-      display.clear();
-      display.drawText(3, 3, "Press w to win and l to lose");
+      this.display.clear();
+      this.display.drawText(3, 3, "Press w to win and l to lose");
       console.log("rendering PlayMode");
+    }
+  }, {
+    key: "handleInput",
+    value: function handleInput(eventType, inputData) {
+      if (eventType == 'keyup' && inputData.key == 'l' || inputData.key == 'L') {
+        this.game.switchMode('lose');
+      } else if (eventType == 'keyup' && inputData.key == 'w' || inputData.key == 'W') {
+        this.game.switchMode('win');
+      }
     }
   }]);
 
@@ -15161,6 +15190,14 @@ var WinMode = exports.WinMode = function (_UIMode3) {
     return _possibleConstructorReturn(this, (WinMode.__proto__ || Object.getPrototypeOf(WinMode)).apply(this, arguments));
   }
 
+  _createClass(WinMode, [{
+    key: "render",
+    value: function render() {
+      this.display.clear();
+      this.display.drawText(3, 3, "You win!");
+    }
+  }]);
+
   return WinMode;
 }(UIMode);
 
@@ -15172,6 +15209,14 @@ var LoseMode = exports.LoseMode = function (_UIMode4) {
 
     return _possibleConstructorReturn(this, (LoseMode.__proto__ || Object.getPrototypeOf(LoseMode)).apply(this, arguments));
   }
+
+  _createClass(LoseMode, [{
+    key: "render",
+    value: function render() {
+      this.display.clear();
+      this.display.drawText(3, 3, "You lose!");
+    }
+  }]);
 
   return LoseMode;
 }(UIMode);
@@ -15200,7 +15245,7 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
           }
         } else if (inputData.key == 'l' || inputData.key == 'L') {
           if (this.game.hasSaved) {
-            this.handleRestoreGame();
+            this.handleLoad();
           }
         } else if (inputData.key == 'Escape') {
           if (this.game.isPlaying) {
@@ -15217,7 +15262,7 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       if (!this.localStorageAvailable()) {
         return false;
       }
-      window.localStorage.setItem('ROGUELIKE', JSON.stringify(this.game));
+      window.localStorage.setItem('ROGUELIKE', this.game.toJSON());
     }
   }, {
     key: "handleLoad",
@@ -15281,11 +15326,12 @@ var Messager = exports.Messager = function () {
     key: 'send',
     value: function send(msg) {
       this.message = msg;
+      this.render();
     }
   }, {
     key: 'clear',
     value: function clear() {
-      this.mssage = '';
+      this.message = '';
     }
   }]);
 

@@ -83,6 +83,7 @@ export let Game = {
     if (this.curMode){
       this.curMode.enter();
     }
+    this.render();
   },
 
   setupNewGame(){
@@ -90,13 +91,6 @@ export let Game = {
     //this._randomSeed = 76250;
     console.log("using random seed "+this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
-  }
-
-  getDisplay: function (displayId) {
-    if (this.display.hasOwnProperty(displayId)) {
-      return this.display[displayId].o;
-    }
-    return null;
   },
 
   render: function() {
@@ -104,21 +98,24 @@ export let Game = {
   },
 
   renderDisplayAvatar: function() {
+    console.log("renderDisplayAvatar");
     let d = this.display.avatar.o;
     d.clear();
     d.drawText(2, 5, "AVATAR DISPLAY");
   },
 
   renderDisplayMain: function() {
-  this.display.main.o.clear();
-  if (this.curMode === null || this.curMode == '') {
-    return;
-  } else {
-    this.curMode.render();
-  }
-},
+    console.log("renderDisplayMain");
+    this.display.main.o.clear();
+    if (this.curMode === null || this.curMode == '') {
+      return;
+    } else {
+      this.curMode.render();
+    }
+  },
 
   renderDisplayMessage: function() {
+    console.log("renderDisplayMessage");
     this.messageHandler.render();
   },
 
@@ -127,6 +124,7 @@ export let Game = {
     this.renderDisplayAvatar();
     this.renderDisplayMain();
     //this.renderDisplayMessage();
+    //messageHandler.send('hello');
   },
 
   bindEvent: function(eventType){

@@ -14,7 +14,8 @@ window.onload = function() {
 
   // Add the containers to our HTML page
   document.getElementById('Main').appendChild(Game.getDisplay('main').getContainer());
-  //document.getElementById('')
+  document.getElementById('Message').appendChild(Game.getDisplay('message').getContainer());
+  document.getElementById('Avatar').appendChild(Game.getDisplay('avatar').getContainer());
 
   Game.render();
 

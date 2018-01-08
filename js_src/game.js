@@ -1,10 +1,13 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
 import {StartupMode, PlayMode, LoseMode, WinMode} from './ui_mode.js';
+import {Messager} from './Messager.js';
 
 export let Game = {
 
-  DISPLAY_SPACING: 1.1,
+  SPACING: 1.1,
+
+  messageHandler : Messager,
 
   display: {
     main: {
@@ -32,36 +35,44 @@ export let Game = {
   },
   curMode: '',
 
+  getDisplay: function(display){
+    if (this.display.hasOwnProperty(display)) {
+      return this.display[display].o;
+    } else{
+      return null;
+    }
+  },
+
   init: function() {
-    this._randomSeed = 5 + Math.floor(Math.random()*100000);
-    //this._randomSeed = 76250;
-    console.log("using random seed "+this._randomSeed);
-    ROT.RNG.setSeed(this._randomSeed);
 
-    this.display.main.o = new ROT.Display({
-      width: this.display.main.w,
-      height: this.display.main.h,
-      spacing: this.display.SPACING});
+    this.setupNewGame();
 
-      this.setupModes(this);
-      this.switchMode("startup");
-      console.log("game:");
-      console.dir(this);
+
+    this.setupDisplays();
+    // this.messageHandler.init(this.getDisplay('message'));
+    // console.log("message handler initialized");
+    this.setupModes(this);
+    this.switchMode("startup");
+    console.log("game:");
+    console.dir(this);
   },
 
   setupModes: function(){
     this.modes.startup = new StartupMode(this);
     this.modes.play = new PlayMode(this);
-    console.log("startup mode");
+    this.modes.lose = new LoseMode(this);
+    this.modes.win = new WinMode(this);
+    console.log("Setup modes");
   },
 
-  _setupDisplays: function() {
-    for (var display_key in this._display) {
-      this._display[display_key].o = new ROT.Display({
-        width: this._display[display_key].w,
-        height: this._display[display_key].h,
-        spacing: this._DISPLAY_SPACING});
+  setupDisplays: function() {
+    for (var display_key in this.display) {
+      this.display[display_key].o = new ROT.Display({
+        width: this.display[display_key].w,
+        height: this.display[display_key].h,
+        spacing: this.SPACING});
     }
+    console.log("Displays set up");
   },
 
   switchMode: function(newModeName){
@@ -74,6 +85,13 @@ export let Game = {
     }
   },
 
+  setupNewGame(){
+    this._randomSeed = 5 + Math.floor(Math.random()*100000);
+    //this._randomSeed = 76250;
+    console.log("using random seed "+this._randomSeed);
+    ROT.RNG.setSeed(this._randomSeed);
+  }
+
   getDisplay: function (displayId) {
     if (this.display.hasOwnProperty(displayId)) {
       return this.display[displayId].o;
@@ -85,11 +103,30 @@ export let Game = {
     this.renderMain();
   },
 
+  renderDisplayAvatar: function() {
+    let d = this.display.avatar.o;
+    d.clear();
+    d.drawText(2, 5, "AVATAR DISPLAY");
+  },
+
+  renderDisplayMain: function() {
+  this.display.main.o.clear();
+  if (this.curMode === null || this.curMode == '') {
+    return;
+  } else {
+    this.curMode.render();
+  }
+},
+
+  renderDisplayMessage: function() {
+    this.messageHandler.render();
+  },
+
   renderMain: function() {
-      this.curMode.render(this.display.main.o);
-      //this.renderDisplayAvatar();
-      //this.renderDisplayMain();
-      //this.renderDisplayMessage();
+    console.log("renderMain function");
+    this.renderDisplayAvatar();
+    this.renderDisplayMain();
+    //this.renderDisplayMessage();
   },
 
   bindEvent: function(eventType){
@@ -106,6 +143,17 @@ export let Game = {
         //Message.ageMessages();
       }
     }
+  },
+
+  toJSON: function(){
+    let json = '';
+    json = JSON.stringify({rseed: this._randomSeed});
+    return json;
+  },
+
+  fromJSON: function(json){
+    let state = JSON.parse(json);
+    this._randomSeed = state.rseed;
   }
 
 };

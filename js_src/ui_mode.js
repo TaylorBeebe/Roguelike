@@ -1,3 +1,5 @@
+
+
 class UIMode {
 
   constructor(thegame){
@@ -15,12 +17,7 @@ class UIMode {
     console.log("exiting " + this.constructor.name);
   }
 
-  // handleInput(eventType, evt){
-  //   console.log("handling input for " + this.constructor.name);
-  //   console.log(`event type is ${eventType}`);
-  //   console.dir(evt);
-  //   return false;
-  // }
+  handleInput(){}
 }
 
 export class StartupMode extends UIMode {
@@ -40,18 +37,36 @@ export class StartupMode extends UIMode {
 }
 
 export class PlayMode extends UIMode{
+  /*
+  enter(){
+    if(!this.map){
+      this.map = new Map(30,16);
+    }
+    this.camerax = 5;
+    this.cameray = 8;
+    this.cameraSymbol = new DisplaySymbol( `@`, `#eb4`);
+  }
+  */
+  
     render(){
       this.display.clear();
-      this.display.drawText(3, 3, "Press w to win and l to lose");
+      this.display.drawText(3, 3, "Press w to win and l to lose and = for persistence");
       console.log("rendering PlayMode");
+      /*
+      this.map.render(display, this.camera_map_x, this.camera_map_y);
+      this.cameraSymbol.render(display, display.getOptions().width/2, display.getOptions().height/2);
+      */
     }
 
     handleInput(eventType, inputData){
       if(eventType == 'keyup' && inputData.key == 'l' || inputData.key == 'L'){
-      this.game.switchMode('lose');
-    } else if (eventType == 'keyup' && inputData.key == 'w'|| inputData.key == 'W'){
-      this.game.switchMode('win');
-    }
+        this.game.switchMode('lose');
+      } else if (eventType == 'keyup' && inputData.key == 'w'|| inputData.key == 'W'){
+        this.game.switchMode('win');
+      }
+      else if (eventType == 'keyup' && inputData.key == '='){
+        this.game.switchMode('persistence')
+      }
   }
 
 }
@@ -72,28 +87,38 @@ export class LoseMode extends UIMode{
 
 export class PersistenceMode extends UIMode{
 
+  render(){
+    this.display.clear();
+    this.display.drawText(3,3, "Press n for new game, s for save game, l for load game, escape to go back to your game")
+  }
 
   handleInput(inputType,inputData) {
   // super.handleInput(inputType,inputData);
   if (inputType == 'keyup') {
     if (inputData.key == 'n' || inputData.key == 'N') {
-      this.game.startNewGame();
-      Message.send("New game started");
+      this.game.setupNewGame();
+      this.game.messageHandler.send("New game started");
       this.game.switchMode('play');
     }
     else if (inputData.key == 's' || inputData.key == 'S') {
       if (this.game.isPlaying) {
         this.handleSaveGame();
+      } else{
+        this.game.messageHandler.send("You cannot save game at this time!")
       }
     }
     else if (inputData.key == 'l' || inputData.key == 'L') {
       if (this.game.hasSaved) {
         this.handleLoad();
+      } else{
+        this.game.messageHandler.send("There are no save games to load!")
       }
     }
     else if (inputData.key == 'Escape') {
       if (this.game.isPlaying) {
         this.game.switchMode('play');
+      } else{
+        this.game.messageHandler.send("You are not currently playing a game!")
       }
     }
       return false;
@@ -123,7 +148,7 @@ export class PersistenceMode extends UIMode{
     return true;
   }
   catch(e) {
-    Message.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
+    this.game.messageHandler.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
     return false;
   }
 }

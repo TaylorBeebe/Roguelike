@@ -1,13 +1,13 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode, PlayMode, LoseMode, WinMode} from './ui_mode.js';
-import {Messager} from './Messager.js';
+import {StartupMode, PlayMode, LoseMode, WinMode, PersistenceMode} from './ui_mode.js';
+import {Messenger} from './Messenger.js';
 
 export let Game = {
 
   SPACING: 1.1,
 
-  messageHandler : Messager,
+  messageHandler : Messenger,
 
   display: {
     main: {
@@ -31,7 +31,8 @@ export let Game = {
     startup: '',
     play: '',
     lose: '',
-    win: ''
+    win: '',
+    persistence : ''
   },
   curMode: '',
 
@@ -46,13 +47,12 @@ export let Game = {
   init: function() {
 
     this.setupNewGame();
-
-
     this.setupDisplays();
-    // this.messageHandler.init(this.getDisplay('message'));
-    // console.log("message handler initialized");
+    this.messageHandler.init(this.getDisplay('message'));
+
     this.setupModes(this);
     this.switchMode("startup");
+    this.messageHandler.send("hello");
     console.log("game:");
     console.dir(this);
   },
@@ -62,6 +62,7 @@ export let Game = {
     this.modes.play = new PlayMode(this);
     this.modes.lose = new LoseMode(this);
     this.modes.win = new WinMode(this);
+    this.modes.persistence = new PersistenceMode(this);
     console.log("Setup modes");
   },
 
@@ -123,8 +124,7 @@ export let Game = {
     console.log("renderMain function");
     this.renderDisplayAvatar();
     this.renderDisplayMain();
-    //this.renderDisplayMessage();
-    //messageHandler.send('hello');
+    this.renderDisplayMessage();
   },
 
   bindEvent: function(eventType){

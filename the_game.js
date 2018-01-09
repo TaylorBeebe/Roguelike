@@ -14894,7 +14894,7 @@ var U = _interopRequireWildcard(_util);
 
 var _ui_mode = __webpack_require__(332);
 
-var _Messager = __webpack_require__(333);
+var _Messenger = __webpack_require__(333);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -14904,7 +14904,7 @@ var Game = exports.Game = {
 
   SPACING: 1.1,
 
-  messageHandler: _Messager.Messager,
+  messageHandler: _Messenger.Messenger,
 
   display: {
     main: {
@@ -14928,7 +14928,8 @@ var Game = exports.Game = {
     startup: '',
     play: '',
     lose: '',
-    win: ''
+    win: '',
+    persistence: ''
   },
   curMode: '',
 
@@ -14943,12 +14944,12 @@ var Game = exports.Game = {
   init: function init() {
 
     this.setupNewGame();
-
     this.setupDisplays();
-    // this.messageHandler.init(this.getDisplay('message'));
-    // console.log("message handler initialized");
+    this.messageHandler.init(this.getDisplay('message'));
+
     this.setupModes(this);
     this.switchMode("startup");
+    this.messageHandler.send("hello");
     console.log("game:");
     console.dir(this);
   },
@@ -14958,6 +14959,7 @@ var Game = exports.Game = {
     this.modes.play = new _ui_mode.PlayMode(this);
     this.modes.lose = new _ui_mode.LoseMode(this);
     this.modes.win = new _ui_mode.WinMode(this);
+    this.modes.persistence = new _ui_mode.PersistenceMode(this);
     console.log("Setup modes");
   },
 
@@ -15020,8 +15022,7 @@ var Game = exports.Game = {
     console.log("renderMain function");
     this.renderDisplayAvatar();
     this.renderDisplayMain();
-    //this.renderDisplayMessage();
-    //messageHandler.send('hello');
+    this.renderDisplayMessage();
   },
 
   bindEvent: function bindEvent(eventType) {
@@ -15109,14 +15110,9 @@ var UIMode = function () {
     value: function exit() {
       console.log("exiting " + this.constructor.name);
     }
-
-    // handleInput(eventType, evt){
-    //   console.log("handling input for " + this.constructor.name);
-    //   console.log(`event type is ${eventType}`);
-    //   console.dir(evt);
-    //   return false;
-    // }
-
+  }, {
+    key: "handleInput",
+    value: function handleInput() {}
   }]);
 
   return UIMode;
@@ -15162,10 +15158,26 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
 
   _createClass(PlayMode, [{
     key: "render",
+
+    /*
+    enter(){
+      if(!this.map){
+        this.map = new Map(30,16);
+      }
+      this.camerax = 5;
+      this.cameray = 8;
+      this.cameraSymbol = new DisplaySymbol( `@`, `#eb4`);
+    }
+    */
+
     value: function render() {
       this.display.clear();
-      this.display.drawText(3, 3, "Press w to win and l to lose");
+      this.display.drawText(3, 3, "Press w to win and l to lose and = for persistence");
       console.log("rendering PlayMode");
+      /*
+      this.map.render(display, this.camera_map_x, this.camera_map_y);
+      this.cameraSymbol.render(display, display.getOptions().width/2, display.getOptions().height/2);
+      */
     }
   }, {
     key: "handleInput",
@@ -15174,6 +15186,8 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         this.game.switchMode('lose');
       } else if (eventType == 'keyup' && inputData.key == 'w' || inputData.key == 'W') {
         this.game.switchMode('win');
+      } else if (eventType == 'keyup' && inputData.key == '=') {
+        this.game.switchMode('persistence');
       }
     }
   }]);
@@ -15231,25 +15245,37 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
   }
 
   _createClass(PersistenceMode, [{
+    key: "render",
+    value: function render() {
+      this.display.clear();
+      this.display.drawText(3, 3, "Press n for new game, s for save game, l for load game, escape to go back to your game");
+    }
+  }, {
     key: "handleInput",
     value: function handleInput(inputType, inputData) {
       // super.handleInput(inputType,inputData);
       if (inputType == 'keyup') {
         if (inputData.key == 'n' || inputData.key == 'N') {
-          this.game.startNewGame();
-          Message.send("New game started");
+          this.game.setupNewGame();
+          this.game.messageHandler.send("New game started");
           this.game.switchMode('play');
         } else if (inputData.key == 's' || inputData.key == 'S') {
           if (this.game.isPlaying) {
             this.handleSaveGame();
+          } else {
+            this.game.messageHandler.send("You cannot save game at this time!");
           }
         } else if (inputData.key == 'l' || inputData.key == 'L') {
           if (this.game.hasSaved) {
             this.handleLoad();
+          } else {
+            this.game.messageHandler.send("There are no save games to load!");
           }
         } else if (inputData.key == 'Escape') {
           if (this.game.isPlaying) {
             this.game.switchMode('play');
+          } else {
+            this.game.messageHandler.send("You are not currently playing a game!");
           }
         }
         return false;
@@ -15285,7 +15311,7 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
         window.localStorage.removeItem(x);
         return true;
       } catch (e) {
-        Message.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
+        this.game.messageHandler.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
         return false;
       }
     }
@@ -15304,41 +15330,27 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+var Messenger = exports.Messenger = {
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+  init: function init(d) {
+    this.targetDisplay = d;
+    this.message = '';
+  },
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+  render: function render() {
+    this.targetDisplay.clear();
+    this.targetDisplay.drawText(1, 1, this.message);
+  },
 
-var Messager = exports.Messager = function () {
-  function Messager() {
-    _classCallCheck(this, Messager);
+  send: function send(msg) {
+    this.message = msg;
+    this.render();
+  },
 
+  clear: function clear() {
     this.message = '';
   }
-
-  _createClass(Messager, [{
-    key: 'render',
-    value: function render(targetDisplay) {
-      targetDisplay.clear();
-      targetDisplay.drawText(1, 1, this.message);
-    }
-  }, {
-    key: 'send',
-    value: function send(msg) {
-      this.message = msg;
-      this.render();
-    }
-  }, {
-    key: 'clear',
-    value: function clear() {
-      this.message = '';
-    }
-  }]);
-
-  return Messager;
-}();
-
-var messager = exports.messager = new Messager();
+};
 
 /***/ })
 /******/ ]);

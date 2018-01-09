@@ -16,7 +16,7 @@ class UIMode {
   exit(){
     console.log("exiting " + this.constructor.name);
   }
-
+  
   handleInput(){}
 }
 
@@ -47,7 +47,7 @@ export class PlayMode extends UIMode{
     this.cameraSymbol = new DisplaySymbol( `@`, `#eb4`);
   }
   */
-  
+
     render(){
       this.display.clear();
       this.display.drawText(3, 3, "Press w to win and l to lose and = for persistence");

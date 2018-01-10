@@ -2,6 +2,7 @@ import ROT from 'rot-js';
 import * as U from './util.js';
 import {StartupMode, PlayMode, LoseMode, WinMode, PersistenceMode} from './ui_mode.js';
 import {Messenger} from './Messenger.js';
+import {DATASTORE, initializeDatastore} from './datastore.js';
 
 export let Game = {
 
@@ -36,6 +37,11 @@ export let Game = {
   },
   curMode: '',
 
+  _PERSISTANCE_NAMESPACE: 'ROGUELIKE GAME NAME',
+
+  isPlaying: false,
+  hasSaved: false,
+
   getDisplay: function(display){
     if (this.display.hasOwnProperty(display)) {
       return this.display[display].o;
@@ -46,14 +52,13 @@ export let Game = {
 
   init: function() {
 
-    this.setupNewGame();
+    //this.setupNewGame();
     this.setupDisplays();
     this.messageHandler.init(this.getDisplay('message'));
 
     this.setupModes(this);
     this.switchMode("startup");
-    this.messageHandler.send("hello");
-    console.log("game:");
+
     console.dir(this);
   },
 
@@ -88,10 +93,20 @@ export let Game = {
   },
 
   setupNewGame(){
+
+    console.log("starting new game");
+    initializeDatastore();
+    DATASTORE.GAME = this;
+    console.log("datastore:");
+    console.dir(DATASTORE);
+    //this.mode.play.setupNewGame();
+    /*
     this._randomSeed = 5 + Math.floor(Math.random()*100000);
     //this._randomSeed = 76250;
     console.log("using random seed "+this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
+    */
+
   },
 
   render: function() {

@@ -45,16 +45,6 @@ export class StartupMode extends UIMode {
 }
 
 export class PlayMode extends UIMode{
-  /*
-  enter(){
-    if(!this.map){
-      this.map = new Map(30,16);
-    }
-    this.camerax = 5;
-    this.cameray = 8;
-    this.cameraSymbol = new DisplaySymbol( `@`, `#eb4`);
-  }
-  */
 
   enter(){
     super.enter();
@@ -75,13 +65,19 @@ export class PlayMode extends UIMode{
       x: Math.round(this.display.getOptions().width/2),
       y: Math.round(this.display.getOptions().height/2)
     };
+    console.log("new game built._GAMESTATE_ dir is - ");
+    console.dir(this._GAMESTATE_);
   }
 
     render(){
       this.display.clear();
+      console.dir(DATASTORE.MAPS);
+      console.dir(this._GAMESTATE_);
       DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
       console.log("rendering PlayMode");
+
+      //this._GAMESTATE_.curMapId
       /*
       this.map.render(display, this.camera_map_x, this.camera_map_y);
       this.cameraSymbol.render(display, display.getOptions().width/2, display.getOptions().height/2);
@@ -99,35 +95,33 @@ export class PlayMode extends UIMode{
           this.game.switchMode('persistence')
         }
         else if (inputData.key == '1') {
-        this.moveBy(-1,1);
+        this.move(-1,1);
         }
         else if (inputData.key == '2') {
-          this.moveBy(0,1);
+          this.move(0,1);
         }
         else if (inputData.key == '3') {
-          this.moveBy(1,1);
+          this.move(1,1);
         }
         else if (inputData.key == '4') {
-          this.moveBy(-1,0);
+          this.move(-1,0);
         }
-        else if (inputData.key == '5') {}
-
         else if (inputData.key == '6') {
-          this.moveBy(1,0);
+          this.move(1,0);
         }
         else if (inputData.key == '7') {
-          this.moveBy(-1,-1);
+          this.move(-1,-1);
         }
         else if (inputData.key == '8') {
-          this.moveBy(0,-1);
+          this.move(0,-1);
         }
         else if (inputData.key == '9') {
-          this.moveBy(1,-1);
+          this.move(1,-1);
         }
       }
     }
 
-    moveBy(x, y){
+    move(x, y){
       let newX = this._GAMESTATE_.cameraMapLoc.x + x;
       let newY = this._GAMESTATE_.cameraMapLoc.y + y;
       if (newX < 0 || newX > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getXDim() - 1) { return; }
@@ -191,7 +185,9 @@ export class PersistenceMode extends UIMode{
     }
     else if (inputData.key == 's' || inputData.key == 'S') {
       if (this.game.isPlaying) {
-        this.handleSaveGame();
+        this.handleSave();
+        this.game.messageHandler.send("Game saved");
+        this.game.switchMode('play');
       } else{
         this.game.messageHandler.send("You cannot save game at this time!")
       }
@@ -199,6 +195,8 @@ export class PersistenceMode extends UIMode{
     else if (inputData.key == 'l' || inputData.key == 'L') {
       if (this.game.hasSaved) {
         this.handleLoad();
+        this.game.messageHandler.send("Game loaded");
+        this.game.switchMode('play');
       } else{
         this.game.messageHandler.send("There are no save games to load!")
       }
@@ -215,12 +213,11 @@ export class PersistenceMode extends UIMode{
 }
 
   handleSave(){
-    console.lot('save game');
+    console.log('saving game');
     if(!this.localStorageAvailable()){return false;}
     window.localStorage.setItem(this.game._PERSISTANCE_NAMESPACE,JSON.stringify(DATASTORE));
     this.game.hasSaved = true;
-    this.game.messageHandler.send("Game saved");
-    this.game.switchMode('play');
+
   }
 
   handleLoad(){
@@ -228,11 +225,11 @@ export class PersistenceMode extends UIMode{
     if (!this.localStorageAvailable()){return false;}
 
     let restorationString = window.localStorage.getItem(this.game._PERSISTANCE_NAMESPACE);
-    let saved__GAMESTATE__ = JSON.parse(restorationString);
+    let saved_GAMESTATE_ = JSON.parse(restorationString);
 
 
     initializeDatastore();
-
+    console.log('datastore initialized');
     // restore game core
     DATASTORE.GAME = this.game;
     this.game.fromJSON(saved_GAMESTATE_.GAME);
@@ -240,10 +237,11 @@ export class PersistenceMode extends UIMode{
     // restore maps (note: in the future might not instantiate all maps here, but instead build some kind of instantiate on demand)
     for (let savedMapId in saved_GAMESTATE_.MAPS) {
       makeMap(JSON.parse(saved_GAMESTATE_.MAPS[savedMapId]));
+      console.log("map restored- ");
+      console.log(savedMapId);
     }
-
-    this.game.messageHandler.send("Game loaded");
-    this.game.switchMode('play');
+    console.log('all maps restored');
+    console.dir(DATASTORE.GAME);
     }
 
 

@@ -100,7 +100,7 @@ let TILE_GRID_GENERATOR = {
 
 export function makeMap(mapData) {
   let m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);
-  if (mapData.id !== undefined) { m.setId(mapData.id); }
+  if (mapData.id !== undefined) { m.setID(mapData.id); }
   if (mapData.rngBaseState !== undefined) { m.setRngBaseState(mapData.rngBaseState); }
   m.setUp();
 

@@ -98,14 +98,11 @@ export let Game = {
     DATASTORE.GAME = this;
     console.log("datastore:");
     console.dir(DATASTORE);
-    this.modes.play.newGame();
-    /*
     this._randomSeed = 5 + Math.floor(Math.random()*100000);
     //this._randomSeed = 76250;
     console.log("using random seed "+this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
-    */
-
+    this.modes.play.newGame();
   },
 
   render: function() {
@@ -158,14 +155,30 @@ export let Game = {
   },
 
   toJSON: function(){
+    return this.modes.play.toJSON();
+  },
+
+  fromJSON: function(json){
+    this.modes.play.fromJSON(json);
+  }
+
+/*
+
+  toJSON: function(){
     let json = '';
-    json = JSON.stringify({rseed: this._randomSeed});
+    json = JSON.stringify(){
+      rseed: this._randomSeed,
+      playModeState: this.modes.play
+    });
     return json;
   },
 
   fromJSON: function(json){
     let state = JSON.parse(json);
     this._randomSeed = state.rseed;
-  }
+    ROT.RNG.setSeed(this._randomSeed);
 
+    this.modes.play.
+  }
+*/
 };

@@ -8413,14 +8413,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.initializeDatastore = initializeDatastore;
-
-// a generally accessible datastore object
-// NOTE: this holds the objects the game uses, keyed by object ID (and subgroupd - e.g. all maps are in a MAPS sub-namespace). Relationships between game objects (e.g. UI mode play's current map) are tracked via id rather than fully embedding related objects, which greatly eases persistence headaches (among other things).
 var DATASTORE = exports.DATASTORE = {};
 
 function initializeDatastore() {
   exports.DATASTORE = DATASTORE = {
-    //ID_SEQ = 1,
     GAME: {},
     MAPS: {}
   };
@@ -15130,13 +15126,11 @@ var Game = exports.Game = {
     _datastore.DATASTORE.GAME = this;
     console.log("datastore:");
     console.dir(_datastore.DATASTORE);
-    this.modes.play.newGame();
-    /*
-    this._randomSeed = 5 + Math.floor(Math.random()*100000);
+    this._randomSeed = 5 + Math.floor(Math.random() * 100000);
     //this._randomSeed = 76250;
-    console.log("using random seed "+this._randomSeed);
-    ROT.RNG.setSeed(this._randomSeed);
-    */
+    console.log("using random seed " + this._randomSeed);
+    _rotJs2.default.RNG.setSeed(this._randomSeed);
+    this.modes.play.newGame();
   },
 
 
@@ -15192,16 +15186,32 @@ var Game = exports.Game = {
   },
 
   toJSON: function toJSON() {
-    var json = '';
-    json = JSON.stringify({ rseed: this._randomSeed });
-    return json;
+    return this.modes.play.toJSON();
   },
 
   fromJSON: function fromJSON(json) {
-    var state = JSON.parse(json);
-    this._randomSeed = state.rseed;
+    this.modes.play.fromJSON(json);
   }
 
+  /*
+  
+    toJSON: function(){
+      let json = '';
+      json = JSON.stringify(){
+        rseed: this._randomSeed,
+        playModeState: this.modes.play
+      });
+      return json;
+    },
+  
+    fromJSON: function(json){
+      let state = JSON.parse(json);
+      this._randomSeed = state.rseed;
+      ROT.RNG.setSeed(this._randomSeed);
+  
+      this.modes.play.
+    }
+  */
 };
 
 /***/ }),
@@ -15313,18 +15323,6 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
 
   _createClass(PlayMode, [{
     key: 'enter',
-
-    /*
-    enter(){
-      if(!this.map){
-        this.map = new Map(30,16);
-      }
-      this.camerax = 5;
-      this.cameray = 8;
-      this.cameraSymbol = new DisplaySymbol( `@`, `#eb4`);
-    }
-    */
-
     value: function enter() {
       _get(PlayMode.prototype.__proto__ || Object.getPrototypeOf(PlayMode.prototype), 'enter', this).call(this);
       this.game.isPlaying = true;
@@ -15345,14 +15343,20 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         x: Math.round(this.display.getOptions().width / 2),
         y: Math.round(this.display.getOptions().height / 2)
       };
+      console.log("new game built._GAMESTATE_ dir is - ");
+      console.dir(this._GAMESTATE_);
     }
   }, {
     key: 'render',
     value: function render() {
       this.display.clear();
+      console.dir(_datastore.DATASTORE.MAPS);
+      console.dir(this._GAMESTATE_);
       _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
       console.log("rendering PlayMode");
+
+      //this._GAMESTATE_.curMapId
       /*
       this.map.render(display, this.camera_map_x, this.camera_map_y);
       this.cameraSymbol.render(display, display.getOptions().width/2, display.getOptions().height/2);
@@ -15369,27 +15373,27 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         } else if (inputData.key == '=') {
           this.game.switchMode('persistence');
         } else if (inputData.key == '1') {
-          this.moveBy(-1, 1);
+          this.move(-1, 1);
         } else if (inputData.key == '2') {
-          this.moveBy(0, 1);
+          this.move(0, 1);
         } else if (inputData.key == '3') {
-          this.moveBy(1, 1);
+          this.move(1, 1);
         } else if (inputData.key == '4') {
-          this.moveBy(-1, 0);
-        } else if (inputData.key == '5') {} else if (inputData.key == '6') {
-          this.moveBy(1, 0);
+          this.move(-1, 0);
+        } else if (inputData.key == '6') {
+          this.move(1, 0);
         } else if (inputData.key == '7') {
-          this.moveBy(-1, -1);
+          this.move(-1, -1);
         } else if (inputData.key == '8') {
-          this.moveBy(0, -1);
+          this.move(0, -1);
         } else if (inputData.key == '9') {
-          this.moveBy(1, -1);
+          this.move(1, -1);
         }
       }
     }
   }, {
-    key: 'moveBy',
-    value: function moveBy(x, y) {
+    key: 'move',
+    value: function move(x, y) {
       var newX = this._GAMESTATE_.cameraMapLoc.x + x;
       var newY = this._GAMESTATE_.cameraMapLoc.y + y;
       if (newX < 0 || newX > _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].getXDim() - 1) {
@@ -15498,13 +15502,17 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
           this.game.switchMode('play');
         } else if (inputData.key == 's' || inputData.key == 'S') {
           if (this.game.isPlaying) {
-            this.handleSaveGame();
+            this.handleSave();
+            this.game.messageHandler.send("Game saved");
+            this.game.switchMode('play');
           } else {
             this.game.messageHandler.send("You cannot save game at this time!");
           }
         } else if (inputData.key == 'l' || inputData.key == 'L') {
           if (this.game.hasSaved) {
             this.handleLoad();
+            this.game.messageHandler.send("Game loaded");
+            this.game.switchMode('play');
           } else {
             this.game.messageHandler.send("There are no save games to load!");
           }
@@ -15521,14 +15529,12 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
   }, {
     key: 'handleSave',
     value: function handleSave() {
-      console.lot('save game');
+      console.log('saving game');
       if (!this.localStorageAvailable()) {
         return false;
       }
       window.localStorage.setItem(this.game._PERSISTANCE_NAMESPACE, JSON.stringify(_datastore.DATASTORE));
       this.game.hasSaved = true;
-      this.game.messageHandler.send("Game saved");
-      this.game.switchMode('play');
     }
   }, {
     key: 'handleLoad',
@@ -15539,10 +15545,10 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       }
 
       var restorationString = window.localStorage.getItem(this.game._PERSISTANCE_NAMESPACE);
-      var saved__GAMESTATE__ = JSON.parse(restorationString);
+      var saved_GAMESTATE_ = JSON.parse(restorationString);
 
       (0, _datastore.initializeDatastore)();
-
+      console.log('datastore initialized');
       // restore game core
       _datastore.DATASTORE.GAME = this.game;
       this.game.fromJSON(saved_GAMESTATE_.GAME);
@@ -15550,10 +15556,11 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       // restore maps (note: in the future might not instantiate all maps here, but instead build some kind of instantiate on demand)
       for (var savedMapId in saved_GAMESTATE_.MAPS) {
         (0, _map.makeMap)(JSON.parse(saved_GAMESTATE_.MAPS[savedMapId]));
+        console.log("map restored- ");
+        console.log(savedMapId);
       }
-
-      this.game.messageHandler.send("Game loaded");
-      this.game.switchMode('play');
+      console.log('all maps restored');
+      console.dir(_datastore.DATASTORE.GAME);
     }
   }, {
     key: 'localStorageAvailable',
@@ -15723,7 +15730,7 @@ var TILE_GRID_GENERATOR = {
 function makeMap(mapData) {
   var m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);
   if (mapData.id !== undefined) {
-    m.setId(mapData.id);
+    m.setID(mapData.id);
   }
   if (mapData.rngBaseState !== undefined) {
     m.setRngBaseState(mapData.rngBaseState);

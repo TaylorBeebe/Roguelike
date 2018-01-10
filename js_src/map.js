@@ -15,12 +15,12 @@ class Map{
     this.attr.ydim = ydim;
     this.attr.mapType = mapType;
     this.attr.id = randomString();
-    this.rng = ROG.RNG.clome();
+    this.rng = ROT.RNG.clone();
     this.attr.rngBaseState = this.rng.getState();
   }
 
   setUp(){
-    this.rng.setState(this.rngBaseState);
+    this.rng.setState(this.attr.rngBaseState);
     this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
   }
 
@@ -59,8 +59,8 @@ class Map{
     let o = display.getOptions();
     let xStart = camX-Math.round(o.width/2);
     let yStart = camY-Math.round(o.height/2);
-    for (let x=0;x<this._attr.xdim;x++) {
-      for (let y=0;y<this._attr.ydim;y++) {
+    for (let x=0;x<this.attr.xdim;x++) {
+      for (let y=0;y<this.attr.ydim;y++) {
         let tile = this.getTile(x+xStart, y+yStart);
         if (tile.isA(TILES.NULLTILE)) {
           tile = TILES.WALL;
@@ -71,7 +71,7 @@ class Map{
   }
 
   toJSON() {
-    return JSON.stringify(this._attr);
+    return JSON.stringify(this.attr);
   }
 }
 
@@ -104,10 +104,12 @@ export function makeMap(mapData) {
   if (mapData.rngBaseState !== undefined) { m.setRngBaseState(mapData.rngBaseState); }
   m.setUp();
 
-  DATASTORE.MAPS[m.getId()] = m;
+  DATASTORE.MAPS[m.getID()] = m;
 
   return m;
 }
+
+//export function mapMaker(mapWidth, mapHeight)
 
 /*
 render(display, camera_map_x, camera_map_y){

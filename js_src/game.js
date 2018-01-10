@@ -1,7 +1,7 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
 import {StartupMode, PlayMode, LoseMode, WinMode, PersistenceMode} from './ui_mode.js';
-import {Messenger} from './Messenger.js';
+import {Messenger} from './messenger.js';
 import {DATASTORE, initializeDatastore} from './datastore.js';
 
 export let Game = {
@@ -52,7 +52,6 @@ export let Game = {
 
   init: function() {
 
-    //this.setupNewGame();
     this.setupDisplays();
     this.messageHandler.init(this.getDisplay('message'));
 
@@ -99,7 +98,7 @@ export let Game = {
     DATASTORE.GAME = this;
     console.log("datastore:");
     console.dir(DATASTORE);
-    //this.mode.play.setupNewGame();
+    this.modes.play.newGame();
     /*
     this._randomSeed = 5 + Math.floor(Math.random()*100000);
     //this._randomSeed = 76250;

@@ -39,7 +39,7 @@ export class StartupMode extends UIMode {
 
     handleInput(inputType,inputData) {
       if (inputData.charCode !== 0) {
-        this.game.switchMode('play');
+        this.game.switchMode('persistence');
       }
     }
 }
@@ -63,14 +63,15 @@ export class PlayMode extends UIMode{
   }
 
   newGame(){
-    this._STATE_ = {};
+    this._GAMESTATE_ = {};
     let m = makeMap({xdim: 60, ydim:20});
-    this._STATE_.curMapId = m.getId();
-    this._STATE_.cameraMapLoc = {
+    this._GAMESTATE_.curMapId = m.getID();
+    console.log(m.getID());
+    this._GAMESTATE_.cameraMapLoc = {
       x: Math.round(m.getXDim()/2),
       y: Math.round(m.getYDim()/2)
     };
-    this._STATE_.cameraDisplayLoc = {
+    this._GAMESTATE_.cameraDisplayLoc = {
       x: Math.round(this.display.getOptions().width/2),
       y: Math.round(this.display.getOptions().height/2)
     };
@@ -78,8 +79,8 @@ export class PlayMode extends UIMode{
 
     render(){
       this.display.clear();
-      DATASTORE.MAPS[this._STATE_.curMapId].renderOn(this.display, this._STATE_.cameraMapLoc.x, this._STATE_.cameramMapLoc.y);
-      this.avatarSymbol.drawOn(this.display, this._STATE_.cameraDisplayLoc.x, this._STATE_.cameraDisplayLoc.y);
+      DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
+      this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
       console.log("rendering PlayMode");
       /*
       this.map.render(display, this.camera_map_x, this.camera_map_y);
@@ -127,21 +128,21 @@ export class PlayMode extends UIMode{
     }
 
     moveBy(x, y){
-      let newX = this._STATE_.cameraMapLoc.x + x;
-      let newY = this._STATE_.cameraMapLoc.y + y;
-      if (newX < 0 || newX > DATASTORE.MAPS[this._STATE_.curMapId].getXDim() - 1) { return; }
-      if (newY < 0 || newY > DATASTORE.MAPS[this._STATE_.curMapId].getYDim() - 1) { return; }
-      this._STATE_.cameraMapLoc.x = newX;
-      this._STATE_.cameraMapLoc.y = newY;
+      let newX = this._GAMESTATE_.cameraMapLoc.x + x;
+      let newY = this._GAMESTATE_.cameraMapLoc.y + y;
+      if (newX < 0 || newX > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getXDim() - 1) { return; }
+      if (newY < 0 || newY > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getYDim() - 1) { return; }
+      this._GAMESTATE_.cameraMapLoc.x = newX;
+      this._GAMESTATE_.cameraMapLoc.y = newY;
       this.render();
     }
 
     toJSON(){
-      return JSON.stringify(this._STATE_);
+      return JSON.stringify(this._GAMESTATE_);
     }
 
     fromJSON(json){
-      this._STATE_ = JSON.parse(json);
+      this._GAMESTATE_ = JSON.parse(json);
     }
   }
 
@@ -227,18 +228,18 @@ export class PersistenceMode extends UIMode{
     if (!this.localStorageAvailable()){return false;}
 
     let restorationString = window.localStorage.getItem(this.game._PERSISTANCE_NAMESPACE);
-    let saved__STATE__ = JSON.parse(restorationString);
+    let saved__GAMESTATE__ = JSON.parse(restorationString);
 
 
     initializeDatastore();
 
     // restore game core
     DATASTORE.GAME = this.game;
-    this.game.fromJSON(saved_STATE_.GAME);
+    this.game.fromJSON(saved_GAMESTATE_.GAME);
 
     // restore maps (note: in the future might not instantiate all maps here, but instead build some kind of instantiate on demand)
-    for (let savedMapId in saved_STATE_.MAPS) {
-      makeMap(JSON.parse(saved_STATE_.MAPS[savedMapId]));
+    for (let savedMapId in saved_GAMESTATE_.MAPS) {
+      makeMap(JSON.parse(saved_GAMESTATE_.MAPS[savedMapId]));
     }
 
     this.game.messageHandler.send("Game loaded");

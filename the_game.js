@@ -8420,6 +8420,7 @@ var DATASTORE = exports.DATASTORE = {};
 
 function initializeDatastore() {
   exports.DATASTORE = DATASTORE = {
+    //ID_SEQ = 1,
     GAME: {},
     MAPS: {}
   };
@@ -9372,14 +9373,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.randomString = randomString;
 exports.init2DArray = init2DArray;
-var randStringCharSource = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+var randCharSource = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
 function randomString() {
   var len = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 8;
 
   var res = '';
   for (var i = 0; i < len; i++) {
-    res += randStringCharSource.random();
+    res += randCharSource.random();
   }
+  //res =  `${DATASTORE.ID_SEQ} - ${res}`
   return res;
 }
 
@@ -9397,6 +9399,16 @@ function init2DArray() {
   }
   return a;
 }
+/*
+let randStringCharSource = ''.split('');
+export functions uniqueId(tag){
+  let id = '';
+  for (let i=1;i<4;i++){
+    id += randStringCharSource.random();
+  }
+  id = `${tag ? tag + `-`}`
+}
+*/
 
 /***/ }),
 /* 128 */
@@ -15016,7 +15028,7 @@ var U = _interopRequireWildcard(_util);
 
 var _ui_mode = __webpack_require__(335);
 
-var _Messenger = __webpack_require__(338);
+var _messenger = __webpack_require__(338);
 
 var _datastore = __webpack_require__(92);
 
@@ -15028,7 +15040,7 @@ var Game = exports.Game = {
 
   SPACING: 1.1,
 
-  messageHandler: _Messenger.Messenger,
+  messageHandler: _messenger.Messenger,
 
   display: {
     main: {
@@ -15072,7 +15084,6 @@ var Game = exports.Game = {
 
   init: function init() {
 
-    //this.setupNewGame();
     this.setupDisplays();
     this.messageHandler.init(this.getDisplay('message'));
 
@@ -15119,7 +15130,7 @@ var Game = exports.Game = {
     _datastore.DATASTORE.GAME = this;
     console.log("datastore:");
     console.dir(_datastore.DATASTORE);
-    //this.mode.play.setupNewGame();
+    this.modes.play.newGame();
     /*
     this._randomSeed = 5 + Math.floor(Math.random()*100000);
     //this._randomSeed = 76250;
@@ -15283,7 +15294,7 @@ var StartupMode = exports.StartupMode = function (_UIMode) {
     key: 'handleInput',
     value: function handleInput(inputType, inputData) {
       if (inputData.charCode !== 0) {
-        this.game.switchMode('play');
+        this.game.switchMode('persistence');
       }
     }
   }]);
@@ -15322,14 +15333,15 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
   }, {
     key: 'newGame',
     value: function newGame() {
-      this._STATE_ = {};
+      this._GAMESTATE_ = {};
       var m = (0, _map.makeMap)({ xdim: 60, ydim: 20 });
-      this._STATE_.curMapId = m.getId();
-      this._STATE_.cameraMapLoc = {
+      this._GAMESTATE_.curMapId = m.getID();
+      console.log(m.getID());
+      this._GAMESTATE_.cameraMapLoc = {
         x: Math.round(m.getXDim() / 2),
         y: Math.round(m.getYDim() / 2)
       };
-      this._STATE_.cameraDisplayLoc = {
+      this._GAMESTATE_.cameraDisplayLoc = {
         x: Math.round(this.display.getOptions().width / 2),
         y: Math.round(this.display.getOptions().height / 2)
       };
@@ -15338,8 +15350,8 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'render',
     value: function render() {
       this.display.clear();
-      _datastore.DATASTORE.MAPS[this._STATE_.curMapId].renderOn(this.display, this._STATE_.cameraMapLoc.x, this._STATE_.cameramMapLoc.y);
-      this.avatarSymbol.drawOn(this.display, this._STATE_.cameraDisplayLoc.x, this._STATE_.cameraDisplayLoc.y);
+      _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
+      this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
       console.log("rendering PlayMode");
       /*
       this.map.render(display, this.camera_map_x, this.camera_map_y);
@@ -15378,27 +15390,27 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
   }, {
     key: 'moveBy',
     value: function moveBy(x, y) {
-      var newX = this._STATE_.cameraMapLoc.x + x;
-      var newY = this._STATE_.cameraMapLoc.y + y;
-      if (newX < 0 || newX > _datastore.DATASTORE.MAPS[this._STATE_.curMapId].getXDim() - 1) {
+      var newX = this._GAMESTATE_.cameraMapLoc.x + x;
+      var newY = this._GAMESTATE_.cameraMapLoc.y + y;
+      if (newX < 0 || newX > _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].getXDim() - 1) {
         return;
       }
-      if (newY < 0 || newY > _datastore.DATASTORE.MAPS[this._STATE_.curMapId].getYDim() - 1) {
+      if (newY < 0 || newY > _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].getYDim() - 1) {
         return;
       }
-      this._STATE_.cameraMapLoc.x = newX;
-      this._STATE_.cameraMapLoc.y = newY;
+      this._GAMESTATE_.cameraMapLoc.x = newX;
+      this._GAMESTATE_.cameraMapLoc.y = newY;
       this.render();
     }
   }, {
     key: 'toJSON',
     value: function toJSON() {
-      return JSON.stringify(this._STATE_);
+      return JSON.stringify(this._GAMESTATE_);
     }
   }, {
     key: 'fromJSON',
     value: function fromJSON(json) {
-      this._STATE_ = JSON.parse(json);
+      this._GAMESTATE_ = JSON.parse(json);
     }
   }]);
 
@@ -15527,17 +15539,17 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       }
 
       var restorationString = window.localStorage.getItem(this.game._PERSISTANCE_NAMESPACE);
-      var saved__STATE__ = JSON.parse(restorationString);
+      var saved__GAMESTATE__ = JSON.parse(restorationString);
 
       (0, _datastore.initializeDatastore)();
 
       // restore game core
       _datastore.DATASTORE.GAME = this.game;
-      this.game.fromJSON(saved_STATE_.GAME);
+      this.game.fromJSON(saved_GAMESTATE_.GAME);
 
       // restore maps (note: in the future might not instantiate all maps here, but instead build some kind of instantiate on demand)
-      for (var savedMapId in saved_STATE_.MAPS) {
-        (0, _map.makeMap)(JSON.parse(saved_STATE_.MAPS[savedMapId]));
+      for (var savedMapId in saved_GAMESTATE_.MAPS) {
+        (0, _map.makeMap)(JSON.parse(saved_GAMESTATE_.MAPS[savedMapId]));
       }
 
       this.game.messageHandler.send("Game loaded");
@@ -15608,14 +15620,14 @@ var Map = function () {
     this.attr.ydim = ydim;
     this.attr.mapType = mapType;
     this.attr.id = (0, _util.randomString)();
-    this.rng = ROG.RNG.clome();
+    this.rng = _rotJs2.default.RNG.clone();
     this.attr.rngBaseState = this.rng.getState();
   }
 
   _createClass(Map, [{
     key: 'setUp',
     value: function setUp() {
-      this.rng.setState(this.rngBaseState);
+      this.rng.setState(this.attr.rngBaseState);
       this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
     }
   }, {
@@ -15662,8 +15674,8 @@ var Map = function () {
       var o = display.getOptions();
       var xStart = camX - Math.round(o.width / 2);
       var yStart = camY - Math.round(o.height / 2);
-      for (var x = 0; x < this._attr.xdim; x++) {
-        for (var y = 0; y < this._attr.ydim; y++) {
+      for (var x = 0; x < this.attr.xdim; x++) {
+        for (var y = 0; y < this.attr.ydim; y++) {
           var tile = this.getTile(x + xStart, y + yStart);
           if (tile.isA(_tile.TILES.NULLTILE)) {
             tile = _tile.TILES.WALL;
@@ -15675,7 +15687,7 @@ var Map = function () {
   }, {
     key: 'toJSON',
     value: function toJSON() {
-      return JSON.stringify(this._attr);
+      return JSON.stringify(this.attr);
     }
   }]);
 
@@ -15718,10 +15730,12 @@ function makeMap(mapData) {
   }
   m.setUp();
 
-  _datastore.DATASTORE.MAPS[m.getId()] = m;
+  _datastore.DATASTORE.MAPS[m.getID()] = m;
 
   return m;
 }
+
+//export function mapMaker(mapWidth, mapHeight)
 
 /*
 render(display, camera_map_x, camera_map_y){

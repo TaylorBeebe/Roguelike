@@ -9369,6 +9369,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.randomString = randomString;
 exports.init2DArray = init2DArray;
+exports.uniqueID = uniqueID;
 var randCharSource = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
 function randomString() {
   var len = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 8;
@@ -9395,6 +9396,13 @@ function init2DArray() {
   }
   return a;
 }
+
+var ID_SEQ = 0;
+function uniqueID() {
+  ID_SEQ++;
+  return ID_SEQ + '-' + randomString();
+}
+
 /*
 let randStringCharSource = ''.split('');
 export functions uniqueId(tag){
@@ -9436,6 +9444,13 @@ var DisplaySymbol = exports.DisplaySymbol = function () {
     this._fgHexColor = fgHexColor;
     this._bgHexColor = bgHexColor;
   }
+  /*
+  constructor(template){
+    this._chr = chr;
+    this._fgHexColor = template.fg || Color.FG;
+    this._bgHexColor = template.bg || Color.BG;
+  }
+  */
 
   _createClass(DisplaySymbol, [{
     key: 'getRepresentation',
@@ -15629,6 +15644,8 @@ var Map = function () {
     this.attr.id = (0, _util.randomString)();
     this.rng = _rotJs2.default.RNG.clone();
     this.attr.rngBaseState = this.rng.getState();
+    this.attr.locationToEntityID = {};
+    this.enityIDToLocation = {};
   }
 
   _createClass(Map, [{
@@ -15666,6 +15683,67 @@ var Map = function () {
     key: 'getYDim',
     value: function getYDim() {
       return this.attr.ydim;
+    }
+    /*
+    addEntity(ent,mapx,mapy){
+      let pos =  `${x}, ${y}`;
+    }
+    */
+
+  }, {
+    key: 'removeEntitiy',
+    value: function removeEntitiy(e) {
+      e.setMapID('');
+      delete this.attr.entityIDToLocation[e.getID()];
+      delete this.attr.locationToEntityID[e.getPos()];
+    }
+  }, {
+    key: 'moveEntityTo',
+    value: function moveEntityTo(e, x, y) {
+      if (x < 0 || x >= this.attr.xdim || y < 0 || y >= this.attr.ydim) {
+        return false;
+      }
+      if (this.testLocationBlocked(x, y)) {
+        return false;
+      }
+
+      delete this.attr.locationToEntityID[e.getPos()];
+      e.setPos(x, y);
+      this.attr.locationToEntityID[e.getPos()] = e.getID();
+      this.attr.entityIDToLocation[e.getID()] = e.getPos();
+      return true;
+    }
+  }, {
+    key: 'getRandomUnblockedPosition',
+    value: function getRandomUnblockedPosition() {
+      var rx = Math.trunc(this.rng.getUniform() * this.attr.xdim);
+      var ry = Math.trunc(this.rng.getUniform() * this.attr.ydim);
+      if (this.testLocationBlocked(rx, ry)) {
+        return this.getRandomOpenPosition();
+      }
+      return { x: rx, y: ry };
+    }
+    /*
+    getUnblockedPerimeterLocation(inset){
+      inset = inset || 2;
+      let bounds = {
+        lx: insert,
+        ux: this.attr.xdim - 1 - inset,
+        ly: inset,
+        uy: this.attr.ydim - 1 - inset
+      };
+      let range = {
+        rx:this.attr.xim - 1 - inset - inset,
+        ry: this.attr.ydim - 1 - inset - inset
+      };
+      let [x,y] = [0,0];
+     }
+    */
+
+  }, {
+    key: 'testLocationBlocked',
+    value: function testLocationBlocked(x, y) {
+      return this.attr.locationToEntityID[x + ', ' + y] || !this.getTile(x, y).isWalkable();
     }
   }, {
     key: 'getTile',
@@ -15725,9 +15803,19 @@ var TILE_GRID_GENERATOR = {
     _rotJs2.default.RNG.setState(origRngState);
     return tg;
   }
-};
+  /*
+  getRandomOpenPosition(){
+    let x = Math.trunc(ROT.RNG.getUniform()*this.state.xdim);
+    let y = Math.trunc(ROT.RNG.getUniform()*this.state.ydim);
+  
+    if (this.tileGrid[x][y].isA('floor')){
+      return `${x},${y}`;
+    }
+    return this.getRandomOpenPosition();
+  }
+  */
 
-function makeMap(mapData) {
+};function makeMap(mapData) {
   var m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);
   if (mapData.id !== undefined) {
     m.setID(mapData.id);
@@ -15807,6 +15895,14 @@ var Tile = exports.Tile = function () {
     this._name = name;
     this._symbol = symbol;
   }
+  /*
+    constructor(template){
+      super(template);
+      this._name = template.name || 'No Name';
+      this.walkable = themplate.walkable || false;
+    }
+  */
+
 
   _createClass(Tile, [{
     key: 'getDisplaySymbol',
@@ -15828,6 +15924,12 @@ var Tile = exports.Tile = function () {
     value: function isA(matchingTile) {
       return this.getName() == matchingTile.getName();
     }
+    /*
+    isWalkable(){
+      return this.walkable;
+    }
+    */
+
   }]);
 
   return Tile;

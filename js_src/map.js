@@ -17,6 +17,8 @@ class Map{
     this.attr.id = randomString();
     this.rng = ROT.RNG.clone();
     this.attr.rngBaseState = this.rng.getState();
+    this.attr.locationToEntityID = {};
+    this.enityIDToLocation = {};
   }
 
   setUp(){
@@ -46,6 +48,62 @@ class Map{
 
   getYDim() {
      return this.attr.ydim;
+  }
+  /*
+  addEntity(ent,mapx,mapy){
+    let pos =  `${x}, ${y}`;
+  }
+  */
+
+  removeEntitiy(e){
+    e.setMapID('');
+    delete this.attr.entityIDToLocation[e.getID()];
+    delete this.attr.locationToEntityID[e.getPos()];
+  }
+
+  moveEntityTo(e, x, y){
+    if ((x < 0) || (x >= this.attr.xdim) || (y<0) || (y >= this.attr.ydim)) {
+      return false;
+    }
+    if (this.testLocationBlocked(x,y)){
+      return false;
+    }
+
+    delete this.attr.locationToEntityID[e.getPos()];
+    e.setPos(x, y);
+    this.attr.locationToEntityID[e.getPos()] = e.getID();
+    this.attr.entityIDToLocation[e.getID()] = e.getPos();
+    return true;
+  }
+
+  getRandomUnblockedPosition(){
+    let rx = Math.trunc(this.rng.getUniform()*this.attr.xdim);
+    let ry = Math.trunc(this.rng.getUniform()*this.attr.ydim);
+    if (this.testLocationBlocked(rx, ry)){
+      return this.getRandomOpenPosition();
+    }
+    return {x: rx, y:ry};
+  }
+  /*
+  getUnblockedPerimeterLocation(inset){
+    inset = inset || 2;
+    let bounds = {
+      lx: insert,
+      ux: this.attr.xdim - 1 - inset,
+      ly: inset,
+      uy: this.attr.ydim - 1 - inset
+    };
+    let range = {
+      rx:this.attr.xim - 1 - inset - inset,
+      ry: this.attr.ydim - 1 - inset - inset
+    };
+    let [x,y] = [0,0];
+
+  }
+  */
+
+  testLocationBlocked(x, y) {
+    return (this.attr.locationToEntityID[`${x}, ${y}`] || !this.getTile(x, y).isWalkable());
   }
 
   getTile(x,y) {
@@ -97,6 +155,17 @@ let TILE_GRID_GENERATOR = {
     return tg;
   }
 }
+/*
+getRandomOpenPosition(){
+  let x = Math.trunc(ROT.RNG.getUniform()*this.state.xdim);
+  let y = Math.trunc(ROT.RNG.getUniform()*this.state.ydim);
+
+  if (this.tileGrid[x][y].isA('floor')){
+    return `${x},${y}`;
+  }
+  return this.getRandomOpenPosition();
+}
+*/
 
 export function makeMap(mapData) {
   let m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);

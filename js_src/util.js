@@ -18,6 +18,13 @@ export function init2DArray(x=1,y=1,initVal='') {
   }
   return a;
 }
+
+let ID_SEQ = 0;
+export function uniqueID() {
+  ID_SEQ++;
+  return `${ID_SEQ}-${randomString()}`;
+}
+
 /*
 let randStringCharSource = ''.split('');
 export functions uniqueId(tag){

@@ -5,7 +5,13 @@ export class Tile {
     this._name = name;
     this._symbol = symbol;
   }
-
+/*
+  constructor(template){
+    super(template);
+    this._name = template.name || 'No Name';
+    this.walkable = themplate.walkable || false;
+  }
+*/
   getDisplaySymbol() {
     return this._symbol;
   }
@@ -21,6 +27,11 @@ export class Tile {
   isA(matchingTile) {
     return this.getName() == matchingTile.getName();
   }
+  /*
+  isWalkable(){
+    return this.walkable;
+  }
+  */
 }
 
 export let TILES = {

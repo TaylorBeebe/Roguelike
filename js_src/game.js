@@ -42,23 +42,23 @@ export let Game = {
   isPlaying: false,
   hasSaved: false,
 
-  getDisplay: function(display){
-    if (this.display.hasOwnProperty(display)) {
-      return this.display[display].o;
-    } else{
-      return null;
-    }
-  },
-
   init: function() {
 
     this.setupDisplays();
     this.messageHandler.init(this.getDisplay('message'));
 
     this.setupModes(this);
-    this.switchMode("startup");
+    this.switchMode('startup');
 
     console.dir(this);
+  },
+
+  getDisplay: function(display){
+    if (this.display.hasOwnProperty(display)) {
+      return this.display[display].o;
+    } else{
+      return null;
+    }
   },
 
   setupModes: function(){
@@ -162,23 +162,4 @@ export let Game = {
     this.modes.play.fromJSON(json);
   }
 
-/*
-
-  toJSON: function(){
-    let json = '';
-    json = JSON.stringify(){
-      rseed: this._randomSeed,
-      playModeState: this.modes.play
-    });
-    return json;
-  },
-
-  fromJSON: function(json){
-    let state = JSON.parse(json);
-    this._randomSeed = state.rseed;
-    ROT.RNG.setSeed(this._randomSeed);
-
-    this.modes.play.
-  }
-*/
 };

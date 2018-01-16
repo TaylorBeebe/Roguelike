@@ -1,8 +1,8 @@
-//a general factory system - objects that create other objects
+
 import {DATASTORE} from './datastore.js';
 
 export class Factory{
-  constructor(productClass, datastoreNamespace){
+  constructor(datastoreNamespace, productClass){
     this.productClass = productClass;
     this.datastoreNamespace = datastoreNamespace;
     this.knownTemplates = {};
@@ -11,13 +11,18 @@ export class Factory{
   learn(template){
     this.knownTemplates[template.templateName ? template.templateName :
     template.name] = template;
+    console.log("Known templates are: ");
+    console.dir(this.knownTemplates);
   }
 
-  create(templateName){
-    let product = new this.productClass(this.knownTemplates[templateName]);
-
-    //DATASTORE.product.getID() = product;
-
+  create(templateName, restorationState){
+    console.log('now in the create() method');
+    console.log(this.templateName);
+    let product = new this.productClass(templateName, this.knownTemplates[templateName]);
+    if (restorationState){
+      product.fromState(restorationState);
+    }
+    DATASTORE[this.datastoreNamespace][product.getID()] = product;
     return product;
   }
 }

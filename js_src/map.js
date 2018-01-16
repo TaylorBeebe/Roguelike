@@ -1,6 +1,6 @@
 
 import ROT from 'rot-js';
-import {randomString,init2DArray} from './util.js';
+import {uniqueID,init2DArray} from './util.js';
 import {TILES} from './tile.js';
 import {DATASTORE} from './datastore.js';
 
@@ -14,7 +14,7 @@ class Map{
     this.attr.xdim = xdim;
     this.attr.ydim = ydim;
     this.attr.mapType = mapType;
-    this.attr.id = randomString();
+    this.attr.id = uniqueID();
     this.rng = ROT.RNG.clone();
     this.attr.rngBaseState = this.rng.getState();
     this.attr.locationToEntityID = {};
@@ -49,19 +49,21 @@ class Map{
   getYDim() {
      return this.attr.ydim;
   }
-  /*
-  addEntity(ent,mapx,mapy){
-    let pos =  `${x}, ${y}`;
-  }
-  */
 
-  removeEntitiy(e){
-    e.setMapID('');
-    delete this.attr.entityIDToLocation[e.getID()];
-    delete this.attr.locationToEntityID[e.getPos()];
+  addEntity(ent) {
+     ent.setMapId(this.attr.id);
+     this.attr.entityIdToLocation[ent.getId()] = ent.getPos();
+     this.attr.locationToEntityId[ent.gePos()] = ent.getId();
+   }
+
+
+  removeEntitiy(ent){
+    ent.setMapID('');
+    delete this.attr.entityIDToLocation[ent.getID()];
+    delete this.attr.locationToEntityID[ent.getPos()];
   }
 
-  moveEntityTo(e, x, y){
+  moveEntityTo(ent, x, y){
     if ((x < 0) || (x >= this.attr.xdim) || (y<0) || (y >= this.attr.ydim)) {
       return false;
     }
@@ -69,10 +71,10 @@ class Map{
       return false;
     }
 
-    delete this.attr.locationToEntityID[e.getPos()];
-    e.setPos(x, y);
-    this.attr.locationToEntityID[e.getPos()] = e.getID();
-    this.attr.entityIDToLocation[e.getID()] = e.getPos();
+    delete this.attr.locationToEntityID[ent.getPos()];
+    ent.setPos(x, y);
+    this.attr.locationToEntityID[ent.getPos()] = ent.getID();
+    this.attr.entityIDToLocation[ent.getID()] = ent.getPos();
     return true;
   }
 
@@ -82,9 +84,9 @@ class Map{
     if (this.testLocationBlocked(rx, ry)){
       return this.getRandomOpenPosition();
     }
-    return {x: rx, y:ry};
+    return {x: rx, y: ry};
   }
-  /*
+
   getUnblockedPerimeterLocation(inset){
     inset = inset || 2;
     let bounds = {
@@ -98,9 +100,27 @@ class Map{
       ry: this.attr.ydim - 1 - inset - inset
     };
     let [x,y] = [0,0];
+    if (this.rng.getUniform() < .5) {
+      x = this.rng.getUniform() < .5 ? bounds.lx : bounds.ux;
+      y = Math.trunc(this.rng.getUniform() * range.ry);
+    } else {
+      x = Math.trunc(this.rng.getUniform() * range.rx);
+      y = this.rng.getUniform() < .5 ? bounds.ly : bounds.uy;
+    }
 
+    let perimLen = range.rx * 2 + range.ry * 2 - 4;
+    for (let i=0; i<perimLen; i++) {
+      if (! this.testLocationBlocked(x,y)) {
+        return {'x': x, 'y': y};
+      }
+      if (y==bounds.ly && x < bounds.ux) { x++; continue; }
+      if (x==bounds.ux && y < bounds.uy) { y++; continue; }
+      if (y==bounds.uy && x > bounds.lx) { x--; continue; }
+      if (x==bounds.lx && y > bounds.ly) { y--; continue; }
+    }
+    return this.getUnblockedPerimeterLocation(inset+1);
   }
-  */
+
 
   testLocationBlocked(x, y) {
     return (this.attr.locationToEntityID[`${x}, ${y}`] || !this.getTile(x, y).isWalkable());
@@ -126,6 +146,18 @@ class Map{
         tile.drawOn(display,x,y);
       }
     }
+  }
+
+  getDisplaySymbolAtMapLocation(mapX,mapY) {
+    // priority is: entity, tile
+    let entityId = this.attr.locationToEntityId[`${mapX},${mapY}`];
+    if (entityId) { return DATASTORE.ENTITIES[entityId]; }
+
+    let tile = this.getTile(mapX, mapY);
+    if (tile.isA(TILES.NULLTILE)) {
+      tile = TILES.WALL;
+    }
+    return tile;
   }
 
   toJSON() {
@@ -155,6 +187,7 @@ let TILE_GRID_GENERATOR = {
     return tg;
   }
 }
+
 /*
 getRandomOpenPosition(){
   let x = Math.trunc(ROT.RNG.getUniform()*this.state.xdim);

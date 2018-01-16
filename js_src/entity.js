@@ -4,13 +4,13 @@ import {DATASTORE} from './datastore.js';
 
 export class Entity extends DisplaySymbol {
   constructor(templateName, template){
-    super(tempate);
+    super(template);
     this.name = template.name || template.templateName || 'no name';
     //this.descr = template.descr || 'boring';
 
     if (!('attr' in this)) {this.attr = {}; }
     this.attr.id = uniqueID();
-    this.attr.templateName = template.templateName;
+    this.attr.templateName = template.name;
     this.attr.x = template.x || 1;
     this.attr.y = tempalte.y || 1;
     this.attr.mapID = '';
@@ -28,7 +28,7 @@ export class Entity extends DisplaySymbol {
 
   getY() {return this.attr.y;}
 
-  getPos(){return x: {this.attr.x, y: this.attr.y};}
+  getPos(){return {x: this.attr.x, y: this.attr.y};}
 
   setPos(x, y){
     this.attr.x = x;
@@ -39,9 +39,6 @@ export class Entity extends DisplaySymbol {
 
   setY(y){this.attr.y = y;}
 
-//UNCOMMENT WHEN moveEntityTo CREATED
-
-/*
   moveBy(dx, dy){
     if (!this.attr.mapID) {
       this.attr.x += dx;
@@ -50,7 +47,7 @@ export class Entity extends DisplaySymbol {
     }
     return DATASTORE.MAPS[this.attr.mapID].moveEntityTo(this.this.attr.x + dx, this.attr.y + dy);
   }
-*/
+
   toJSON(){
     return JSON.stringify(this.attr);
   }

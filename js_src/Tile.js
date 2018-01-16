@@ -1,17 +1,18 @@
 import {DisplaySymbol} from './display_symbol.js';
 
-export class Tile {
-  constructor(name,symbol) {
-    this._name = name;
-    this._symbol = symbol;
-  }
-/*
+export class Tile extends DisplaySymbol {
+  // constructor(name,symbol) {
+  //   this._name = name;
+  //   this._symbol = symbol;
+  // }
+
   constructor(template){
     super(template);
     this._name = template.name || 'No Name';
-    this.walkable = themplate.walkable || false;
+    this._walkable = template.walkable || false;
+    // this.transparent = template.transparent || false;
   }
-*/
+
   getDisplaySymbol() {
     return this._symbol;
   }
@@ -27,15 +28,21 @@ export class Tile {
   isA(matchingTile) {
     return this.getName() == matchingTile.getName();
   }
-  /*
+
   isWalkable(){
-    return this.walkable;
+    return this._walkable;
   }
-  */
+
 }
 
 export let TILES = {
-  NULLTILE: new Tile('NULLTILE',new DisplaySymbol()),
-  FLOOR: new Tile('FLOOR',new DisplaySymbol('.')),
-  WALL: new Tile('WALL',new DisplaySymbol('#'))
+  NULLTILE: new Tile({name: 'NULLTILE'}),
+  FLOOR: new Tile({name: 'FLOOR', chr: '.', walkable: true}),
+  WALL: new Tile({name: 'WALL', chr: '#'})
 }
+
+// export let TILES = {
+//   NULLTILE: new Tile('NULLTILE',new DisplaySymbol()),
+//   FLOOR: new Tile('FLOOR', new DisplaySymbol('.')),
+//   WALL: new Tile('WALL',new DisplaySymbol('#'))
+// }

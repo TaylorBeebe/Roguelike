@@ -3,6 +3,7 @@ import {makeMap} from './map.js';
 import {Color} from './colors.js';
 import {DisplaySymbol} from './display_symbol.js';
 import {DATASTORE,initializeDatastore} from './datastore.js';
+import {EntityFactory} from './entities.js';
 
 class UIMode {
 
@@ -10,7 +11,6 @@ class UIMode {
     console.log("created " + this.constructor.name);
     this.game = thegame;
     this.display = this.game.getDisplay("main");
-    console.log(this.displayId);
   }
 
   enter(){
@@ -21,7 +21,7 @@ class UIMode {
     console.log("exiting " + this.constructor.name);
   }
 
-  handleInput(){}
+  handleInput(inputType, inputData){}
 }
 
 export class StartupMode extends UIMode {
@@ -32,7 +32,6 @@ export class StartupMode extends UIMode {
   }
 
   render(){
-    this.display.drawText(33,4, "Start New Game");
     this.display.drawText(33, 1, "Press any key to advance");
     console.log("rendering StartupMode");
   }
@@ -49,32 +48,37 @@ export class PlayMode extends UIMode{
   enter(){
     super.enter();
     this.game.isPlaying = true;
-    this.avatarSymbol = new DisplaySymbol(`@`, `#eb4`);
+    //this.avatarSymbol = new DisplaySymbol(`@`, `#eb4`);
   }
 
   newGame(){
-    this._GAMESTATE_ = {};
+    console.log("creating avatar");
+    let a = EntityFactory.create('avatar');
+    console.log("avatar created");
     let m = makeMap({xdim: 60, ydim:20});
+    this._GAMESTATE_ = {};
+    this._GAMESTATE_.avatarId = a.getID();
     this._GAMESTATE_.curMapId = m.getID();
-    console.log(m.getID());
-    this._GAMESTATE_.cameraMapLoc = {
-      x: Math.round(m.getXDim()/2),
-      y: Math.round(m.getYDim()/2)
-    };
+    // console.log(m.getID());
+    this.cameraToAvatar();
+    // this._GAMESTATE_.cameraMapLoc = {
+    //   x: Math.round(m.getXDim()/2),
+    //   y: Math.round(m.getYDim()/2)
+    // };
     this._GAMESTATE_.cameraDisplayLoc = {
       x: Math.round(this.display.getOptions().width/2),
       y: Math.round(this.display.getOptions().height/2)
     };
-    console.log("new game built._GAMESTATE_ dir is - ");
+    console.log("new game built._GAMESTATE_ dir is: ");
     console.dir(this._GAMESTATE_);
   }
 
     render(){
       this.display.clear();
-      console.dir(DATASTORE.MAPS);
-      console.dir(this._GAMESTATE_);
+      // console.dir(DATASTORE.MAPS);
+      // console.dir(this._GAMESTATE_);
       DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
-      this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
+      // this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
       console.log("rendering PlayMode");
 
       //this._GAMESTATE_.curMapId
@@ -122,13 +126,25 @@ export class PlayMode extends UIMode{
     }
 
     move(x, y){
-      let newX = this._GAMESTATE_.cameraMapLoc.x + x;
-      let newY = this._GAMESTATE_.cameraMapLoc.y + y;
-      if (newX < 0 || newX > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getXDim() - 1) { return; }
-      if (newY < 0 || newY > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getYDim() - 1) { return; }
-      this._GAMESTATE_.cameraMapLoc.x = newX;
-      this._GAMESTATE_.cameraMapLoc.y = newY;
-      this.render();
+
+      if(DATASTORE.ENTITIES[this.attr.avatarId].moveBy(x,y)){
+        this.cameraToAvatar();
+        this.render();
+      } else{
+        this.game.messageHandler.sent("unable to move there");
+      }
+      // let newX = this._GAMESTATE_.cameraMapLoc.x + x;
+      // let newY = this._GAMESTATE_.cameraMapLoc.y + y;
+      // if (newX < 0 || newX > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getXDim() - 1) { return; }
+      // if (newY < 0 || newY > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getYDim() - 1) { return; }
+      // this._GAMESTATE_.cameraMapLoc.x = newX;
+      // this._GAMESTATE_.cameraMapLoc.y = newY;
+      // this.render();
+    }
+
+    cameraToAvatar(){
+      this._GAMESTATE_.cameraMapLoc.x = DATASTORE.ENTITEIS[this._GAMESTATE_.avatarId].getx();
+      this._GAMESTATE_.cameraMapLoc.y = DATASTORE.ENTITEIS[this._GAMESTATE_.avatarId].gety();
     }
 
     toJSON(){
@@ -188,8 +204,6 @@ export class PersistenceMode extends UIMode{
         this.handleSave();
         this.game.messageHandler.send("Game saved");
         this.game.switchMode('play');
-      } else{
-        this.game.messageHandler.send("You cannot save game at this time!")
       }
     }
     else if (inputData.key == 'l' || inputData.key == 'L') {
@@ -197,15 +211,11 @@ export class PersistenceMode extends UIMode{
         this.handleLoad();
         this.game.messageHandler.send("Game loaded");
         this.game.switchMode('play');
-      } else{
-        this.game.messageHandler.send("There are no save games to load!")
       }
     }
     else if (inputData.key == 'Escape') {
       if (this.game.isPlaying) {
         this.game.switchMode('play');
-      } else{
-        this.game.messageHandler.send("You are not currently playing a game!")
       }
     }
     return false;
@@ -241,7 +251,16 @@ export class PersistenceMode extends UIMode{
       console.log(savedMapId);
     }
     console.log('all maps restored');
+
+    //CHECK ACCURATE VARIABLE NAMES
+    console.log('loading entities');
+    for (let savedEntityId in saved_GAMESTATE_.ENTITIES){
+      let entState = JSON.parse(saved_GAMESTATE_.ENTITIES[savedEntityId]);
+      EntityFactory.create(entState.templateName, entState);
+    }
+    console.log('all entities loaded');
     console.dir(DATASTORE.GAME);
+
     }
 
 

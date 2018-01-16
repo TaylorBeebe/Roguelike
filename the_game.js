@@ -15182,6 +15182,11 @@ var Game = exports.Game = {
     this.renderDisplayMessage();
   },
 
+  // renderMain: function(){
+  //   console.log('rendermain function');
+  //   this.renderAvatar();
+  // },
+
   bindEvent: function bindEvent(eventType) {
     var _this = this;
 
@@ -15268,6 +15273,11 @@ var UIMode = function () {
       console.log("exiting " + this.constructor.name);
     }
   }, {
+    key: 'renderAvatar',
+    value: function renderAvatar(display) {
+      display.clear();
+    }
+  }, {
     key: 'handleInput',
     value: function handleInput(inputType, inputData) {}
   }]);
@@ -15327,9 +15337,9 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
   }, {
     key: 'newGame',
     value: function newGame() {
-      console.log("creating avatar");
+      console.log('creating avatar');
       var a = _entities.EntityFactory.create('avatar');
-      console.log("avatar created");
+      console.log('avatar created');
       var m = (0, _map.makeMap)({ xdim: 60, ydim: 20 });
       a.setPos(m.getUnblockedPerimeterLocation());
       m.addEntity(a);
@@ -15339,10 +15349,6 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       // console.log(m.getID());
       this._GAMESTATE_.cameraMapLoc = {};
       this.cameraToAvatar();
-      // this._GAMESTATE_.cameraMapLoc = {
-      //   x: Math.round(m.getXDim()/2),
-      //   y: Math.round(m.getYDim()/2)
-      // };
       this._GAMESTATE_.cameraDisplayLoc = {
         x: Math.round(this.display.getOptions().width / 2),
         y: Math.round(this.display.getOptions().height / 2)
@@ -15354,7 +15360,8 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'render',
     value: function render() {
       this.display.clear();
-      // console.dir(DATASTORE.MAPS);
+      console.log('in PlayMode.render()');
+      console.dir(_datastore.DATASTORE.MAPS);
       // console.dir(this._GAMESTATE_);
       _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       // this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
@@ -15389,22 +15396,37 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         }
       }
     }
+
+    /*
+    renderAvatar(){
+      display.clear();
+      display.drawText(0,0, "AVATAR");
+      display.drawText(0,2,"Time: " + DATASTORE.ENTITEIS[this._GAMESTATE_.avatarId].getTime();)
+      this.display.drawText(33, 1, "Press any key to advance");
+    }
+    */
+
   }, {
     key: 'move',
     value: function move(x, y) {
-
+      //THIS WILL REPLACE MOVEBY. TRYWALK IS IN MIXINS INSTEAD OF ENTITY
+      //if(DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].tryWalk(x,y))
       if (_datastore.DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].moveBy(x, y)) {
         this.cameraToAvatar();
+        // DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].addTime(1);
         this.render();
       } else {
-        this.game.messageHandler.sent("unable to move there");
+        this.game.messageHandler.send("unable to move there");
       }
     }
   }, {
     key: 'cameraToAvatar',
     value: function cameraToAvatar() {
+      console.log('centering camera on avatar');
+      console.dir(_datastore.DATASTORE.ENTITIES);
       this._GAMESTATE_.cameraMapLoc.x = _datastore.DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].getX();
       this._GAMESTATE_.cameraMapLoc.y = _datastore.DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].getY();
+      console.log('camera centered. cameraMapLoc.x : ' + this._GAMESTATE_.cameraMapLoc.x + ' cameraMapLoc.y: ' + this._GAMESTATE_.cameraMapLoc.y);
     }
   }, {
     key: 'toJSON',
@@ -15562,7 +15584,8 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
         _entities.EntityFactory.create(entState.templateName, entState);
       }
       console.log('all entities loaded');
-      console.dir(_datastore.DATASTORE.GAME);
+      console.log('game loaded!');
+      console.dir(_datastore.DATASTORE);
     }
   }, {
     key: 'localStorageAvailable',
@@ -15623,6 +15646,7 @@ var Map = function () {
     if (!TILE_GRID_GENERATOR.hasOwnProperty(mapType)) {
       mapType = 'basicCaves';
     }
+    console.log('in map constructor()');
 
     this.attr = {};
     this.attr.xdim = xdim;
@@ -15633,6 +15657,8 @@ var Map = function () {
     this.attr.rngBaseState = this.rng.getState();
     this.attr.locationToEntityID = {};
     this.attr.entityIDToLocation = {};
+    console.dir(this.attr);
+    console.log('exiting map constructor()');
   }
 
   _createClass(Map, [{
@@ -15699,11 +15725,12 @@ var Map = function () {
         console.log('position is blocked [map.moveEntityTo()]');
         return false;
       }
-
-      delete this.attr.locationToEntityID[ent.getPos()];
+      console.log('entity can move to this location. moving...');
+      delete this.attr.locationToEntityID[ent.getxcy()];
       ent.setPos(x, y);
-      this.attr.locationToEntityID[ent.getPos()] = ent.getID();
-      this.attr.entityIDToLocation[ent.getID()] = ent.getPos();
+      this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
+      this.attr.entityIDToLocation[ent.getID()] = ent.getxcy();
+      console.dir(this.attr);
       return true;
     }
   }, {
@@ -15712,45 +15739,10 @@ var Map = function () {
       var rx = Math.trunc(this.rng.getUniform() * this.attr.xdim);
       var ry = Math.trunc(this.rng.getUniform() * this.attr.ydim);
       if (this.testLocationBlocked(rx, ry)) {
-        return this.getRandomOpenPosition();
+        return this.getRandomUnblockedPosition();
       }
       return { x: rx, y: ry };
     }
-
-    // getUnblockedPerimeterLocation(inset){
-    //   inset = inset || 2;
-    //   let bounds = {
-    //     lx: inset,
-    //     ux: this.attr.xdim - 1 - inset,
-    //     ly: inset,
-    //     uy: this.attr.ydim - 1 - inset
-    //   };
-    //   let range = {
-    //     rx:this.attr.xim - 1 - inset - inset,
-    //     ry: this.attr.ydim - 1 - inset - inset
-    //   };
-    //   let [x,y] = [0,0];
-    //   if (this.rng.getUniform() < .5) {
-    //     x = this.rng.getUniform() < .5 ? bounds.lx : bounds.ux;
-    //     y = Math.trunc(this.rng.getUniform() * range.ry);
-    //   } else {
-    //     x = Math.trunc(this.rng.getUniform() * range.rx);
-    //     y = this.rng.getUniform() < .5 ? bounds.ly : bounds.uy;
-    //   }
-    //
-    //   let perimLen = range.rx * 2 + range.ry * 2 - 4;
-    //   for (let i=0; i<perimLen; i++) {
-    //     if (! this.testLocationBlocked(x,y)) {
-    //       return {'x': x, 'y': y};
-    //     }
-    //     if (y==bounds.ly && x < bounds.ux) { x++; continue; }
-    //     if (x==bounds.ux && y < bounds.uy) { y++; continue; }
-    //     if (y==bounds.uy && x > bounds.lx) { x--; continue; }
-    //     if (x==bounds.lx && y > bounds.ly) { y--; continue; }
-    //   }
-    //   return this.getUnblockedPerimeterLocation(inset+1);
-    // }
-
   }, {
     key: 'getUnblockedPerimeterLocation',
     value: function getUnblockedPerimeterLocation(inset) {
@@ -15815,31 +15807,33 @@ var Map = function () {
   }, {
     key: 'renderOn',
     value: function renderOn(display, camX, camY) {
-      console.log('camX: ' + camX + ' camY: ' + camY);
+      //console.log('camX: ' + camX + ' camY: ' + camY);
       var o = display.getOptions();
       var xStart = camX - Math.round(o.width / 2);
       var yStart = camY - Math.round(o.height / 2);
-      console.log('xStart: ' + xStart + ' yStart: ' + yStart);
-      for (var x = 0; x < this.attr.xdim; x++) {
-        for (var _y = 0; _y < this.attr.ydim; _y++) {
+      // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
+      for (var x = 0; x < o.width; x++) {
+        for (var y = 0; y < o.height; y++) {
           // let tile = this.getTile(x+xStart, y+yStart);
           // if (tile.isA(TILES.NULLTILE)) {
           //   tile = TILES.WALL;
-          this.getDisplaySymbolAtMapLocation(x + xStart, _y + yStart).drawOn(display, x, _y);
+          this.getDisplaySymbolAtMapLocation(x + xStart, y + yStart).drawOn(display, x, y);
         }
         // console.log(camX + ", " + camY);
         // console.dir(tile);
-        tile.drawOn(display, x, y);
+        //tile.drawOn(display,x,y);
       }
     }
   }, {
     key: 'getDisplaySymbolAtMapLocation',
     value: function getDisplaySymbolAtMapLocation(mapX, mapY) {
-      // priority is: entity, tile
-      var entityId = this.attr.locationToEntityId[mapX + ',' + mapY];
-      console.log('creating entityid in map.getDisplaySymbolAtMapLocation()');
-      console.dir(entityId);
+      // console.log('creating entityid in map.getDisplaySymbolAtMapLocation()');
+      // console.dir(this.attr);
+      // console.dir(this.attr.locationToEntityID);
+      var entityId = this.attr.locationToEntityID[mapX + ',' + mapY];
+      // console.dir(entityId);
       if (entityId) {
+        console.log('entity at this location: ' + mapX + ', ' + mapY);
         return _datastore.DATASTORE.ENTITIES[entityId];
       }
 
@@ -15853,6 +15847,13 @@ var Map = function () {
     key: 'toJSON',
     value: function toJSON() {
       return JSON.stringify(this.attr);
+    }
+  }, {
+    key: 'fromState',
+    value: function fromState(mapData) {
+      console.log('creating map from data');
+      console.dir(mapData);
+      this.attr = mapData;
     }
   }]);
 
@@ -15870,9 +15871,9 @@ var TILE_GRID_GENERATOR = {
       gen.create();
       // set the boundary to all wall each pass
       for (var x = 0; x < xdim; x++) {
-        for (var _y2 = 0; _y2 < ydim; _y2++) {
-          if (x <= 1 || _y2 <= 1 || x >= xdim - 2 || _y2 >= ydim - 2) {
-            gen.set(x, _y2, 1);
+        for (var y = 0; y < ydim; y++) {
+          if (x <= 1 || y <= 1 || x >= xdim - 2 || y >= ydim - 2) {
+            gen.set(x, y, 1);
           }
         }
       }
@@ -16022,7 +16023,8 @@ EntityFactory.learn({
   name: 'avatar',
   descr: '',
   chr: '@',
-  fg: '#eb4'
+  fg: '#eb4',
+  'mixinNames': ['TimeTracker', 'tryWalk']
 });
 
 /***/ }),
@@ -16062,8 +16064,8 @@ var Factory = exports.Factory = function () {
   }, {
     key: 'create',
     value: function create(templateName, restorationState) {
-      console.log('now in the create() method');
-      console.log(this.templateName);
+      console.log('now in the Factory.create() method');
+      //console.log(this.templateName);
       var product = new this.productClass(templateName, this.knownTemplates[templateName]);
       if (restorationState) {
         product.fromState(restorationState);
@@ -16088,6 +16090,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.Entity = undefined;
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _display_symbol = __webpack_require__(94);
@@ -16100,7 +16104,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } //unecessary to import once mixable symbols are implemented
+
+
+// import {MixableSymbol} from './mixable_symbol.js'
+
+//should extend mixable symbol next -> extends MixableSymbol
 
 var Entity = exports.Entity = function (_DisplaySymbol) {
   _inherits(Entity, _DisplaySymbol);
@@ -16166,9 +16175,14 @@ var Entity = exports.Entity = function (_DisplaySymbol) {
     }
   }, {
     key: 'setPos',
-    value: function setPos(x, y) {
-      this.attr.x = x;
-      this.attr.y = y;
+    value: function setPos(x_or_xy, y) {
+      if ((typeof x_or_xy === 'undefined' ? 'undefined' : _typeof(x_or_xy)) == 'object') {
+        this.attr.x = x_or_xy.x;
+        this.attr.y = x_or_xy.y;
+      } else {
+        this.attr.x = x_or_xy;
+        this.attr.y = y;
+      }
     }
   }, {
     key: 'setX',

@@ -21,6 +21,10 @@ class UIMode {
     console.log("exiting " + this.constructor.name);
   }
 
+  renderAvatar(display){
+    display.clear();
+  }
+
   handleInput(inputType, inputData){}
 }
 
@@ -35,6 +39,8 @@ export class StartupMode extends UIMode {
     this.display.drawText(33, 1, "Press any key to advance");
     console.log("rendering StartupMode");
   }
+
+
 
     handleInput(inputType,inputData) {
       if (inputData.charCode !== 0) {
@@ -52,9 +58,9 @@ export class PlayMode extends UIMode{
   }
 
   newGame(){
-    console.log("creating avatar");
+    console.log('creating avatar');
     let a = EntityFactory.create('avatar');
-    console.log("avatar created");
+    console.log('avatar created');
     let m = makeMap({xdim: 60, ydim:20});
     a.setPos(m.getUnblockedPerimeterLocation());
     m.addEntity(a);
@@ -64,10 +70,6 @@ export class PlayMode extends UIMode{
     // console.log(m.getID());
     this._GAMESTATE_.cameraMapLoc = {};
     this.cameraToAvatar();
-    // this._GAMESTATE_.cameraMapLoc = {
-    //   x: Math.round(m.getXDim()/2),
-    //   y: Math.round(m.getYDim()/2)
-    // };
     this._GAMESTATE_.cameraDisplayLoc = {
       x: Math.round(this.display.getOptions().width/2),
       y: Math.round(this.display.getOptions().height/2)
@@ -78,7 +80,8 @@ export class PlayMode extends UIMode{
 
     render(){
       this.display.clear();
-      // console.dir(DATASTORE.MAPS);
+      console.log('in PlayMode.render()')
+      console.dir(DATASTORE.MAPS);
       // console.dir(this._GAMESTATE_);
       DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       // this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
@@ -122,19 +125,34 @@ export class PlayMode extends UIMode{
       }
     }
 
-    move(x, y){
+    /*
+    renderAvatar(){
+      display.clear();
+      display.drawText(0,0, "AVATAR");
+      display.drawText(0,2,"Time: " + DATASTORE.ENTITEIS[this._GAMESTATE_.avatarId].getTime();)
+      this.display.drawText(33, 1, "Press any key to advance");
+    }
+    */
 
+    move(x, y){
+      //THIS WILL REPLACE MOVEBY. TRYWALK IS IN MIXINS INSTEAD OF ENTITY
+      //if(DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].tryWalk(x,y))
       if(DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].moveBy(x,y)){
         this.cameraToAvatar();
+        // DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].addTime(1);
         this.render();
       } else{
-        this.game.messageHandler.sent("unable to move there");
+        this.game.messageHandler.send("unable to move there");
       }
     }
 
     cameraToAvatar(){
+      console.log('centering camera on avatar');
+      console.dir(DATASTORE.ENTITIES);
       this._GAMESTATE_.cameraMapLoc.x = DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].getX();
       this._GAMESTATE_.cameraMapLoc.y = DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].getY();
+      console.log('camera centered. cameraMapLoc.x : ' + this._GAMESTATE_.cameraMapLoc.x
+      + ' cameraMapLoc.y: ' + this._GAMESTATE_.cameraMapLoc.y);
     }
 
     toJSON(){
@@ -227,7 +245,6 @@ export class PersistenceMode extends UIMode{
     let restorationString = window.localStorage.getItem(this.game._PERSISTANCE_NAMESPACE);
     let saved_GAMESTATE_ = JSON.parse(restorationString);
 
-
     initializeDatastore();
     console.log('datastore initialized');
     // restore game core
@@ -249,7 +266,8 @@ export class PersistenceMode extends UIMode{
       EntityFactory.create(entState.templateName, entState);
     }
     console.log('all entities loaded');
-    console.dir(DATASTORE.GAME);
+    console.log('game loaded!')
+    console.dir(DATASTORE);
 
     }
 

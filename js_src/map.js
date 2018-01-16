@@ -9,6 +9,7 @@ class Map{
     if(!TILE_GRID_GENERATOR.hasOwnProperty(mapType)){
       mapType = 'basicCaves';
     }
+    console.log('in map constructor()');
 
     this.attr = {};
     this.attr.xdim = xdim;
@@ -19,6 +20,9 @@ class Map{
     this.attr.rngBaseState = this.rng.getState();
     this.attr.locationToEntityID = {};
     this.attr.entityIDToLocation = {};
+    console.dir(this.attr);
+    console.log('exiting map constructor()');
+
   }
 
   setUp(){
@@ -75,11 +79,12 @@ class Map{
       console.log('position is blocked [map.moveEntityTo()]');
       return false;
     }
-
-    delete this.attr.locationToEntityID[ent.getPos()];
+    console.log('entity can move to this location. moving...')
+    delete this.attr.locationToEntityID[ent.getxcy()];
     ent.setPos(x, y);
-    this.attr.locationToEntityID[ent.getPos()] = ent.getID();
-    this.attr.entityIDToLocation[ent.getID()] = ent.getPos();
+    this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
+    this.attr.entityIDToLocation[ent.getID()] = ent.getxcy();
+    console.dir(this.attr);
     return true;
   }
 
@@ -87,44 +92,10 @@ class Map{
     let rx = Math.trunc(this.rng.getUniform()*this.attr.xdim);
     let ry = Math.trunc(this.rng.getUniform()*this.attr.ydim);
     if (this.testLocationBlocked(rx, ry)){
-      return this.getRandomOpenPosition();
+      return this.getRandomUnblockedPosition();
     }
     return {x: rx, y: ry};
   }
-
-  // getUnblockedPerimeterLocation(inset){
-  //   inset = inset || 2;
-  //   let bounds = {
-  //     lx: inset,
-  //     ux: this.attr.xdim - 1 - inset,
-  //     ly: inset,
-  //     uy: this.attr.ydim - 1 - inset
-  //   };
-  //   let range = {
-  //     rx:this.attr.xim - 1 - inset - inset,
-  //     ry: this.attr.ydim - 1 - inset - inset
-  //   };
-  //   let [x,y] = [0,0];
-  //   if (this.rng.getUniform() < .5) {
-  //     x = this.rng.getUniform() < .5 ? bounds.lx : bounds.ux;
-  //     y = Math.trunc(this.rng.getUniform() * range.ry);
-  //   } else {
-  //     x = Math.trunc(this.rng.getUniform() * range.rx);
-  //     y = this.rng.getUniform() < .5 ? bounds.ly : bounds.uy;
-  //   }
-  //
-  //   let perimLen = range.rx * 2 + range.ry * 2 - 4;
-  //   for (let i=0; i<perimLen; i++) {
-  //     if (! this.testLocationBlocked(x,y)) {
-  //       return {'x': x, 'y': y};
-  //     }
-  //     if (y==bounds.ly && x < bounds.ux) { x++; continue; }
-  //     if (x==bounds.ux && y < bounds.uy) { y++; continue; }
-  //     if (y==bounds.uy && x > bounds.lx) { x--; continue; }
-  //     if (x==bounds.lx && y > bounds.ly) { y--; continue; }
-  //   }
-  //   return this.getUnblockedPerimeterLocation(inset+1);
-  // }
 
   getUnblockedPerimeterLocation(inset) {
     inset = inset || 2;
@@ -176,13 +147,13 @@ class Map{
   }
 
   renderOn(display, camX, camY) {
-    console.log('camX: ' + camX + ' camY: ' + camY);
+    //console.log('camX: ' + camX + ' camY: ' + camY);
     let o = display.getOptions();
     let xStart = camX-Math.round(o.width/2);
     let yStart = camY-Math.round(o.height/2);
-    console.log('xStart: ' + xStart + ' yStart: ' + yStart);
-    for (let x=0;x<this.attr.xdim;x++) {
-      for (let y=0;y<this.attr.ydim;y++) {
+    // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
+    for (let x=0;x<o.width;x++) {
+      for (let y=0;y<o.height;y++) {
         // let tile = this.getTile(x+xStart, y+yStart);
         // if (tile.isA(TILES.NULLTILE)) {
         //   tile = TILES.WALL;
@@ -190,17 +161,21 @@ class Map{
         }
         // console.log(camX + ", " + camY);
         // console.dir(tile);
-        tile.drawOn(display,x,y);
+        //tile.drawOn(display,x,y);
       }
     }
 
 
   getDisplaySymbolAtMapLocation(mapX,mapY) {
-    // priority is: entity, tile
-    let entityId = this.attr.locationToEntityId[`${mapX},${mapY}`];
-    console.log('creating entityid in map.getDisplaySymbolAtMapLocation()');
-    console.dir(entityId);
-    if (entityId) { return DATASTORE.ENTITIES[entityId]; }
+    // console.log('creating entityid in map.getDisplaySymbolAtMapLocation()');
+    // console.dir(this.attr);
+    // console.dir(this.attr.locationToEntityID);
+    let entityId = this.attr.locationToEntityID[`${mapX},${mapY}`];
+    // console.dir(entityId);
+    if (entityId) {
+      console.log('entity at this location: ' + mapX + ', ' + mapY);
+      return DATASTORE.ENTITIES[entityId];
+    }
 
     let tile = this.getTile(mapX, mapY);
     if (tile.isA(TILES.NULLTILE)) {
@@ -212,6 +187,13 @@ class Map{
   toJSON() {
     return JSON.stringify(this.attr);
   }
+
+  fromState(mapData){
+    console.log('creating map from data');
+    console.dir(mapData);
+    this.attr = mapData;
+  }
+
 }
 
 let TILE_GRID_GENERATOR = {

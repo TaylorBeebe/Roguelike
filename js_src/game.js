@@ -138,6 +138,11 @@ export let Game = {
     this.renderDisplayMessage();
   },
 
+  // renderMain: function(){
+  //   console.log('rendermain function');
+  //   this.renderAvatar();
+  // },
+
   bindEvent: function(eventType){
     window.addEventListener(eventType, (evt) => {
       this.eventHandler(eventType, evt);

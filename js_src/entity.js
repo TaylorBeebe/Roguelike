@@ -1,6 +1,10 @@
+//unecessary to import once mixable symbols are implemented
 import {DisplaySymbol} from './display_symbol.js';
 import {uniqueID} from './util.js';
 import {DATASTORE} from './datastore.js';
+// import {MixableSymbol} from './mixable_symbol.js'
+
+//should extend mixable symbol next -> extends MixableSymbol
 
 export class Entity extends DisplaySymbol {
   constructor(templateName, template){
@@ -32,9 +36,14 @@ export class Entity extends DisplaySymbol {
 
   getxcy() { return `${this.attr.x},${this.attr.y}`; }
 
-  setPos(x, y){
-    this.attr.x = x;
+  setPos(x_or_xy,y) {
+  if (typeof x_or_xy == 'object') {
+    this.attr.x = x_or_xy.x;
+    this.attr.y = x_or_xy.y;
+  } else {
+    this.attr.x = x_or_xy;
     this.attr.y = y;
+    }
   }
 
   setX(x){this.attr.x = x;}

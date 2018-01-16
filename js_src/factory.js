@@ -16,8 +16,8 @@ export class Factory{
   }
 
   create(templateName, restorationState){
-    console.log('now in the create() method');
-    console.log(this.templateName);
+    console.log('now in the Factory.create() method');
+    //console.log(this.templateName);
     let product = new this.productClass(templateName, this.knownTemplates[templateName]);
     if (restorationState){
       product.fromState(restorationState);

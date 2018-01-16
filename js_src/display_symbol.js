@@ -20,6 +20,9 @@ export class DisplaySymbol {
   }
 
   drawOn(display, dispX, dispY) {
+
+    // console.log('entering display_symbol.drawOn(). x: ' + dispX + ", y: " + dispY);
+    // console.dir(this._chr);
     display.draw(dispX, dispY, this._chr, this._fgHexColor, this._bgHexColor);
   }
 

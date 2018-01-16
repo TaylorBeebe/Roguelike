@@ -18,12 +18,14 @@ class Map{
     this.rng = ROT.RNG.clone();
     this.attr.rngBaseState = this.rng.getState();
     this.attr.locationToEntityID = {};
-    this.enityIDToLocation = {};
+    this.attr.entityIDToLocation = {};
   }
 
   setUp(){
     this.rng.setState(this.attr.rngBaseState);
     this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
+    // console.log('Tile Grid:')
+    // console.dir(this.tileGrid);
   }
 
   getID(){
@@ -51,9 +53,11 @@ class Map{
   }
 
   addEntity(ent) {
-     ent.setMapId(this.attr.id);
-     this.attr.entityIdToLocation[ent.getId()] = ent.getPos();
-     this.attr.locationToEntityId[ent.gePos()] = ent.getId();
+    console.dir(ent);
+     ent.setMapID(this.attr.id);
+     console.dir(this.attr.entityIDToLocation);
+     this.attr.entityIDToLocation[ent.getID()] = ent.getxcy();
+     this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
    }
 
 
@@ -64,10 +68,11 @@ class Map{
   }
 
   moveEntityTo(ent, x, y){
-    if ((x < 0) || (x >= this.attr.xdim) || (y<0) || (y >= this.attr.ydim)) {
+    if ((x < 0) || (x >= this.attr.xdim) || (y < 0) || (y >= this.attr.ydim)) {
       return false;
     }
     if (this.testLocationBlocked(x,y)){
+      console.log('position is blocked [map.moveEntityTo()]');
       return false;
     }
 
@@ -87,17 +92,51 @@ class Map{
     return {x: rx, y: ry};
   }
 
-  getUnblockedPerimeterLocation(inset){
+  // getUnblockedPerimeterLocation(inset){
+  //   inset = inset || 2;
+  //   let bounds = {
+  //     lx: inset,
+  //     ux: this.attr.xdim - 1 - inset,
+  //     ly: inset,
+  //     uy: this.attr.ydim - 1 - inset
+  //   };
+  //   let range = {
+  //     rx:this.attr.xim - 1 - inset - inset,
+  //     ry: this.attr.ydim - 1 - inset - inset
+  //   };
+  //   let [x,y] = [0,0];
+  //   if (this.rng.getUniform() < .5) {
+  //     x = this.rng.getUniform() < .5 ? bounds.lx : bounds.ux;
+  //     y = Math.trunc(this.rng.getUniform() * range.ry);
+  //   } else {
+  //     x = Math.trunc(this.rng.getUniform() * range.rx);
+  //     y = this.rng.getUniform() < .5 ? bounds.ly : bounds.uy;
+  //   }
+  //
+  //   let perimLen = range.rx * 2 + range.ry * 2 - 4;
+  //   for (let i=0; i<perimLen; i++) {
+  //     if (! this.testLocationBlocked(x,y)) {
+  //       return {'x': x, 'y': y};
+  //     }
+  //     if (y==bounds.ly && x < bounds.ux) { x++; continue; }
+  //     if (x==bounds.ux && y < bounds.uy) { y++; continue; }
+  //     if (y==bounds.uy && x > bounds.lx) { x--; continue; }
+  //     if (x==bounds.lx && y > bounds.ly) { y--; continue; }
+  //   }
+  //   return this.getUnblockedPerimeterLocation(inset+1);
+  // }
+
+  getUnblockedPerimeterLocation(inset) {
     inset = inset || 2;
     let bounds = {
-      lx: insert,
-      ux: this.attr.xdim - 1 - inset,
+      lx: inset,
+      ux: this.attr.xdim-1-inset,
       ly: inset,
-      uy: this.attr.ydim - 1 - inset
+      uy: this.attr.ydim-1-inset
     };
     let range = {
-      rx:this.attr.xim - 1 - inset - inset,
-      ry: this.attr.ydim - 1 - inset - inset
+      rx: this.attr.xdim-1-inset-inset,
+      ry: this.attr.ydim-1-inset-inset
     };
     let [x,y] = [0,0];
     if (this.rng.getUniform() < .5) {
@@ -127,30 +166,40 @@ class Map{
   }
 
   getTile(x,y) {
-    if ((x < 0) || (x >= this.attr.xdim) || (y<0) || (y >= this.attr.ydim)) {
+    // console.log('x: ' + x + " y: " + y);
+    if ((x < 0) || (x >= this.attr.xdim) || (y < 0) || (y >= this.attr.ydim)) {
+      // console.log('Tile out of bounds');
       return TILES.NULLTILE;
     }
+    // console.dir(this.tileGrid[x][y]);
     return this.tileGrid[x][y] || TILES.NULLTILE;
   }
 
   renderOn(display, camX, camY) {
+    console.log('camX: ' + camX + ' camY: ' + camY);
     let o = display.getOptions();
     let xStart = camX-Math.round(o.width/2);
     let yStart = camY-Math.round(o.height/2);
+    console.log('xStart: ' + xStart + ' yStart: ' + yStart);
     for (let x=0;x<this.attr.xdim;x++) {
       for (let y=0;y<this.attr.ydim;y++) {
-        let tile = this.getTile(x+xStart, y+yStart);
-        if (tile.isA(TILES.NULLTILE)) {
-          tile = TILES.WALL;
+        // let tile = this.getTile(x+xStart, y+yStart);
+        // if (tile.isA(TILES.NULLTILE)) {
+        //   tile = TILES.WALL;
+        this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart).drawOn(display,x,y);
         }
+        // console.log(camX + ", " + camY);
+        // console.dir(tile);
         tile.drawOn(display,x,y);
       }
     }
-  }
+
 
   getDisplaySymbolAtMapLocation(mapX,mapY) {
     // priority is: entity, tile
     let entityId = this.attr.locationToEntityId[`${mapX},${mapY}`];
+    console.log('creating entityid in map.getDisplaySymbolAtMapLocation()');
+    console.dir(entityId);
     if (entityId) { return DATASTORE.ENTITIES[entityId]; }
 
     let tile = this.getTile(mapX, mapY);
@@ -202,51 +251,14 @@ getRandomOpenPosition(){
 
 export function makeMap(mapData) {
   let m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);
-  if (mapData.id !== undefined) { m.setID(mapData.id); }
-  if (mapData.rngBaseState !== undefined) { m.setRngBaseState(mapData.rngBaseState); }
+  // if (mapData.id !== undefined) { m.setID(mapData.id); }
+  // if (mapData.rngBaseState !== undefined) { m.setRngBaseState(mapData.rngBaseState); }
+  if (mapData.id !== undefined) {
+  m.fromState(mapData);
+  }
   m.setUp();
 
   DATASTORE.MAPS[m.getID()] = m;
 
   return m;
 }
-
-//export function mapMaker(mapWidth, mapHeight)
-
-/*
-render(display, camera_map_x, camera_map_y){
-  let cx=0;
-  let cy=0;
-  let xstart = camera_map_x - Math.trunc(display.getOptions().width/2);
-  let xend = xstart + display.getOptions().width; //{{display.width}}
-  let ystart = camera_map_y - Math.trunc(display.getOptions().height/2);
-  let yend ystart + display.getOptions().height; //{{display.height}}
-
-  for(let xi = xstart;xi<xend;xi++){
-    for(let yi = ystart;yi<yend;yi++){
-      this.tileGrid[xi][yi].render(display,cy,cy);
-      cy++;
-    }
-    cx++;
-    cy=0;
-  }
-}
-
-getTile(mapx, mapy){
-  if (mapx < 0 || mapx > this.xdim - 1 || mapy < 0 || mapy > this.ydim - 1){
-    return TILES>NULLTILE;
-  }
-  return this.tileGrid[mapx][mapy];
-}
-
-
-let TILE_GRID_GENERATOR = {
-  'basic caves': function(xDim,yDim){
-    let tg = init2DArray(xDim, yDim, TILES.NULLTILE);
-    let gen = new ROT.Map.Cellular(xDim, yDim, {connected: true});
-    gen.randomize(0.5);
-
-  }
-
-}
-*/

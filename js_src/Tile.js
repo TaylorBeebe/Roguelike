@@ -21,9 +21,13 @@ export class Tile extends DisplaySymbol {
     return this._name;
   }
 
-  drawOn(display, dispX, dispY) {
-    this._symbol.drawOn(display, dispX, dispY);
-  }
+  // drawOn(display, dispX, dispY) {
+  //   console.log('entering tile.drawOn()');
+  //   console.log(dispX + ", " + dispY);
+  //   // console.log("Display:");
+  //   // console.dir(display);
+  //   this._symbol.drawOn(display, dispX, dispY);
+  // }
 
   isA(matchingTile) {
     return this.getName() == matchingTile.getName();

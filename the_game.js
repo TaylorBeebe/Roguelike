@@ -8522,6 +8522,9 @@ var DisplaySymbol = exports.DisplaySymbol = function () {
   }, {
     key: 'drawOn',
     value: function drawOn(display, dispX, dispY) {
+
+      // console.log('entering display_symbol.drawOn(). x: ' + dispX + ", y: " + dispY);
+      // console.dir(this._chr);
       display.draw(dispX, dispY, this._chr, this._fgHexColor, this._bgHexColor);
     }
   }]);
@@ -15328,10 +15331,13 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       var a = _entities.EntityFactory.create('avatar');
       console.log("avatar created");
       var m = (0, _map.makeMap)({ xdim: 60, ydim: 20 });
+      a.setPos(m.getUnblockedPerimeterLocation());
+      m.addEntity(a);
       this._GAMESTATE_ = {};
       this._GAMESTATE_.avatarId = a.getID();
       this._GAMESTATE_.curMapId = m.getID();
       // console.log(m.getID());
+      this._GAMESTATE_.cameraMapLoc = {};
       this.cameraToAvatar();
       // this._GAMESTATE_.cameraMapLoc = {
       //   x: Math.round(m.getXDim()/2),
@@ -15353,12 +15359,6 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       // this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
       console.log("rendering PlayMode");
-
-      //this._GAMESTATE_.curMapId
-      /*
-      this.map.render(display, this.camera_map_x, this.camera_map_y);
-      this.cameraSymbol.render(display, display.getOptions().width/2, display.getOptions().height/2);
-      */
     }
   }, {
     key: 'handleInput',
@@ -15393,25 +15393,18 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'move',
     value: function move(x, y) {
 
-      if (_datastore.DATASTORE.ENTITIES[this.attr.avatarId].moveBy(x, y)) {
+      if (_datastore.DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].moveBy(x, y)) {
         this.cameraToAvatar();
         this.render();
       } else {
         this.game.messageHandler.sent("unable to move there");
       }
-      // let newX = this._GAMESTATE_.cameraMapLoc.x + x;
-      // let newY = this._GAMESTATE_.cameraMapLoc.y + y;
-      // if (newX < 0 || newX > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getXDim() - 1) { return; }
-      // if (newY < 0 || newY > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getYDim() - 1) { return; }
-      // this._GAMESTATE_.cameraMapLoc.x = newX;
-      // this._GAMESTATE_.cameraMapLoc.y = newY;
-      // this.render();
     }
   }, {
     key: 'cameraToAvatar',
     value: function cameraToAvatar() {
-      this._GAMESTATE_.cameraMapLoc.x = _datastore.DATASTORE.ENTITEIS[this._GAMESTATE_.avatarId].getx();
-      this._GAMESTATE_.cameraMapLoc.y = _datastore.DATASTORE.ENTITEIS[this._GAMESTATE_.avatarId].gety();
+      this._GAMESTATE_.cameraMapLoc.x = _datastore.DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].getX();
+      this._GAMESTATE_.cameraMapLoc.y = _datastore.DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].getY();
     }
   }, {
     key: 'toJSON',
@@ -15639,7 +15632,7 @@ var Map = function () {
     this.rng = _rotJs2.default.RNG.clone();
     this.attr.rngBaseState = this.rng.getState();
     this.attr.locationToEntityID = {};
-    this.enityIDToLocation = {};
+    this.attr.entityIDToLocation = {};
   }
 
   _createClass(Map, [{
@@ -15647,6 +15640,8 @@ var Map = function () {
     value: function setUp() {
       this.rng.setState(this.attr.rngBaseState);
       this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
+      // console.log('Tile Grid:')
+      // console.dir(this.tileGrid);
     }
   }, {
     key: 'getID',
@@ -15681,9 +15676,11 @@ var Map = function () {
   }, {
     key: 'addEntity',
     value: function addEntity(ent) {
-      ent.setMapId(this.attr.id);
-      this.attr.entityIdToLocation[ent.getId()] = ent.getPos();
-      this.attr.locationToEntityId[ent.gePos()] = ent.getId();
+      console.dir(ent);
+      ent.setMapID(this.attr.id);
+      console.dir(this.attr.entityIDToLocation);
+      this.attr.entityIDToLocation[ent.getID()] = ent.getxcy();
+      this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
     }
   }, {
     key: 'removeEntitiy',
@@ -15699,6 +15696,7 @@ var Map = function () {
         return false;
       }
       if (this.testLocationBlocked(x, y)) {
+        console.log('position is blocked [map.moveEntityTo()]');
         return false;
       }
 
@@ -15718,18 +15716,53 @@ var Map = function () {
       }
       return { x: rx, y: ry };
     }
+
+    // getUnblockedPerimeterLocation(inset){
+    //   inset = inset || 2;
+    //   let bounds = {
+    //     lx: inset,
+    //     ux: this.attr.xdim - 1 - inset,
+    //     ly: inset,
+    //     uy: this.attr.ydim - 1 - inset
+    //   };
+    //   let range = {
+    //     rx:this.attr.xim - 1 - inset - inset,
+    //     ry: this.attr.ydim - 1 - inset - inset
+    //   };
+    //   let [x,y] = [0,0];
+    //   if (this.rng.getUniform() < .5) {
+    //     x = this.rng.getUniform() < .5 ? bounds.lx : bounds.ux;
+    //     y = Math.trunc(this.rng.getUniform() * range.ry);
+    //   } else {
+    //     x = Math.trunc(this.rng.getUniform() * range.rx);
+    //     y = this.rng.getUniform() < .5 ? bounds.ly : bounds.uy;
+    //   }
+    //
+    //   let perimLen = range.rx * 2 + range.ry * 2 - 4;
+    //   for (let i=0; i<perimLen; i++) {
+    //     if (! this.testLocationBlocked(x,y)) {
+    //       return {'x': x, 'y': y};
+    //     }
+    //     if (y==bounds.ly && x < bounds.ux) { x++; continue; }
+    //     if (x==bounds.ux && y < bounds.uy) { y++; continue; }
+    //     if (y==bounds.uy && x > bounds.lx) { x--; continue; }
+    //     if (x==bounds.lx && y > bounds.ly) { y--; continue; }
+    //   }
+    //   return this.getUnblockedPerimeterLocation(inset+1);
+    // }
+
   }, {
     key: 'getUnblockedPerimeterLocation',
     value: function getUnblockedPerimeterLocation(inset) {
       inset = inset || 2;
       var bounds = {
-        lx: insert,
+        lx: inset,
         ux: this.attr.xdim - 1 - inset,
         ly: inset,
         uy: this.attr.ydim - 1 - inset
       };
       var range = {
-        rx: this.attr.xim - 1 - inset - inset,
+        rx: this.attr.xdim - 1 - inset - inset,
         ry: this.attr.ydim - 1 - inset - inset
       };
       var x = 0,
@@ -15771,25 +15804,32 @@ var Map = function () {
   }, {
     key: 'getTile',
     value: function getTile(x, y) {
+      // console.log('x: ' + x + " y: " + y);
       if (x < 0 || x >= this.attr.xdim || y < 0 || y >= this.attr.ydim) {
+        // console.log('Tile out of bounds');
         return _tile.TILES.NULLTILE;
       }
+      // console.dir(this.tileGrid[x][y]);
       return this.tileGrid[x][y] || _tile.TILES.NULLTILE;
     }
   }, {
     key: 'renderOn',
     value: function renderOn(display, camX, camY) {
+      console.log('camX: ' + camX + ' camY: ' + camY);
       var o = display.getOptions();
       var xStart = camX - Math.round(o.width / 2);
       var yStart = camY - Math.round(o.height / 2);
+      console.log('xStart: ' + xStart + ' yStart: ' + yStart);
       for (var x = 0; x < this.attr.xdim; x++) {
-        for (var y = 0; y < this.attr.ydim; y++) {
-          var tile = this.getTile(x + xStart, y + yStart);
-          if (tile.isA(_tile.TILES.NULLTILE)) {
-            tile = _tile.TILES.WALL;
-          }
-          tile.drawOn(display, x, y);
+        for (var _y = 0; _y < this.attr.ydim; _y++) {
+          // let tile = this.getTile(x+xStart, y+yStart);
+          // if (tile.isA(TILES.NULLTILE)) {
+          //   tile = TILES.WALL;
+          this.getDisplaySymbolAtMapLocation(x + xStart, _y + yStart).drawOn(display, x, _y);
         }
+        // console.log(camX + ", " + camY);
+        // console.dir(tile);
+        tile.drawOn(display, x, y);
       }
     }
   }, {
@@ -15797,6 +15837,8 @@ var Map = function () {
     value: function getDisplaySymbolAtMapLocation(mapX, mapY) {
       // priority is: entity, tile
       var entityId = this.attr.locationToEntityId[mapX + ',' + mapY];
+      console.log('creating entityid in map.getDisplaySymbolAtMapLocation()');
+      console.dir(entityId);
       if (entityId) {
         return _datastore.DATASTORE.ENTITIES[entityId];
       }
@@ -15828,9 +15870,9 @@ var TILE_GRID_GENERATOR = {
       gen.create();
       // set the boundary to all wall each pass
       for (var x = 0; x < xdim; x++) {
-        for (var y = 0; y < ydim; y++) {
-          if (x <= 1 || y <= 1 || x >= xdim - 2 || y >= ydim - 2) {
-            gen.set(x, y, 1);
+        for (var _y2 = 0; _y2 < ydim; _y2++) {
+          if (x <= 1 || _y2 <= 1 || x >= xdim - 2 || _y2 >= ydim - 2) {
+            gen.set(x, _y2, 1);
           }
         }
       }
@@ -15856,11 +15898,10 @@ var TILE_GRID_GENERATOR = {
 
 };function makeMap(mapData) {
   var m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);
+  // if (mapData.id !== undefined) { m.setID(mapData.id); }
+  // if (mapData.rngBaseState !== undefined) { m.setRngBaseState(mapData.rngBaseState); }
   if (mapData.id !== undefined) {
-    m.setID(mapData.id);
-  }
-  if (mapData.rngBaseState !== undefined) {
-    m.setRngBaseState(mapData.rngBaseState);
+    m.fromState(mapData);
   }
   m.setUp();
 
@@ -15868,46 +15909,6 @@ var TILE_GRID_GENERATOR = {
 
   return m;
 }
-
-//export function mapMaker(mapWidth, mapHeight)
-
-/*
-render(display, camera_map_x, camera_map_y){
-  let cx=0;
-  let cy=0;
-  let xstart = camera_map_x - Math.trunc(display.getOptions().width/2);
-  let xend = xstart + display.getOptions().width; //{{display.width}}
-  let ystart = camera_map_y - Math.trunc(display.getOptions().height/2);
-  let yend ystart + display.getOptions().height; //{{display.height}}
-
-  for(let xi = xstart;xi<xend;xi++){
-    for(let yi = ystart;yi<yend;yi++){
-      this.tileGrid[xi][yi].render(display,cy,cy);
-      cy++;
-    }
-    cx++;
-    cy=0;
-  }
-}
-
-getTile(mapx, mapy){
-  if (mapx < 0 || mapx > this.xdim - 1 || mapy < 0 || mapy > this.ydim - 1){
-    return TILES>NULLTILE;
-  }
-  return this.tileGrid[mapx][mapy];
-}
-
-
-let TILE_GRID_GENERATOR = {
-  'basic caves': function(xDim,yDim){
-    let tg = init2DArray(xDim, yDim, TILES.NULLTILE);
-    let gen = new ROT.Map.Cellular(xDim, yDim, {connected: true});
-    gen.randomize(0.5);
-
-  }
-
-}
-*/
 
 /***/ }),
 /* 337 */
@@ -15960,11 +15961,15 @@ var Tile = exports.Tile = function (_DisplaySymbol) {
     value: function getName() {
       return this._name;
     }
-  }, {
-    key: 'drawOn',
-    value: function drawOn(display, dispX, dispY) {
-      this._symbol.drawOn(display, dispX, dispY);
-    }
+
+    // drawOn(display, dispX, dispY) {
+    //   console.log('entering tile.drawOn()');
+    //   console.log(dispX + ", " + dispY);
+    //   // console.log("Display:");
+    //   // console.dir(display);
+    //   this._symbol.drawOn(display, dispX, dispY);
+    // }
+
   }, {
     key: 'isA',
     value: function isA(matchingTile) {
@@ -16114,7 +16119,7 @@ var Entity = exports.Entity = function (_DisplaySymbol) {
     _this.attr.id = (0, _util.uniqueID)();
     _this.attr.templateName = template.name;
     _this.attr.x = template.x || 1;
-    _this.attr.y = tempalte.y || 1;
+    _this.attr.y = template.y || 1;
     _this.attr.mapID = '';
     return _this;
   }
@@ -16155,6 +16160,11 @@ var Entity = exports.Entity = function (_DisplaySymbol) {
       return { x: this.attr.x, y: this.attr.y };
     }
   }, {
+    key: 'getxcy',
+    value: function getxcy() {
+      return this.attr.x + ',' + this.attr.y;
+    }
+  }, {
     key: 'setPos',
     value: function setPos(x, y) {
       this.attr.x = x;
@@ -16178,7 +16188,7 @@ var Entity = exports.Entity = function (_DisplaySymbol) {
         this.attr.y += dy;
         return true;
       }
-      return _datastore.DATASTORE.MAPS[this.attr.mapID].moveEntityTo(this.this.attr.x + dx, this.attr.y + dy);
+      return _datastore.DATASTORE.MAPS[this.attr.mapID].moveEntityTo(this, this.attr.x + dx, this.attr.y + dy);
     }
   }, {
     key: 'toJSON',

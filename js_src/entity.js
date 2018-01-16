@@ -12,7 +12,7 @@ export class Entity extends DisplaySymbol {
     this.attr.id = uniqueID();
     this.attr.templateName = template.name;
     this.attr.x = template.x || 1;
-    this.attr.y = tempalte.y || 1;
+    this.attr.y = template.y || 1;
     this.attr.mapID = '';
   }
 
@@ -30,6 +30,8 @@ export class Entity extends DisplaySymbol {
 
   getPos(){return {x: this.attr.x, y: this.attr.y};}
 
+  getxcy() { return `${this.attr.x},${this.attr.y}`; }
+
   setPos(x, y){
     this.attr.x = x;
     this.attr.y = y;
@@ -45,7 +47,7 @@ export class Entity extends DisplaySymbol {
       this.attr.y += dy;
       return true;
     }
-    return DATASTORE.MAPS[this.attr.mapID].moveEntityTo(this.this.attr.x + dx, this.attr.y + dy);
+    return DATASTORE.MAPS[this.attr.mapID].moveEntityTo(this, this.attr.x + dx, this.attr.y + dy);
   }
 
   toJSON(){

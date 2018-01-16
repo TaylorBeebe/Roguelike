@@ -56,10 +56,13 @@ export class PlayMode extends UIMode{
     let a = EntityFactory.create('avatar');
     console.log("avatar created");
     let m = makeMap({xdim: 60, ydim:20});
+    a.setPos(m.getUnblockedPerimeterLocation());
+    m.addEntity(a);
     this._GAMESTATE_ = {};
     this._GAMESTATE_.avatarId = a.getID();
     this._GAMESTATE_.curMapId = m.getID();
     // console.log(m.getID());
+    this._GAMESTATE_.cameraMapLoc = {};
     this.cameraToAvatar();
     // this._GAMESTATE_.cameraMapLoc = {
     //   x: Math.round(m.getXDim()/2),
@@ -80,12 +83,6 @@ export class PlayMode extends UIMode{
       DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       // this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
       console.log("rendering PlayMode");
-
-      //this._GAMESTATE_.curMapId
-      /*
-      this.map.render(display, this.camera_map_x, this.camera_map_y);
-      this.cameraSymbol.render(display, display.getOptions().width/2, display.getOptions().height/2);
-      */
     }
 
     handleInput(eventType, inputData){
@@ -127,24 +124,17 @@ export class PlayMode extends UIMode{
 
     move(x, y){
 
-      if(DATASTORE.ENTITIES[this.attr.avatarId].moveBy(x,y)){
+      if(DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].moveBy(x,y)){
         this.cameraToAvatar();
         this.render();
       } else{
         this.game.messageHandler.sent("unable to move there");
       }
-      // let newX = this._GAMESTATE_.cameraMapLoc.x + x;
-      // let newY = this._GAMESTATE_.cameraMapLoc.y + y;
-      // if (newX < 0 || newX > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getXDim() - 1) { return; }
-      // if (newY < 0 || newY > DATASTORE.MAPS[this._GAMESTATE_.curMapId].getYDim() - 1) { return; }
-      // this._GAMESTATE_.cameraMapLoc.x = newX;
-      // this._GAMESTATE_.cameraMapLoc.y = newY;
-      // this.render();
     }
 
     cameraToAvatar(){
-      this._GAMESTATE_.cameraMapLoc.x = DATASTORE.ENTITEIS[this._GAMESTATE_.avatarId].getx();
-      this._GAMESTATE_.cameraMapLoc.y = DATASTORE.ENTITEIS[this._GAMESTATE_.avatarId].gety();
+      this._GAMESTATE_.cameraMapLoc.x = DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].getX();
+      this._GAMESTATE_.cameraMapLoc.y = DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].getY();
     }
 
     toJSON(){

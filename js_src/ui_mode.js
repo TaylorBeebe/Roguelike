@@ -73,18 +73,18 @@ export class PlayMode extends UIMode{
       x: Math.round(this.display.getOptions().width/2),
       y: Math.round(this.display.getOptions().height/2)
     };
-    console.log("new game built._GAMESTATE_ dir is: ");
+    console.log("new game built._GAMESTATE_ dir is-> ");
     console.dir(this._GAMESTATE_);
   }
 
     render(){
       this.display.clear();
-      console.log('in PlayMode.render()')
-      console.dir(DATASTORE.MAPS);
+      // console.log('in PlayMode.render()')
+      // console.dir(DATASTORE.MAPS);
       // console.dir(this._GAMESTATE_);
       DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       // this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
-      console.log("rendering PlayMode");
+      // console.log("rendering PlayMode");
     }
 
     handleInput(eventType, inputData){
@@ -134,24 +134,20 @@ export class PlayMode extends UIMode{
     */
 
     move(x, y){
-      //THIS WILL REPLACE MOVEBY. TRYWALK IS IN MIXINS INSTEAD OF ENTITY
-      //if(DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].tryWalk(x,y))
-      if(DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].moveBy(x,y)){
-        this.cameraToAvatar();
-        // DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].addTime(1);
-        this.render();
-      } else{
-        this.game.messageHandler.send("unable to move there");
-      }
+      console.dir(this.getAvatar());
+      //WHY DOESN'T THIS WORK???
+      // this.getAvatar().trywalk(x, y);
+      DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].tryWalk(x,y);
+      this.cameraToAvatar();
+      this.render();
     }
 
     cameraToAvatar(){
-      console.log('centering camera on avatar');
-      console.dir(DATASTORE.ENTITIES);
-      this._GAMESTATE_.cameraMapLoc.x = DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].getX();
-      this._GAMESTATE_.cameraMapLoc.y = DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].getY();
-      console.log('camera centered. cameraMapLoc.x : ' + this._GAMESTATE_.cameraMapLoc.x
-      + ' cameraMapLoc.y: ' + this._GAMESTATE_.cameraMapLoc.y);
+      // console.log('centering camera on avatar');
+      this._GAMESTATE_.cameraMapLoc.x = this.getAvatar().getX();
+      this._GAMESTATE_.cameraMapLoc.y = this.getAvatar().getY();
+      // console.log('camera centered. cameraMapLoc.x : ' + this._GAMESTATE_.cameraMapLoc.x
+      // + ' cameraMapLoc.y: ' + this._GAMESTATE_.cameraMapLoc.y);
     }
 
     toJSON(){
@@ -163,8 +159,11 @@ export class PlayMode extends UIMode{
     }
 
     getAvatar(){
-      if (this._GAMESTATE_.avatarId) { return DATASTORE.ENTITIES[this._GAMESTATE_.avatarId] }
-      else { return false; }
+      if (this._GAMESTATE_.avatarId) { return DATASTORE.ENTITIES[this._GAMESTATE_.avatarId]; }
+      else {
+        console.log('avatar not available! cannot fetch avatar reference!')
+        return false;
+      }
     }
 
   }
@@ -251,16 +250,16 @@ export class PersistenceMode extends UIMode{
     let saved_GAMESTATE_ = JSON.parse(restorationString);
 
     initializeDatastore();
-    console.log('datastore initialized');
+    // console.log('datastore initialized');
     // restore game core
     DATASTORE.GAME = this.game;
     this.game.fromJSON(saved_GAMESTATE_.GAME);
-
+    console.log('restoring maps');
     // restore maps (note: in the future might not instantiate all maps here, but instead build some kind of instantiate on demand)
     for (let savedMapId in saved_GAMESTATE_.MAPS) {
       makeMap(JSON.parse(saved_GAMESTATE_.MAPS[savedMapId]));
-      console.log("map restored- ");
-      console.log(savedMapId);
+      // console.log('map restored-> ');
+      // console.log(savedMapId);
     }
     console.log('all maps restored');
 
@@ -271,7 +270,7 @@ export class PersistenceMode extends UIMode{
       EntityFactory.create(entState.templateName, entState);
     }
     console.log('all entities loaded');
-    console.log('game loaded!')
+    console.log('game loaded! DATASTORE -> ')
     console.dir(DATASTORE);
 
     }

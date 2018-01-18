@@ -1,12 +1,10 @@
 //unecessary to import once mixable symbols are implemented
-import {DisplaySymbol} from './display_symbol.js';
+// import {DisplaySymbol} from './display_symbol.js';
 import {uniqueID} from './util.js';
 import {DATASTORE} from './datastore.js';
-// import {MixableSymbol} from './mixable_symbol.js'
+import {MixableSymbol} from './mixable_symbol.js'
 
-//should extend mixable symbol next -> extends MixableSymbol
-
-export class Entity extends DisplaySymbol {
+export class Entity extends MixableSymbol {
   constructor(templateName, template){
     super(template);
     this.name = template.name || template.templateName || 'no name';
@@ -36,7 +34,7 @@ export class Entity extends DisplaySymbol {
 
   getxcy() { return `${this.attr.x},${this.attr.y}`; }
 
-  getMap() { return DATASTORE.MAPS[this.attr.mapID] }
+  getMap() { return DATASTORE.MAPS[this.attr.mapID]; }
 
   setPos(x_or_xy,y) {
   if (typeof x_or_xy == 'object') {
@@ -52,14 +50,14 @@ export class Entity extends DisplaySymbol {
 
   setY(y){this.attr.y = y;}
 
-  moveBy(dx, dy){
-    if (!this.attr.mapID) {
-      this.attr.x += dx;
-      this.attr.y += dy;
-      return true;
-    }
-    return this.getMap().moveEntityTo(this, this.attr.x + dx, this.attr.y + dy);
-  }
+  // moveBy(dx, dy){
+  //   if (!this.attr.mapID) {
+  //     this.attr.x += dx;
+  //     this.attr.y += dy;
+  //     return true;
+  //   }
+  //   return this.getMap().moveEntityTo(this, this.attr.x + dx, this.attr.y + dy);
+  // }
 
   toJSON(){
     return JSON.stringify(this.attr);

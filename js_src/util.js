@@ -9,8 +9,7 @@ export function randomString(len = 8) {
 }
 
 export function init2DArray(x=1,y=1,initVal='') {
-  console.log('initializing 2D Array');
-  console.log(initVal);
+  // console.log('initializing 2D Array');
   var a = [];
   for (var xdim=0; xdim < x; xdim++) {
     a.push([]);
@@ -18,7 +17,7 @@ export function init2DArray(x=1,y=1,initVal='') {
       a[xdim].push(initVal);
     }
   }
-  console.log(a);
+  // console.log(a);
   return a;
 }
 

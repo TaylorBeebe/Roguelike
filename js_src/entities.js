@@ -10,5 +10,5 @@ EntityFactory.learn({
   descr: '',
   chr: '@',
   fg: '#eb4',
-  'mixinNames': ['TimeTracker', 'tryWalk', '']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal']
 });

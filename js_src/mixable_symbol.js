@@ -5,6 +5,7 @@ import {uniqueID} from './util.js';
 export class MixableSymbol extends DisplaySymbol {
 
   constructor(template){
+    console.log('NOW IN MIXABLESYMBOL');
     super(template);
     this.name = template.name || template.templateName || 'no name';
     this.descr = template.descr || '';
@@ -14,16 +15,17 @@ export class MixableSymbol extends DisplaySymbol {
     if(!template.mixins){
       template.mixins = [];
     }
-    
+
     this.mixins = [];
     this.mixinTracker = {};
     //record/track any mixins this entity has
     if (template.mixinNames) {
       for (let mi = 0; mi < template.mixinNames.length; mi++){
-        this.mixinNames.push(E[template.mixinNames[mi]]);
+        this.mixins.push(E[template.mixinNames[mi]]);
         this.mixinTracker[template.mixinNames[mi]] = true;
       }
     }
+    // console.dir(this.mixins);
     //set up mixin state and import/insert mixin methods
     for (let mi = 0; mi < this.mixins.length; mi++){
       let m = this.mixins[mi];

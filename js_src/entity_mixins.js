@@ -61,23 +61,21 @@ export let WalkerCorporeal = {
 
     //tryWalk from class
     tryWalk: function (dx, dy){
-
+      // console.log('now in the entity_mixins.tryWalk() function');
       let newX = this.attr.x*1 + dx*1;
       let newY = this.attr.y*1 + dy*1;
 
-      if (this.getMap().testLocationBlocked(newX, newY)){
-        this.attr.x = newX;
-        this.attr.y - newY;
-        this.getMap().moveEntityTo(this,this.attr.x, this.attr.y);
-        this.raiseMixinEvent('turntaken', {timeUsed: 1});
+      if (!this.getMap().testLocationBlocked(newX, newY)){
+        this.getMap().moveEntityTo(this, newX, newY);
+        // this.raiseMixinEvent('turntaken', {timeUsed: 1});
         return true;
       } else {
-      this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
+      // this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
       return false;
       } } }
 };
 
-let PlayerMessage = {
+export let PlayerMessage = {
   META:{
     mixinName: 'PlayerMessage',
     mixinGroupName: 'Messenger',

@@ -9,6 +9,8 @@ export function randomString(len = 8) {
 }
 
 export function init2DArray(x=1,y=1,initVal='') {
+  console.log('initializing 2D Array');
+  console.log(initVal);
   var a = [];
   for (var xdim=0; xdim < x; xdim++) {
     a.push([]);
@@ -16,6 +18,7 @@ export function init2DArray(x=1,y=1,initVal='') {
       a[xdim].push(initVal);
     }
   }
+  console.log(a);
   return a;
 }
 
@@ -24,14 +27,3 @@ export function uniqueID() {
   ID_SEQ++;
   return `${ID_SEQ}-${randomString()}`;
 }
-
-/*
-let randStringCharSource = ''.split('');
-export functions uniqueId(tag){
-  let id = '';
-  for (let i=1;i<4;i++){
-    id += randStringCharSource.random();
-  }
-  id = `${tag ? tag + `-`}`
-}
-*/

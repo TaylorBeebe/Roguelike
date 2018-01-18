@@ -1,7 +1,7 @@
 import {Messenger} from './messenger.js';
 //defines the various mixins that can be added to an Entity
 
-/*
+
 let _exampleMixin = {
   META:{
     mixinName: 'ExampleMixin',
@@ -21,7 +21,7 @@ let _exampleMixin = {
     }
   }
 };
-*/
+
 
 export let TimeTracker = {
   META:{

@@ -8453,6 +8453,8 @@ function init2DArray() {
   var y = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
   var initVal = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 
+  console.log('initializing 2D Array');
+  console.log(initVal);
   var a = [];
   for (var xdim = 0; xdim < x; xdim++) {
     a.push([]);
@@ -8460,6 +8462,7 @@ function init2DArray() {
       a[xdim].push(initVal);
     }
   }
+  console.log(a);
   return a;
 }
 
@@ -8468,17 +8471,6 @@ function uniqueID() {
   ID_SEQ++;
   return ID_SEQ + '-' + randomString();
 }
-
-/*
-let randStringCharSource = ''.split('');
-export functions uniqueId(tag){
-  let id = '';
-  for (let i=1;i<4;i++){
-    id += randStringCharSource.random();
-  }
-  id = `${tag ? tag + `-`}`
-}
-*/
 
 /***/ }),
 /* 94 */
@@ -8499,12 +8491,6 @@ var _colors = __webpack_require__(129);
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var DisplaySymbol = exports.DisplaySymbol = function () {
-  // constructor(chr=' ',fgHexColor=Color.FG,bgHexColor=Color.BG) {
-  //   this._chr = chr;
-  //   this._fgHexColor = fgHexColor;
-  //   this._bgHexColor = bgHexColor;
-  // }
-
   function DisplaySymbol(template) {
     _classCallCheck(this, DisplaySymbol);
 
@@ -9500,7 +9486,7 @@ var _game = __webpack_require__(334);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 window.onload = function () {
-  console.log("starting WSRL - window loaded");
+  console.log("starting Roguelike - Window Loaded");
   // Check if rot.js can work on this browser
   if (!_rotJs2.default.isSupported()) {
     alert("The rot.js library isn't supported by your browser.");
@@ -15332,7 +15318,6 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     value: function enter() {
       _get(PlayMode.prototype.__proto__ || Object.getPrototypeOf(PlayMode.prototype), 'enter', this).call(this);
       this.game.isPlaying = true;
-      //this.avatarSymbol = new DisplaySymbol(`@`, `#eb4`);
     }
   }, {
     key: 'newGame',
@@ -15506,7 +15491,7 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       this.display.clear();
       this.display.drawText(3, 3, "N - Start New Game");
       if (this.game.hasSaved) {
-        this.display.drawText(3, 9, "L - Load A New Game");
+        this.display.drawText(3, 9, "L - Load Your Previous Save");
       }
       if (this.game.isPlaying) {
         this.display.drawText(3, 5, "S - Save Your Current Game");
@@ -15646,7 +15631,7 @@ var Map = function () {
     if (!TILE_GRID_GENERATOR.hasOwnProperty(mapType)) {
       mapType = 'basicCaves';
     }
-    console.log('in map constructor()');
+    console.log('in map.constructor()');
 
     this.attr = {};
     this.attr.xdim = xdim;
@@ -15657,8 +15642,8 @@ var Map = function () {
     this.attr.rngBaseState = this.rng.getState();
     this.attr.locationToEntityID = {};
     this.attr.entityIDToLocation = {};
-    console.dir(this.attr);
-    console.log('exiting map constructor()');
+    // console.dir(this.attr);
+    console.log('exiting map.constructor()');
   }
 
   _createClass(Map, [{
@@ -15702,9 +15687,9 @@ var Map = function () {
   }, {
     key: 'addEntity',
     value: function addEntity(ent) {
-      console.dir(ent);
+      // console.dir(ent);
       ent.setMapID(this.attr.id);
-      console.dir(this.attr.entityIDToLocation);
+      // console.dir(this.attr.entityIDToLocation);
       this.attr.entityIDToLocation[ent.getID()] = ent.getxcy();
       this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
     }
@@ -15730,7 +15715,7 @@ var Map = function () {
       ent.setPos(x, y);
       this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
       this.attr.entityIDToLocation[ent.getID()] = ent.getxcy();
-      console.dir(this.attr);
+      // console.dir(this.attr);
       return true;
     }
   }, {
@@ -15814,14 +15799,8 @@ var Map = function () {
       // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
       for (var x = 0; x < o.width; x++) {
         for (var y = 0; y < o.height; y++) {
-          // let tile = this.getTile(x+xStart, y+yStart);
-          // if (tile.isA(TILES.NULLTILE)) {
-          //   tile = TILES.WALL;
           this.getDisplaySymbolAtMapLocation(x + xStart, y + yStart).drawOn(display, x, y);
         }
-        // console.log(camX + ", " + camY);
-        // console.dir(tile);
-        //tile.drawOn(display,x,y);
       }
     }
   }, {
@@ -15833,27 +15812,16 @@ var Map = function () {
       var entityId = this.attr.locationToEntityID[mapX + ',' + mapY];
       // console.dir(entityId);
       if (entityId) {
-        console.log('entity at this location: ' + mapX + ', ' + mapY);
+        // console.log('entity at this location: ' + mapX + ', ' + mapY);
         return _datastore.DATASTORE.ENTITIES[entityId];
       }
-
       var tile = this.getTile(mapX, mapY);
-      if (tile.isA(_tile.TILES.NULLTILE)) {
-        tile = _tile.TILES.WALL;
-      }
       return tile;
     }
   }, {
     key: 'toJSON',
     value: function toJSON() {
       return JSON.stringify(this.attr);
-    }
-  }, {
-    key: 'fromState',
-    value: function fromState(mapData) {
-      console.log('creating map from data');
-      console.dir(mapData);
-      this.attr = mapData;
     }
   }]);
 
@@ -15866,10 +15834,9 @@ var TILE_GRID_GENERATOR = {
     _rotJs2.default.RNG.setState(rngState);
     var tg = (0, _util.init2DArray)(xdim, ydim, _tile.TILES.NULLTILE);
     var gen = new _rotJs2.default.Map.Cellular(xdim, ydim, { connected: true });
-    gen.randomize(.5);
-    for (var i = 3; i >= 0; i--) {
+    gen.randomize(.4);
+    for (var i = 0; i <= 3; i++) {
       gen.create();
-      // set the boundary to all wall each pass
       for (var x = 0; x < xdim; x++) {
         for (var y = 0; y < ydim; y++) {
           if (x <= 1 || y <= 1 || x >= xdim - 2 || y >= ydim - 2) {
@@ -15884,30 +15851,15 @@ var TILE_GRID_GENERATOR = {
     _rotJs2.default.RNG.setState(origRngState);
     return tg;
   }
+};
 
-  /*
-  getRandomOpenPosition(){
-    let x = Math.trunc(ROT.RNG.getUniform()*this.state.xdim);
-    let y = Math.trunc(ROT.RNG.getUniform()*this.state.ydim);
-  
-    if (this.tileGrid[x][y].isA('floor')){
-      return `${x},${y}`;
-    }
-    return this.getRandomOpenPosition();
-  }
-  */
-
-};function makeMap(mapData) {
+function makeMap(mapData) {
   var m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);
-  // if (mapData.id !== undefined) { m.setID(mapData.id); }
-  // if (mapData.rngBaseState !== undefined) { m.setRngBaseState(mapData.rngBaseState); }
   if (mapData.id !== undefined) {
-    m.fromState(mapData);
+    m.attr = mapData;
   }
   m.setUp();
-
   _datastore.DATASTORE.MAPS[m.getID()] = m;
-
   return m;
 }
 
@@ -15936,11 +15888,6 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Tile = exports.Tile = function (_DisplaySymbol) {
   _inherits(Tile, _DisplaySymbol);
 
-  // constructor(name,symbol) {
-  //   this._name = name;
-  //   this._symbol = symbol;
-  // }
-
   function Tile(template) {
     _classCallCheck(this, Tile);
 
@@ -15962,15 +15909,6 @@ var Tile = exports.Tile = function (_DisplaySymbol) {
     value: function getName() {
       return this._name;
     }
-
-    // drawOn(display, dispX, dispY) {
-    //   console.log('entering tile.drawOn()');
-    //   console.log(dispX + ", " + dispY);
-    //   // console.log("Display:");
-    //   // console.dir(display);
-    //   this._symbol.drawOn(display, dispX, dispY);
-    // }
-
   }, {
     key: 'isA',
     value: function isA(matchingTile) {
@@ -15987,16 +15925,9 @@ var Tile = exports.Tile = function (_DisplaySymbol) {
 }(_display_symbol.DisplaySymbol);
 
 var TILES = exports.TILES = {
-  NULLTILE: new Tile({ name: 'NULLTILE' }),
+  NULLTILE: new Tile({ name: 'NULLTILE', chr: '*', walkable: false }),
   FLOOR: new Tile({ name: 'FLOOR', chr: '.', walkable: true }),
-  WALL: new Tile({ name: 'WALL', chr: '#' })
-
-  // export let TILES = {
-  //   NULLTILE: new Tile('NULLTILE',new DisplaySymbol()),
-  //   FLOOR: new Tile('FLOOR', new DisplaySymbol('.')),
-  //   WALL: new Tile('WALL',new DisplaySymbol('#'))
-  // }
-
+  WALL: new Tile({ name: 'WALL', chr: '#', walkable: false })
 };
 
 /***/ }),

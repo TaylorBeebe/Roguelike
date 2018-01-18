@@ -54,7 +54,6 @@ export class PlayMode extends UIMode{
   enter(){
     super.enter();
     this.game.isPlaying = true;
-    //this.avatarSymbol = new DisplaySymbol(`@`, `#eb4`);
   }
 
   newGame(){
@@ -191,7 +190,7 @@ export class PersistenceMode extends UIMode{
     this.display.clear();
     this.display.drawText(3,3, "N - Start New Game");
     if(this.game.hasSaved){
-      this.display.drawText(3, 9, "L - Load A New Game");
+      this.display.drawText(3, 9, "L - Load Your Previous Save");
     }
     if(this.game.isPlaying){
       this.display.drawText(3, 5, "S - Save Your Current Game");

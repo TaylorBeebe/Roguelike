@@ -1,10 +1,6 @@
 import {DisplaySymbol} from './display_symbol.js';
 
 export class Tile extends DisplaySymbol {
-  // constructor(name,symbol) {
-  //   this._name = name;
-  //   this._symbol = symbol;
-  // }
 
   constructor(template){
     super(template);
@@ -21,14 +17,6 @@ export class Tile extends DisplaySymbol {
     return this._name;
   }
 
-  // drawOn(display, dispX, dispY) {
-  //   console.log('entering tile.drawOn()');
-  //   console.log(dispX + ", " + dispY);
-  //   // console.log("Display:");
-  //   // console.dir(display);
-  //   this._symbol.drawOn(display, dispX, dispY);
-  // }
-
   isA(matchingTile) {
     return this.getName() == matchingTile.getName();
   }
@@ -40,13 +28,7 @@ export class Tile extends DisplaySymbol {
 }
 
 export let TILES = {
-  NULLTILE: new Tile({name: 'NULLTILE'}),
+  NULLTILE: new Tile({name: 'NULLTILE', chr: '*', walkable: false}),
   FLOOR: new Tile({name: 'FLOOR', chr: '.', walkable: true}),
-  WALL: new Tile({name: 'WALL', chr: '#'})
+  WALL: new Tile({name: 'WALL', chr: '#', walkable: false})
 }
-
-// export let TILES = {
-//   NULLTILE: new Tile('NULLTILE',new DisplaySymbol()),
-//   FLOOR: new Tile('FLOOR', new DisplaySymbol('.')),
-//   WALL: new Tile('WALL',new DisplaySymbol('#'))
-// }

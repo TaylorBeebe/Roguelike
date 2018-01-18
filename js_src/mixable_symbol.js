@@ -1,15 +1,20 @@
-// encapsulate the handling of mixins
-
 import {DisplaySymbol} from './display_symbol.js';
-import * as E from './entity_mixins.js'
+import * as E from './entity_mixins.js';
+import {uniqueID} from './util.js';
 
 export class MixableSymbol extends DisplaySymbol {
 
   constructor(template){
     super(template);
+    this.name = template.name || template.templateName || 'no name';
+    this.descr = template.descr || '';
     if(!this.attr){
       this.attr = {};
     }
+    if(!template.mixins){
+      template.mixins = [];
+    }
+    
     this.mixins = [];
     this.mixinTracker = {};
     //record/track any mixins this entity has

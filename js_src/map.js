@@ -9,7 +9,7 @@ class Map{
     if(!TILE_GRID_GENERATOR.hasOwnProperty(mapType)){
       mapType = 'basicCaves';
     }
-    console.log('in map constructor()');
+    console.log('in map.constructor()');
 
     this.attr = {};
     this.attr.xdim = xdim;
@@ -20,8 +20,8 @@ class Map{
     this.attr.rngBaseState = this.rng.getState();
     this.attr.locationToEntityID = {};
     this.attr.entityIDToLocation = {};
-    console.dir(this.attr);
-    console.log('exiting map constructor()');
+    // console.dir(this.attr);
+    console.log('exiting map.constructor()');
 
   }
 
@@ -57,11 +57,11 @@ class Map{
   }
 
   addEntity(ent) {
-    console.dir(ent);
-     ent.setMapID(this.attr.id);
-     console.dir(this.attr.entityIDToLocation);
-     this.attr.entityIDToLocation[ent.getID()] = ent.getxcy();
-     this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
+    // console.dir(ent);
+    ent.setMapID(this.attr.id);
+    // console.dir(this.attr.entityIDToLocation);
+    this.attr.entityIDToLocation[ent.getID()] = ent.getxcy();
+    this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
    }
 
 
@@ -84,7 +84,7 @@ class Map{
     ent.setPos(x, y);
     this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
     this.attr.entityIDToLocation[ent.getID()] = ent.getxcy();
-    console.dir(this.attr);
+    // console.dir(this.attr);
     return true;
   }
 
@@ -154,14 +154,8 @@ class Map{
     // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
     for (let x=0;x<o.width;x++) {
       for (let y=0;y<o.height;y++) {
-        // let tile = this.getTile(x+xStart, y+yStart);
-        // if (tile.isA(TILES.NULLTILE)) {
-        //   tile = TILES.WALL;
         this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart).drawOn(display,x,y);
         }
-        // console.log(camX + ", " + camY);
-        // console.dir(tile);
-        //tile.drawOn(display,x,y);
       }
     }
 
@@ -173,27 +167,16 @@ class Map{
     let entityId = this.attr.locationToEntityID[`${mapX},${mapY}`];
     // console.dir(entityId);
     if (entityId) {
-      console.log('entity at this location: ' + mapX + ', ' + mapY);
+      // console.log('entity at this location: ' + mapX + ', ' + mapY);
       return DATASTORE.ENTITIES[entityId];
     }
-
     let tile = this.getTile(mapX, mapY);
-    if (tile.isA(TILES.NULLTILE)) {
-      tile = TILES.WALL;
-    }
     return tile;
   }
 
   toJSON() {
     return JSON.stringify(this.attr);
   }
-
-  fromState(mapData){
-    console.log('creating map from data');
-    console.dir(mapData);
-    this.attr = mapData;
-  }
-
 }
 
 let TILE_GRID_GENERATOR = {
@@ -202,14 +185,13 @@ let TILE_GRID_GENERATOR = {
     ROT.RNG.setState(rngState);
     let tg = init2DArray(xdim,ydim,TILES.NULLTILE);
     let gen = new ROT.Map.Cellular(xdim, ydim, { connected: true });
-    gen.randomize(.5);
-    for(let i=3;i>=0;i--) {
+    gen.randomize(.4);
+    for(let i = 0; i <= 3; i++) {
       gen.create();
-      // set the boundary to all wall each pass
-      for (let x=0;x<xdim;x++) {
-        for (let y=0;y<ydim;y++) {
-          if (x<=1 || y<=1 || x>=xdim-2 || y>=ydim-2) {
-            gen.set(x,y,1);
+      for (let x = 0; x < xdim; x++) {
+        for (let y = 0; y < ydim; y++) {
+          if (x <= 1 || y <= 1 || x >= xdim - 2 || y >= ydim - 2) {
+            gen.set(x, y, 1);
           } } } }
     gen.connect(function(x,y,isWall) {
       tg[x][y] = (isWall || x==0 || y==0 || x==xdim-1 || y==ydim-1) ? TILES.WALL : TILES.FLOOR;
@@ -219,28 +201,10 @@ let TILE_GRID_GENERATOR = {
   }
 }
 
-/*
-getRandomOpenPosition(){
-  let x = Math.trunc(ROT.RNG.getUniform()*this.state.xdim);
-  let y = Math.trunc(ROT.RNG.getUniform()*this.state.ydim);
-
-  if (this.tileGrid[x][y].isA('floor')){
-    return `${x},${y}`;
-  }
-  return this.getRandomOpenPosition();
-}
-*/
-
 export function makeMap(mapData) {
   let m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);
-  // if (mapData.id !== undefined) { m.setID(mapData.id); }
-  // if (mapData.rngBaseState !== undefined) { m.setRngBaseState(mapData.rngBaseState); }
-  if (mapData.id !== undefined) {
-  m.fromState(mapData);
-  }
+  if (mapData.id !== undefined) { m.attr = mapData; }
   m.setUp();
-
   DATASTORE.MAPS[m.getID()] = m;
-
   return m;
 }

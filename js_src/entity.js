@@ -36,6 +36,8 @@ export class Entity extends DisplaySymbol {
 
   getxcy() { return `${this.attr.x},${this.attr.y}`; }
 
+  getMap() { return DATASTORE.MAPS[this.attr.mapID] }
+
   setPos(x_or_xy,y) {
   if (typeof x_or_xy == 'object') {
     this.attr.x = x_or_xy.x;
@@ -56,7 +58,7 @@ export class Entity extends DisplaySymbol {
       this.attr.y += dy;
       return true;
     }
-    return DATASTORE.MAPS[this.attr.mapID].moveEntityTo(this, this.attr.x + dx, this.attr.y + dy);
+    return this.getMap().moveEntityTo(this, this.attr.x + dx, this.attr.y + dy);
   }
 
   toJSON(){

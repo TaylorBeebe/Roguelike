@@ -15895,7 +15895,6 @@ var Tile = exports.Tile = function (_DisplaySymbol) {
 
     _this._name = template.name || 'No Name';
     _this._walkable = template.walkable || false;
-    // this.transparent = template.transparent || false;
     return _this;
   }
 
@@ -15949,13 +15948,12 @@ var _entity = __webpack_require__(340);
 var EntityFactory = exports.EntityFactory = new _factory.Factory('ENTITIES', _entity.Entity);
 
 console.log("Learning Avatar Entity");
-
 EntityFactory.learn({
   name: 'avatar',
   descr: '',
   chr: '@',
   fg: '#eb4',
-  'mixinNames': ['TimeTracker', 'tryWalk']
+  'mixinNames': ['TimeTracker', 'tryWalk', '']
 });
 
 /***/ }),
@@ -16105,6 +16103,11 @@ var Entity = exports.Entity = function (_DisplaySymbol) {
       return this.attr.x + ',' + this.attr.y;
     }
   }, {
+    key: 'getMap',
+    value: function getMap() {
+      return _datastore.DATASTORE.MAPS[this.attr.mapID];
+    }
+  }, {
     key: 'setPos',
     value: function setPos(x_or_xy, y) {
       if ((typeof x_or_xy === 'undefined' ? 'undefined' : _typeof(x_or_xy)) == 'object') {
@@ -16133,6 +16136,8 @@ var Entity = exports.Entity = function (_DisplaySymbol) {
         this.attr.y += dy;
         return true;
       }
+      console.log('moving');
+      console.log(this.getMap());
       return _datastore.DATASTORE.MAPS[this.attr.mapID].moveEntityTo(this, this.attr.x + dx, this.attr.y + dy);
     }
   }, {

@@ -6,7 +6,6 @@ export class Tile extends DisplaySymbol {
     super(template);
     this._name = template.name || 'No Name';
     this._walkable = template.walkable || false;
-    // this.transparent = template.transparent || false;
   }
 
   getDisplaySymbol() {

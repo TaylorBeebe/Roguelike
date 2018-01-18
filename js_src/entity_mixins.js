@@ -1,4 +1,5 @@
 import {Messenger} from './messenger.js';
+import {DATASTORE} from './datastore.js';
 //defines the various mixins that can be added to an Entity
 
 
@@ -57,35 +58,23 @@ export let WalkerCorporeal = {
     mixinGroupName: 'Walker',
   },
   METHODS:{
-    /*
+
     //tryWalk from class
-  tryWalk: function (dx, dy){
-    let newX = this.attr.x*1 + dx*1;
-    let newY = this.attr.y*1 + dy*1;
+    tryWalk: function (dx, dy){
 
-    if (this.getMap().isPositionOpen(newX, newY)){
-      this.attr.x = newX;
-      this.attr.y - newY;
-      this.getMap().updateEntityPosition(this,this.state.x, this.state.y);
-      this.raiseMixinEvent('turntaken', {timeUsed: 1});
-      return true;
-    }
-    this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
-    return false;
-  }
-  */
+      let newX = this.attr.x*1 + dx*1;
+      let newY = this.attr.y*1 + dy*1;
 
-    }
-    tryWalk: function(dx, dy){
-      //THIS WILL REPLACE THE MOVEBY FUNCITON IN ENTITY.JS
-        if (!this.attr.mapID) {
-          this.attr.x += dx;
-          this.attr.y += dy;
-          return true;
-        }
-        return DATASTORE.MAPS[this.attr.mapID].moveEntityTo(this, this.attr.x +
-          dx, this.attr.y + dy);
-    }
+      if (this.getMap().testLocationBlocked(newX, newY)){
+        this.attr.x = newX;
+        this.attr.y - newY;
+        this.getMap().moveEntityTo(this,this.attr.x, this.attr.y);
+        this.raiseMixinEvent('turntaken', {timeUsed: 1});
+        return true;
+      } else {
+      this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
+      return false;
+      } } }
 };
 
 let PlayerMessage = {

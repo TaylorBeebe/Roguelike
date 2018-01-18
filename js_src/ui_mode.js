@@ -161,6 +161,12 @@ export class PlayMode extends UIMode{
     fromJSON(json){
       this._GAMESTATE_ = JSON.parse(json);
     }
+
+    getAvatar(){
+      if (this._GAMESTATE_.avatarId) { return DATASTORE.ENTITIES[this._GAMESTATE_.avatarId] }
+      else { return false; }
+    }
+
   }
 
 export class WinMode extends UIMode{

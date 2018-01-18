@@ -36,18 +36,19 @@ export let TimeTracker = {
 
   METHODS:{
     addTime: function(t){
-      this.state._TimeTracker.timeTaken += t;
+      this.attr._TimeTracker.timeTaken += t;
     },
     setTime: function(t){
-      this.state._TimeTracker.timeTaken = t;
+      this.attr._TimeTracker.timeTaken = t;
     },
     getTime: function(){
       return this.attr._TimeTracker.timeTaken;
     }
   },
   LISTENERS: {
-    'turntaken':function(evtData){
-      this.addTime(evt.Data.timeUsed);
+    'turnTaken' :function(evtData){
+      console.log(evtData.timeUsed);
+      this.addTime(evtData.timeUsed);
     }
   }
 };
@@ -67,7 +68,9 @@ export let WalkerCorporeal = {
 
       if (!this.getMap().testLocationBlocked(newX, newY)){
         this.getMap().moveEntityTo(this, newX, newY);
-        // this.raiseMixinEvent('turntaken', {timeUsed: 1});
+        this.raiseMixinEvent('turntaken', {timeUsed: 1});
+        console.log(this.getTime());
+        console.dir(this.attr);
         return true;
       } else {
       // this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});

@@ -79,7 +79,7 @@ class Map{
       console.log('position is blocked [map.moveEntityTo()]');
       return false;
     }
-    console.log('entity can move to this location. moving...')
+    // console.log('entity can move to this location. moving...')
     delete this.attr.locationToEntityID[ent.getxcy()];
     ent.setPos(x, y);
     this.attr.locationToEntityID[ent.getxcy()] = ent.getID();

@@ -15370,14 +15370,14 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         x: Math.round(this.display.getOptions().width / 2),
         y: Math.round(this.display.getOptions().height / 2)
       };
-      console.log("new game built._GAMESTATE_ dir is: ");
+      console.log("new game built._GAMESTATE_ dir is-> ");
       console.dir(this._GAMESTATE_);
     }
   }, {
     key: 'render',
     value: function render() {
       this.display.clear();
-      console.log('in PlayMode.render()');
+      // console.log('in PlayMode.render()')
       // console.dir(DATASTORE.MAPS);
       // console.dir(this._GAMESTATE_);
       _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
@@ -15436,8 +15436,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
   }, {
     key: 'cameraToAvatar',
     value: function cameraToAvatar() {
-      console.log('centering camera on avatar');
-      // console.dir(DATASTORE.ENTITIES);
+      // console.log('centering camera on avatar');
       this._GAMESTATE_.cameraMapLoc.x = this.getAvatar().getX();
       this._GAMESTATE_.cameraMapLoc.y = this.getAvatar().getY();
       // console.log('camera centered. cameraMapLoc.x : ' + this._GAMESTATE_.cameraMapLoc.x
@@ -15589,16 +15588,16 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
       var saved_GAMESTATE_ = JSON.parse(restorationString);
 
       (0, _datastore.initializeDatastore)();
-      console.log('datastore initialized');
+      // console.log('datastore initialized');
       // restore game core
       _datastore.DATASTORE.GAME = this.game;
       this.game.fromJSON(saved_GAMESTATE_.GAME);
-
+      console.log('restoring maps');
       // restore maps (note: in the future might not instantiate all maps here, but instead build some kind of instantiate on demand)
       for (var savedMapId in saved_GAMESTATE_.MAPS) {
         (0, _map.makeMap)(JSON.parse(saved_GAMESTATE_.MAPS[savedMapId]));
-        console.log("map restored- ");
-        console.log(savedMapId);
+        // console.log('map restored-> ');
+        // console.log(savedMapId);
       }
       console.log('all maps restored');
 
@@ -15609,7 +15608,7 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
         _entities.EntityFactory.create(entState.templateName, entState);
       }
       console.log('all entities loaded');
-      console.log('game loaded!');
+      console.log('game loaded! DATASTORE -> ');
       console.dir(_datastore.DATASTORE);
     }
   }, {
@@ -15750,7 +15749,7 @@ var Map = function () {
         console.log('position is blocked [map.moveEntityTo()]');
         return false;
       }
-      console.log('entity can move to this location. moving...');
+      // console.log('entity can move to this location. moving...')
       delete this.attr.locationToEntityID[ent.getxcy()];
       ent.setPos(x, y);
       this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
@@ -16253,7 +16252,7 @@ var MixableSymbol = exports.MixableSymbol = function (_DisplaySymbol) {
         _this.mixinTracker[template.mixinNames[mi]] = true;
       }
     }
-    console.dir(_this.mixins);
+    // console.dir(this.mixins);
     //set up mixin state and import/insert mixin methods
     for (var _mi = 0; _mi < _this.mixins.length; _mi++) {
       var m = _this.mixins[_mi];
@@ -16346,18 +16345,19 @@ var TimeTracker = exports.TimeTracker = {
 
   METHODS: {
     addTime: function addTime(t) {
-      this.state._TimeTracker.timeTaken += t;
+      this.attr._TimeTracker.timeTaken += t;
     },
     setTime: function setTime(t) {
-      this.state._TimeTracker.timeTaken = t;
+      this.attr._TimeTracker.timeTaken = t;
     },
     getTime: function getTime() {
       return this.attr._TimeTracker.timeTaken;
     }
   },
   LISTENERS: {
-    'turntaken': function turntaken(evtData) {
-      this.addTime(evt.Data.timeUsed);
+    'turnTaken': function turnTaken(evtData) {
+      console.log(evtData.timeUsed);
+      this.addTime(evtData.timeUsed);
     }
   }
 };
@@ -16371,14 +16371,15 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
 
     //tryWalk from class
     tryWalk: function tryWalk(dx, dy) {
-      console.log('now in the tryWalk function');
+      // console.log('now in the entity_mixins.tryWalk() function');
       var newX = this.attr.x * 1 + dx * 1;
       var newY = this.attr.y * 1 + dy * 1;
 
       if (!this.getMap().testLocationBlocked(newX, newY)) {
-        console.log('location is not blocked. moving...');
         this.getMap().moveEntityTo(this, newX, newY);
-        // this.raiseMixinEvent('turntaken', {timeUsed: 1});
+        this.raiseMixinEvent('turntaken', { timeUsed: 1 });
+        console.log(this.getTime());
+        console.dir(this.attr);
         return true;
       } else {
         // this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});

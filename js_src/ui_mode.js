@@ -130,6 +130,7 @@ export class PlayMode extends UIMode{
       display.clear();
       display.drawText(0,0, "AVATAR");
       display.drawText(0,2,"Time: " + this.getAvatar().getTime());
+      display.drawText(0,4, "HP: " + this.getAvatar().getCurHP());
     }
 
 

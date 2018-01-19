@@ -5,11 +5,11 @@ import {TILES} from './tile.js';
 import {DATASTORE} from './datastore.js';
 
 class Map{
-  constructor(xdim=1,ydim=1,mapType){
+  constructor(xdim=1,ydim=1,mapType, visibilityRange){
     if(!TILE_GRID_GENERATOR.hasOwnProperty(mapType)){
       mapType = 'basicCaves';
     }
-    console.log('in map.constructor()');
+    console.log('entering map.constructor()');
 
     this.attr = {};
     this.attr.xdim = xdim;
@@ -20,6 +20,7 @@ class Map{
     this.attr.rngBaseState = this.rng.getState();
     this.attr.locationToEntityID = {};
     this.attr.entityIDToLocation = {};
+    this.attr.visibilityRange =  visibilityRange;
     // console.dir(this.attr);
     console.log('exiting map.constructor()');
 
@@ -28,7 +29,7 @@ class Map{
   setUp(){
     this.rng.setState(this.attr.rngBaseState);
     this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
-    // console.log('Tile Grid:')
+    // console.log('Tile Grid -> ')
     // console.dir(this.tileGrid);
   }
 
@@ -155,13 +156,19 @@ class Map{
     // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
     for (let x=0;x<o.width;x++) {
       for (let y=0;y<o.height;y++) {
-        this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart).drawOn(display,x,y);
-        }
+        // console.log(Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))));
+        // console.log('camX = ' + camX + ' curx = ' + x + ' camY = ' + camY + ' cury = ' + y);
+        // if (Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))) <= this.attr.visibilityRange){
+          // console.log('Dist was les than visibilityRange');
+          this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart).drawOn(display,x,y);
+
       }
     }
+  }
 
 
   getDisplaySymbolAtMapLocation(mapX,mapY) {
+    // console.log('in getDisplaySymbolAtMapLocation -> ' + mapX + ', ' + mapY);
     // console.log('creating entityid in map.getDisplaySymbolAtMapLocation()');
     // console.dir(this.attr);
     // console.dir(this.attr.locationToEntityID);
@@ -204,7 +211,10 @@ let TILE_GRID_GENERATOR = {
 }
 
 export function makeMap(mapData) {
-  let m = new Map(mapData.xdim, mapData.ydim, mapData.mapType);
+  if (mapData.mapType == 'basicCaves' || !mapData.mapType){
+    mapData.visibilityRange = 6;
+  }
+  let m = new Map(mapData.xdim, mapData.ydim, mapData.mapType, mapData.visibilityRange);
   if (mapData.id !== undefined) { m.attr = mapData; }
   m.setUp();
   DATASTORE.MAPS[m.getID()] = m;

@@ -4,6 +4,7 @@ import {Color} from './colors.js';
 import {DisplaySymbol} from './display_symbol.js';
 import {DATASTORE,initializeDatastore} from './datastore.js';
 import {EntityFactory} from './entities.js';
+import {Messenger} from './messenger.js';
 
 class UIMode {
 
@@ -129,6 +130,7 @@ export class PlayMode extends UIMode{
           this.move(1,-1);
         }
       }
+      return true;
     }
 
 
@@ -146,6 +148,7 @@ export class PlayMode extends UIMode{
       // console.dir(this.getAvatar());
       this.getAvatar().tryWalk(x, y);
       this.cameraToAvatar();
+      Messenger.ageMessages();
       this.render();
     }
 

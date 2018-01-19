@@ -71,7 +71,6 @@ export let WalkerCorporeal = {
         return true;
       } else {
       this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
-      this.raiseMixinEvent('damaged', {damageAmount: 1, wasDamagedBy: 'a wall'});
       return false;
       } } }
 };

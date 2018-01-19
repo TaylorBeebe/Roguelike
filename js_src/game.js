@@ -50,6 +50,9 @@ export let Game = {
     this.setupModes(this);
     this.switchMode('startup');
 
+    console.log('GAME object');
+    console.dir(this);
+    console.log('DATASTORE object');
     console.dir(this);
   },
 
@@ -149,8 +152,8 @@ export let Game = {
     //Handle event recieved
     if (this.curMode !== null && this.curMode != ''){
       if (this.curMode.handleInput(eventType, evt)){
+        console.log('this.curmode.handleinput = true');
         this.render();
-        Message.ageMessages();
       }
     }
   },

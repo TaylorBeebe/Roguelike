@@ -14,20 +14,23 @@ export let Messenger = {
     this.targetDisplay.clear();
     let y = 0;
     let index = 0;
-    while (y < this.targetDisplay.h && index < this.targetDisplay.h && this.messageQueue[index]){
+    // console.log('now in messenger.render()');
+    while (y < this.targetDisplay._options.height && index < this.targetDisplay._options.height && this.messageQueue[index]){
       if (this.messageQueue[index].age < this.fades.length){
+        // console.log('fading message');
         let messageColor = '%c{'+this.fades[this.messageQueue[index].age]+'}';
-        y += Math.max(1,this.targetDisplay.o.drawText(1,y,`${msgColor}${this.messageQueue[mi].txt}${Color.DEFAULT}`));
-      }
-      index++;
-    }
+        y += Math.max(1,this.targetDisplay.drawText(1,y,`${messageColor}${this.messageQueue[index].txt}${Color.DEFAULT}`));
+      } index++; }
   },
 
   send: function(msg){
+    // console.log('in messenger.send()');
     this.messageQueue.unshift({'txt':msg,'age':0});
+    // console.log(this.messageQueue);
     while(this.messageQueue.length > this.maxLength){
       this.messageQueue.pop();
     }
+    this.ageMessages();
     this.render();
   },
 
@@ -36,6 +39,7 @@ export let Messenger = {
   },
 
   ageMessages: function(){
+    console.log('aging messages');
     for (let i=0;i<10;i++) {
       if (this.messageQueue[i] && this.messageQueue[i].age < this.fades.length) {
         this.messageQueue[i].age++;

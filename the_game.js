@@ -16284,8 +16284,11 @@ var MixableSymbol = exports.MixableSymbol = function (_DisplaySymbol) {
   _createClass(MixableSymbol, [{
     key: 'raiseMixinEvent',
     value: function raiseMixinEvent(evtLabel, evtData) {
+      console.log('raiseMixinEvent -> ' + evtLabel);
       for (var mi = 0; mi < this.mixins.length; mi++) {
         var m = this.mixins[mi];
+        // console.log('m.LISTENERS -> ' + m.LISTENERS);
+        // console.log('m.LISTENERS[evtLabel] -> ' + m.LISTENERS[evtLabel]);
         if (m.LISTENERS && m.LISTENERS[evtLabel]) {
           m.LISTENERS[evtLabel].call(this, evtData);
         }
@@ -16356,7 +16359,8 @@ var TimeTracker = exports.TimeTracker = {
   },
   LISTENERS: {
     'turnTaken': function turnTaken(evtData) {
-      console.log(evtData.timeUsed);
+      console.log('in turnTaken LISTENER');
+      console.log(evtData);
       this.addTime(evtData.timeUsed);
     }
   }
@@ -16377,7 +16381,7 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
 
       if (!this.getMap().testLocationBlocked(newX, newY)) {
         this.getMap().moveEntityTo(this, newX, newY);
-        this.raiseMixinEvent('turntaken', { timeUsed: 1 });
+        this.raiseMixinEvent('turnTaken', { timeUsed: 1 });
         console.log(this.getTime());
         console.dir(this.attr);
         return true;

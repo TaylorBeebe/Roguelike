@@ -47,7 +47,8 @@ export let TimeTracker = {
   },
   LISTENERS: {
     'turnTaken' :function(evtData){
-      console.log(evtData.timeUsed);
+      console.log('in turnTaken LISTENER');
+      console.log(evtData);
       this.addTime(evtData.timeUsed);
     }
   }
@@ -68,7 +69,7 @@ export let WalkerCorporeal = {
 
       if (!this.getMap().testLocationBlocked(newX, newY)){
         this.getMap().moveEntityTo(this, newX, newY);
-        this.raiseMixinEvent('turntaken', {timeUsed: 1});
+        this.raiseMixinEvent('turnTaken', {timeUsed: 1});
         console.log(this.getTime());
         console.dir(this.attr);
         return true;

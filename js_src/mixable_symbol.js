@@ -54,8 +54,11 @@ export class MixableSymbol extends DisplaySymbol {
   }
 
   raiseMixinEvent(evtLabel, evtData){
+    console.log('raiseMixinEvent -> ' + evtLabel);
     for (let mi=0; mi<this.mixins.length; mi++){
       let m = this.mixins[mi];
+      // console.log('m.LISTENERS -> ' + m.LISTENERS);
+      // console.log('m.LISTENERS[evtLabel] -> ' + m.LISTENERS[evtLabel]);
       if (m.LISTENERS && m.LISTENERS[evtLabel]){
         m.LISTENERS[evtLabel].call(this, evtData);
       }

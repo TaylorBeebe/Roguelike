@@ -15172,14 +15172,15 @@ var Game = exports.Game = {
   },
 
   renderDisplayAvatar: function renderDisplayAvatar() {
-    console.log("renderDisplayAvatar");
+    console.log("rendering avatar display");
     var d = this.display.avatar.o;
     d.clear();
-    d.drawText(2, 5, "AVATAR DISPLAY");
+    // d.drawText(2, 5, "AVATAR DISPLAY");
+    this.curMode.renderAvatar(d);
   },
 
   renderDisplayMain: function renderDisplayMain() {
-    console.log("renderDisplayMain");
+    console.log("rendering main display");
     this.display.main.o.clear();
     if (this.curMode === null || this.curMode == '') {
       return;
@@ -15189,21 +15190,16 @@ var Game = exports.Game = {
   },
 
   renderDisplayMessage: function renderDisplayMessage() {
-    console.log("renderDisplayMessage");
+    console.log("rendering message display");
     this.messageHandler.render();
   },
 
   renderMain: function renderMain() {
     console.log("renderMain function");
-    this.renderDisplayAvatar();
     this.renderDisplayMain();
+    this.renderDisplayAvatar();
     this.renderDisplayMessage();
   },
-
-  // renderMain: function(){
-  //   console.log('rendermain function');
-  //   this.renderAvatar();
-  // },
 
   bindEvent: function bindEvent(eventType) {
     var _this = this;
@@ -15370,8 +15366,8 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         x: Math.round(this.display.getOptions().width / 2),
         y: Math.round(this.display.getOptions().height / 2)
       };
-      console.log("new game built._GAMESTATE_ dir is-> ");
-      console.dir(this._GAMESTATE_);
+      // console.log("new game built._GAMESTATE_ dir is-> ");
+      // console.dir(this._GAMESTATE_);
     }
   }, {
     key: 'render',
@@ -15380,7 +15376,9 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       // console.log('in PlayMode.render()')
       // console.dir(DATASTORE.MAPS);
       // console.dir(this._GAMESTATE_);
+      console.dir(this.display);
       _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
+      this.game.renderDisplayAvatar();
       // this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
       // console.log("rendering PlayMode");
     }
@@ -15413,16 +15411,14 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
         }
       }
     }
-
-    /*
-    renderAvatar(){
+  }, {
+    key: 'renderAvatar',
+    value: function renderAvatar(display) {
+      console.log('in PlayMode.renderAvatar()');
       display.clear();
-      display.drawText(0,0, "AVATAR");
-      display.drawText(0,2,"Time: " + DATASTORE.ENTITEIS[this._GAMESTATE_.avatarId].getTime();)
-      this.display.drawText(33, 1, "Press any key to advance");
+      display.drawText(0, 0, "AVATAR");
+      display.drawText(0, 2, "Time: " + this.getAvatar().getTime());
     }
-    */
-
   }, {
     key: 'move',
     value: function move(x, y) {
@@ -16071,7 +16067,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } //unecessary to import once mixable symbols are implemented
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } //unecessary to import once mixable symbol implemented
 // import {DisplaySymbol} from './display_symbol.js';
 
 
@@ -16084,7 +16080,7 @@ var Entity = exports.Entity = function (_MixableSymbol) {
     var _this = _possibleConstructorReturn(this, (Entity.__proto__ || Object.getPrototypeOf(Entity)).call(this, template));
 
     _this.name = template.name || template.templateName || 'no name';
-    //this.descr = template.descr || 'boring';
+    _this.descr = template.descr || 'none';
 
     if (!('attr' in _this)) {
       _this.attr = {};
@@ -16237,8 +16233,6 @@ var MixableSymbol = exports.MixableSymbol = function (_DisplaySymbol) {
   function MixableSymbol(template) {
     _classCallCheck(this, MixableSymbol);
 
-    console.log('NOW IN MIXABLESYMBOL');
-
     var _this = _possibleConstructorReturn(this, (MixableSymbol.__proto__ || Object.getPrototypeOf(MixableSymbol)).call(this, template));
 
     _this.name = template.name || template.templateName || 'no name';
@@ -16282,9 +16276,6 @@ var MixableSymbol = exports.MixableSymbol = function (_DisplaySymbol) {
     for (var _mi2 = 0; _mi2 < _this.mixins.length; _mi2++) {
       var _m = _this.mixins[_mi2];
       if (_m.META.hasOwnProperty('initialize')) {
-        console.log('initializing ->');
-        console.dir(_m);
-        console.log(template);
         _m.META.initialize.call(_this, template);
       }
     }
@@ -16324,9 +16315,6 @@ exports.Hitpoints = exports.PlayerMessage = exports.WalkerCorporeal = exports.Ti
 var _messenger = __webpack_require__(130);
 
 var _datastore = __webpack_require__(46);
-
-//defines the various mixins that can be added to an Entity
-
 
 var _exampleMixin = {
   META: {
@@ -16415,15 +16403,12 @@ var PlayerMessage = exports.PlayerMessage = {
     'walkBlocked': function walkBlocked(evtData) {
       _messenger.Messenger.send(this.getName() + ' cannot walk there because ' + evtData.reason);
     },
-
     'damaged': function damaged(evtData) {
       _messenger.Messenger.send(evtData.wasDamagedBy + ' damaged ' + this.getName() + ' \' \' ' + evtData.damageAmount + ' points');
     },
-
     'healed': function healed(evtData) {
       _messenger.Messenger.send(this.getName() + ' gained ' + evtData.healAmount + ' HP');
     },
-
     'killed': function killed(evtData) {
       _messenger.Messenger.send(evtData.wasDamagedBy + ' killed ' + this.getName() + '!');
     }
@@ -16441,7 +16426,7 @@ var Hitpoints = exports.Hitpoints = {
       curHP: 0
     },
     initialize: function initialize(template) {
-      console.log('initializing Hitpoints on entity -> ' + template.name);
+      // console.log('initializing Hitpoints on entity -> ' + template.name);
       // console.log(this.template);
       this.attr._Hitpoints.maxHP = template.maxHP || 10;
       this.attr._Hitpoints.curHP = template.curHP || this.attr._Hitpoints.maxHP;

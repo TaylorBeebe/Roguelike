@@ -1,4 +1,4 @@
-//unecessary to import once mixable symbols are implemented
+//unecessary to import once mixable symbol implemented
 // import {DisplaySymbol} from './display_symbol.js';
 import {uniqueID} from './util.js';
 import {DATASTORE} from './datastore.js';
@@ -8,7 +8,7 @@ export class Entity extends MixableSymbol {
   constructor(templateName, template){
     super(template);
     this.name = template.name || template.templateName || 'no name';
-    //this.descr = template.descr || 'boring';
+    this.descr = template.descr || 'none';
 
     if (!('attr' in this)) {this.attr = {}; }
     this.attr.id = uniqueID();

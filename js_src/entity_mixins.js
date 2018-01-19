@@ -1,7 +1,5 @@
 import {Messenger} from './messenger.js';
 import {DATASTORE} from './datastore.js';
-//defines the various mixins that can be added to an Entity
-
 
 let _exampleMixin = {
   META:{
@@ -22,7 +20,6 @@ let _exampleMixin = {
     }
   }
 };
-
 
 export let TimeTracker = {
   META:{
@@ -92,15 +89,12 @@ export let PlayerMessage = {
     'walkBlocked': function(evtData){
       Messenger.send(`${this.getName()} cannot walk there because ${evtData.reason}`);
     },
-
     'damaged': function(evtData){
       Messenger.send(`${evtData.wasDamagedBy} damaged ${this.getName()} ' ' ${evtData.damageAmount} points`);
     },
-
     'healed': function (evtData){
       Messenger.send(`${this.getName()} gained ${evtData.healAmount} HP`);
     },
-
     'killed': function(evtData){
       Messenger.send(`${evtData.wasDamagedBy} killed ${this.getName()}!`)
     }

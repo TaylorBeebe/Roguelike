@@ -25,7 +25,7 @@ class UIMode {
     display.clear();
   }
 
-  handleInput(inputType, inputData){}
+  handleInput(inputType, inputData){ }
 }
 
 export class StartupMode extends UIMode {
@@ -73,8 +73,8 @@ export class PlayMode extends UIMode{
       x: Math.round(this.display.getOptions().width/2),
       y: Math.round(this.display.getOptions().height/2)
     };
-    console.log("new game built._GAMESTATE_ dir is-> ");
-    console.dir(this._GAMESTATE_);
+    // console.log("new game built._GAMESTATE_ dir is-> ");
+    // console.dir(this._GAMESTATE_);
   }
 
     render(){
@@ -82,9 +82,9 @@ export class PlayMode extends UIMode{
       // console.log('in PlayMode.render()')
       // console.dir(DATASTORE.MAPS);
       // console.dir(this._GAMESTATE_);
+      console.dir(this.display);
       DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
-      // this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
-      // console.log("rendering PlayMode");
+      this.game.renderDisplayAvatar();
     }
 
     handleInput(eventType, inputData){
@@ -124,14 +124,14 @@ export class PlayMode extends UIMode{
       }
     }
 
-    /*
-    renderAvatar(){
+
+    renderAvatar(display){
+      console.log('in PlayMode.renderAvatar()');
       display.clear();
       display.drawText(0,0, "AVATAR");
-      display.drawText(0,2,"Time: " + DATASTORE.ENTITEIS[this._GAMESTATE_.avatarId].getTime();)
-      this.display.drawText(33, 1, "Press any key to advance");
+      display.drawText(0,2,"Time: " + this.getAvatar().getTime());
     }
-    */
+
 
     move(x, y){
       console.dir(this.getAvatar());

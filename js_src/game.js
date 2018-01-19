@@ -110,14 +110,15 @@ export let Game = {
   },
 
   renderDisplayAvatar: function() {
-    console.log("renderDisplayAvatar");
+    console.log("rendering avatar display");
     let d = this.display.avatar.o;
     d.clear();
-    d.drawText(2, 5, "AVATAR DISPLAY");
+    // d.drawText(2, 5, "AVATAR DISPLAY");
+    this.curMode.renderAvatar(d);
   },
 
   renderDisplayMain: function() {
-    console.log("renderDisplayMain");
+    console.log("rendering main display");
     this.display.main.o.clear();
     if (this.curMode === null || this.curMode == '') {
       return;
@@ -127,21 +128,16 @@ export let Game = {
   },
 
   renderDisplayMessage: function() {
-    console.log("renderDisplayMessage");
+    console.log("rendering message display");
     this.messageHandler.render();
   },
 
   renderMain: function() {
     console.log("renderMain function");
-    this.renderDisplayAvatar();
     this.renderDisplayMain();
+    this.renderDisplayAvatar();
     this.renderDisplayMessage();
   },
-
-  // renderMain: function(){
-  //   console.log('rendermain function');
-  //   this.renderAvatar();
-  // },
 
   bindEvent: function(eventType){
     window.addEventListener(eventType, (evt) => {

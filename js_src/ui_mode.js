@@ -40,8 +40,6 @@ export class StartupMode extends UIMode {
     console.log("rendering StartupMode");
   }
 
-
-
     handleInput(inputType,inputData) {
       if (inputData.charCode !== 0) {
         this.game.switchMode('persistence');

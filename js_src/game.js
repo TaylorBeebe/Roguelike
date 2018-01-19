@@ -150,7 +150,7 @@ export let Game = {
     if (this.curMode !== null && this.curMode != ''){
       if (this.curMode.handleInput(eventType, evt)){
         this.render();
-        //Message.ageMessages();
+        Message.ageMessages();
       }
     }
   },

@@ -47,8 +47,8 @@ export let TimeTracker = {
   },
   LISTENERS: {
     'turnTaken' :function(evtData){
-      console.log('in turnTaken LISTENER');
-      console.log(evtData);
+      // console.log('in turnTaken LISTENER');
+      // console.log(evtData);
       this.addTime(evtData.timeUsed);
     }
   }
@@ -70,11 +70,10 @@ export let WalkerCorporeal = {
       if (!this.getMap().testLocationBlocked(newX, newY)){
         this.getMap().moveEntityTo(this, newX, newY);
         this.raiseMixinEvent('turnTaken', {timeUsed: 1});
-        console.log(this.getTime());
-        console.dir(this.attr);
+        // console.log(this.getTime());
         return true;
       } else {
-      // this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
+      this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
       return false;
       } } }
 };
@@ -91,7 +90,78 @@ export let PlayerMessage = {
   // }
   LISTENERS:{
     'walkBlocked': function(evtData){
-      Messenger.sent("You cannot walk there " + evtData.reason);
+      Messenger.send(`${this.getName()} cannot walk there because ${evtData.reason}`);
+    },
+
+    'damaged': function(evtData){
+      Messenger.send(`${evtData.wasDamagedBy} damaged ${this.getName()} ' ' ${evtData.damageAmount} points`);
+    },
+
+    'healed': function (evtData){
+      Messenger.send(`${this.getName()} gained ${evtData.healAmount} HP`);
+    },
+
+    'killed': function(evtData){
+      Messenger.send(`${evtData.wasDamagedBy} killed ${this.getName()}!`)
+    }
+  }
+}
+
+  export let Hitpoints = {
+
+    META:{
+      mixinName: 'Hitpoints',
+      mixinGroupName: 'Hitpoints ',
+      stateNamespace: '_Hitpoints',
+      stateModel: {
+        maxHP: 0,
+        curHP: 0
+      },
+      initialize: function(template) {
+        // console.log('initializing Hitpoints on entity -> ' + template.name);
+        // console.log(this.template);
+        this.attr._Hitpoints.maxHP = template.maxHP || 10;
+        this.attr._Hitpoints.curHP = template.curHP || this.attr._Hitpoints.maxHP;
+      }
+    },
+    METHODS:{
+      gainHP: function(hp){
+        if(this.attr._Hitpoints.curHP > this.attr._Hitpoints.maxHP) {
+          this.attr_Hitpoints.curHP += hp;
+        } else{
+          this.attr._Hitpoints.curHP = this.attr._Hitpoints.maxHP;
+        }
+        this.raiseMixinEvent('healed', {'healAmount' : hp})
+      },
+
+      loseHP: function(hp) {
+        this.attr._Hitpoints.curHP -= hp;
+      },
+
+      setMaxHP: function(newMax) {
+        this.attr._Hitpionts.maxHP = newMax;
+      },
+
+      getCurHP: function(){
+        return this.attr._Hitpoints.curHP;
+      },
+
+      getMaxHP: function(){
+        return this.attr._Hitpoints.maxHP;
+      }
+  },
+  LISTENERS:{
+    'damaged': function(evtData){
+      this.loseHP(evtData.damageAmount);
+      // Messenger.send("You were damaged by " + evtData.wasDamagedBy);
+      this.raiseMixinEvent('damaged', {'damageAmount' : evtData.damageAmount, 'wasDamagedBy' : evtData.wasDamagedBy});
+
+      if (this.attr._HItpoints.curHP <= 0){
+        this.raiseMixinEvent('killed', {'killer':evtData.wasDamagedBy});
+      }
+    },
+    'killed': function(evtData){
+      this.destroy();
     }
   }
 };

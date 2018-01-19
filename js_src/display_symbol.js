@@ -3,7 +3,7 @@ import {Color} from './colors.js';
 export class DisplaySymbol {
 
   constructor(template){
-    console.log
+    console.log('In DisplaySymbol.constructor()');
     console.dir(template);
     this._chr = template.chr || ' ';
     this._fgHexColor = template.fg || Color.FG;
@@ -21,4 +21,5 @@ export class DisplaySymbol {
     // console.dir(this._chr);
     display.draw(dispX, dispY, this._chr, this._fgHexColor, this._bgHexColor);
   }
+
 }

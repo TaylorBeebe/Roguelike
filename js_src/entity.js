@@ -16,6 +16,7 @@ export class Entity extends MixableSymbol {
     this.attr.x = template.x || 1;
     this.attr.y = template.y || 1;
     this.attr.mapID = '';
+    this.isDestroyed = false;
   }
 
   getName(){return this.name;}
@@ -69,5 +70,11 @@ export class Entity extends MixableSymbol {
 
   fromState(state){
     this.attr = state;
+  }
+
+  destroy() {
+  this.getMap().removeEntity(this);
+  delete DATASTORE.ENTITIES[this.getId()];
+  this.isDestroyed = true;
   }
 }

@@ -5,7 +5,6 @@ import {uniqueID} from './util.js';
 export class MixableSymbol extends DisplaySymbol {
 
   constructor(template){
-    console.log('NOW IN MIXABLESYMBOL');
     super(template);
     this.name = template.name || template.templateName || 'no name';
     this.descr = template.descr || '';
@@ -47,7 +46,7 @@ export class MixableSymbol extends DisplaySymbol {
     //run any initializers
     for (let mi = 0; mi < this.mixins.length; mi++){
       let m = this.mixins[mi];
-      if(m.META.initialize){
+      if(m.META.hasOwnProperty('initialize')){
         m.META.initialize.call(this, template);
       }
     }

@@ -8493,7 +8493,7 @@ var DisplaySymbol = exports.DisplaySymbol = function () {
   function DisplaySymbol(template) {
     _classCallCheck(this, DisplaySymbol);
 
-    console.log;
+    console.log('In DisplaySymbol.constructor()');
     console.dir(template);
     this._chr = template.chr || ' ';
     this._fgHexColor = template.fg || _colors.Color.FG;
@@ -15985,14 +15985,13 @@ var _factory = __webpack_require__(340);
 var _entity = __webpack_require__(341);
 
 var EntityFactory = exports.EntityFactory = new _factory.Factory('ENTITIES', _entity.Entity);
-
-console.log("Learning Avatar Entity");
+console.log("Learning Entites");
 EntityFactory.learn({
   name: 'avatar',
   descr: '',
   chr: '@',
   fg: '#eb4',
-  mixinNames: ['TimeTracker', 'WalkerCorporeal']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'Hitpoints']
 });
 
 /***/ }),
@@ -16095,6 +16094,7 @@ var Entity = exports.Entity = function (_MixableSymbol) {
     _this.attr.x = template.x || 1;
     _this.attr.y = template.y || 1;
     _this.attr.mapID = '';
+    _this.isDestroyed = false;
     return _this;
   }
 
@@ -16189,6 +16189,13 @@ var Entity = exports.Entity = function (_MixableSymbol) {
     value: function fromState(state) {
       this.attr = state;
     }
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      this.getMap().removeEntity(this);
+      delete _datastore.DATASTORE.ENTITIES[this.getId()];
+      this.isDestroyed = true;
+    }
   }]);
 
   return Entity;
@@ -16274,7 +16281,10 @@ var MixableSymbol = exports.MixableSymbol = function (_DisplaySymbol) {
     //run any initializers
     for (var _mi2 = 0; _mi2 < _this.mixins.length; _mi2++) {
       var _m = _this.mixins[_mi2];
-      if (_m.META.initialize) {
+      if (_m.META.hasOwnProperty('initialize')) {
+        console.log('initializing ->');
+        console.dir(_m);
+        console.log(template);
         _m.META.initialize.call(_this, template);
       }
     }
@@ -16309,7 +16319,7 @@ var MixableSymbol = exports.MixableSymbol = function (_DisplaySymbol) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PlayerMessage = exports.WalkerCorporeal = exports.TimeTracker = undefined;
+exports.Hitpoints = exports.PlayerMessage = exports.WalkerCorporeal = exports.TimeTracker = undefined;
 
 var _messenger = __webpack_require__(130);
 
@@ -16359,8 +16369,8 @@ var TimeTracker = exports.TimeTracker = {
   },
   LISTENERS: {
     'turnTaken': function turnTaken(evtData) {
-      console.log('in turnTaken LISTENER');
-      console.log(evtData);
+      // console.log('in turnTaken LISTENER');
+      // console.log(evtData);
       this.addTime(evtData.timeUsed);
     }
   }
@@ -16382,11 +16392,10 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
       if (!this.getMap().testLocationBlocked(newX, newY)) {
         this.getMap().moveEntityTo(this, newX, newY);
         this.raiseMixinEvent('turnTaken', { timeUsed: 1 });
-        console.log(this.getTime());
-        console.dir(this.attr);
+        // console.log(this.getTime());
         return true;
       } else {
-        // this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
+        this.raiseMixinEvent('walkBlocked', { reason: "there's something in the way" });
         return false;
       }
     } }
@@ -16404,7 +16413,78 @@ var PlayerMessage = exports.PlayerMessage = {
   // }
   LISTENERS: {
     'walkBlocked': function walkBlocked(evtData) {
-      _messenger.Messenger.sent("You cannot walk there " + evtData.reason);
+      _messenger.Messenger.send(this.getName() + ' cannot walk there because ' + evtData.reason);
+    },
+
+    'damaged': function damaged(evtData) {
+      _messenger.Messenger.send(evtData.wasDamagedBy + ' damaged ' + this.getName() + ' \' \' ' + evtData.damageAmount + ' points');
+    },
+
+    'healed': function healed(evtData) {
+      _messenger.Messenger.send(this.getName() + ' gained ' + evtData.healAmount + ' HP');
+    },
+
+    'killed': function killed(evtData) {
+      _messenger.Messenger.send(evtData.wasDamagedBy + ' killed ' + this.getName() + '!');
+    }
+  }
+};
+
+var Hitpoints = exports.Hitpoints = {
+
+  META: {
+    mixinName: 'Hitpoints',
+    mixinGroupName: 'Hitpoints ',
+    stateNamespace: '_Hitpoints',
+    stateModel: {
+      maxHP: 0,
+      curHP: 0
+    },
+    initialize: function initialize(template) {
+      console.log('initializing Hitpoints on entity -> ' + template.name);
+      // console.log(this.template);
+      this.attr._Hitpoints.maxHP = template.maxHP || 10;
+      this.attr._Hitpoints.curHP = template.curHP || this.attr._Hitpoints.maxHP;
+    }
+  },
+  METHODS: {
+    gainHP: function gainHP(hp) {
+      if (this.attr._Hitpoints.curHP > this.attr._Hitpoints.maxHP) {
+        this.attr_Hitpoints.curHP += hp;
+      } else {
+        this.attr._Hitpoints.curHP = this.attr._Hitpoints.maxHP;
+      }
+      this.raiseMixinEvent('healed', { 'healAmount': hp });
+    },
+
+    loseHP: function loseHP(hp) {
+      this.attr._Hitpoints.curHP -= hp;
+    },
+
+    setMaxHP: function setMaxHP(newMax) {
+      this.attr._Hitpionts.maxHP = newMax;
+    },
+
+    getCurHP: function getCurHP() {
+      return this.attr._Hitpoints.curHP;
+    },
+
+    getMaxHP: function getMaxHP() {
+      return this.attr._Hitpoints.maxHP;
+    }
+  },
+  LISTENERS: {
+    'damaged': function damaged(evtData) {
+      this.loseHP(evtData.damageAmount);
+      // Messenger.send("You were damaged by " + evtData.wasDamagedBy);
+      this.raiseMixinEvent('damaged', { 'damageAmount': evtData.damageAmount, 'wasDamagedBy': evtData.wasDamagedBy });
+
+      if (this.attr._HItpoints.curHP <= 0) {
+        this.raiseMixinEvent('killed', { 'killer': evtData.wasDamagedBy });
+      }
+    },
+    'killed': function killed(evtData) {
+      this.destroy();
     }
   }
 };

@@ -8578,7 +8578,6 @@ var Messenger = exports.Messenger = {
     while (this.messageQueue.length > this.maxLength) {
       this.messageQueue.pop();
     }
-    this.ageMessages();
     this.render();
   },
 
@@ -15247,7 +15246,6 @@ var Game = exports.Game = {
     //Handle event recieved
     if (this.curMode !== null && this.curMode != '') {
       if (this.curMode.handleInput(eventType, evt)) {
-        console.log('this.curmode.handleinput = true');
         this.render();
       }
     }
@@ -15696,7 +15694,7 @@ var _rotJs2 = _interopRequireDefault(_rotJs);
 
 var _util = __webpack_require__(65);
 
-var _tile = __webpack_require__(338);
+var _tile4 = __webpack_require__(338);
 
 var _datastore = __webpack_require__(46);
 
@@ -15732,12 +15730,19 @@ var Map = function () {
     console.log('exiting map.constructor()');
   }
 
+  // var lightPasses = function(x, y) {
+  //   var key = x+","+y;
+  //   if (key in data) { return (data[key] == 0); }
+  //     return false;
+  // }
+
   _createClass(Map, [{
     key: 'setUp',
     value: function setUp() {
       this.rng.setState(this.attr.rngBaseState);
       this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
-      // console.log('Tile Grid -> ')
+      this.lastSeenGrid = this.tileGrid;
+      // console.log('Tile Grid -> ');
       // console.dir(this.tileGrid);
     }
   }, {
@@ -15870,15 +15875,17 @@ var Map = function () {
       // console.log('x: ' + x + " y: " + y);
       if (x < 0 || x >= this.attr.xdim || y < 0 || y >= this.attr.ydim) {
         // console.log('Tile out of bounds');
-        return _tile.TILES.NULLTILE;
+        return _tile4.TILES.NULLTILE;
       }
 
       // console.dir(this.tileGrid[x][y]);
-      return this.tileGrid[x][y] || _tile.TILES.NULLTILE;
+      return this.tileGrid[x][y] || _tile4.TILES.NULLTILE;
     }
   }, {
     key: 'renderOn',
     value: function renderOn(display, camX, camY) {
+
+      // var fov = new ROT.FOV.PreciseShadowcasting(lightPasses(camX, camY));
       //console.log('camX: ' + camX + ' camY: ' + camY);
       var o = display.getOptions();
       var xStart = camX - Math.round(o.width / 2);
@@ -15888,9 +15895,20 @@ var Map = function () {
         for (var y = 0; y < o.height; y++) {
           // console.log(Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))));
           // console.log('camX = ' + camX + ' curx = ' + x + ' camY = ' + camY + ' cury = ' + y);
-          // if (Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))) <= this.attr.visibilityRange){
-          // console.log('Dist was les than visibilityRange');
-          this.getDisplaySymbolAtMapLocation(x + xStart, y + yStart).drawOn(display, x, y);
+
+          if (Math.abs(Math.sqrt(Math.pow(camX - (x + xStart), 2) + Math.pow(camY - (y + yStart), 2))) <= this.attr.visibilityRange) {
+            var _tile = this.getDisplaySymbolAtMapLocation(x + xStart, y + yStart);
+            if (_tile != _tile4.TILES.NULLTILE) {
+              this.lastSeenGrid[x + xStart][y + yStart] = _tile;
+            }
+          } else {
+            if (x + xStart < 0 || x + xStart >= this.attr.xdim || y + yStart < 0 || y + yStart >= this.attr.ydim) {
+              var _tile2 = _tile4.TILES.NULLTILE;
+            } else {
+              var _tile3 = this.lastSeenGrid[x + xStart][y + yStart];
+            }
+          }
+          tile.drawOn(display, x, y);
         }
       }
     }
@@ -15924,10 +15942,11 @@ var Map = function () {
 }();
 
 var TILE_GRID_GENERATOR = {
+
   basicCaves: function basicCaves(xdim, ydim, rngState) {
     var origRngState = _rotJs2.default.RNG.getState();
     _rotJs2.default.RNG.setState(rngState);
-    var tg = (0, _util.init2DArray)(xdim, ydim, _tile.TILES.NULLTILE);
+    var tg = (0, _util.init2DArray)(xdim, ydim, _tile4.TILES.NULLTILE);
     var gen = new _rotJs2.default.Map.Cellular(xdim, ydim, { connected: true });
     gen.randomize(.4);
     for (var i = 0; i <= 3; i++) {
@@ -15941,16 +15960,16 @@ var TILE_GRID_GENERATOR = {
       }
     }
     gen.connect(function (x, y, isWall) {
-      tg[x][y] = isWall || x == 0 || y == 0 || x == xdim - 1 || y == ydim - 1 ? _tile.TILES.WALL : _tile.TILES.FLOOR;
+      tg[x][y] = isWall || x == 0 || y == 0 || x == xdim - 1 || y == ydim - 1 ? _tile4.TILES.WALL : _tile4.TILES.FLOOR;
     });
-    _rotJs2.default.RNG.setState(origRngState);
+    // ROT.RNG.setState(origRngState);
     return tg;
   }
 };
 
 function makeMap(mapData) {
   if (mapData.mapType == 'basicCaves' || !mapData.mapType) {
-    mapData.visibilityRange = 6;
+    mapData.visibilityRange = 10;
   }
   var m = new Map(mapData.xdim, mapData.ydim, mapData.mapType, mapData.visibilityRange);
   if (mapData.id !== undefined) {

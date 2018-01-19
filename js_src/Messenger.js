@@ -30,7 +30,6 @@ export let Messenger = {
     while(this.messageQueue.length > this.maxLength){
       this.messageQueue.pop();
     }
-    this.ageMessages();
     this.render();
   },
 

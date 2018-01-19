@@ -26,10 +26,17 @@ class Map{
 
   }
 
+  // var lightPasses = function(x, y) {
+  //   var key = x+","+y;
+  //   if (key in data) { return (data[key] == 0); }
+  //     return false;
+  // }
+
   setUp(){
     this.rng.setState(this.attr.rngBaseState);
     this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
-    // console.log('Tile Grid -> ')
+    this.lastSeenGrid = this.tileGrid;
+    // console.log('Tile Grid -> ');
     // console.dir(this.tileGrid);
   }
 
@@ -149,6 +156,8 @@ class Map{
   }
 
   renderOn(display, camX, camY) {
+
+    // var fov = new ROT.FOV.PreciseShadowcasting(lightPasses(camX, camY));
     //console.log('camX: ' + camX + ' camY: ' + camY);
     let o = display.getOptions();
     let xStart = camX-Math.round(o.width/2);
@@ -158,14 +167,22 @@ class Map{
       for (let y=0;y<o.height;y++) {
         // console.log(Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))));
         // console.log('camX = ' + camX + ' curx = ' + x + ' camY = ' + camY + ' cury = ' + y);
-        // if (Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))) <= this.attr.visibilityRange){
-          // console.log('Dist was les than visibilityRange');
-          this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart).drawOn(display,x,y);
 
+        if (Math.abs(Math.sqrt(Math.pow(camX - (x+xStart), 2) + Math.pow(camY - (y+yStart), 2))) <= this.attr.visibilityRange){
+          let tile = this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart);
+          if (tile != TILES.NULLTILE){
+            this.lastSeenGrid[x+xStart][y+yStart] = tile;
+          }
+        } else {
+          if ((x+xStart < 0) || (x+xStart >= this.attr.xdim) || (y+yStart < 0) || (y+yStart >= this.attr.ydim)) {
+            let tile = TILES.NULLTILE;
+          } else {
+          let tile = this.lastSeenGrid[x+xStart][y+yStart];
+        } }
+        tile.drawOn(display, x, y);
       }
     }
   }
-
 
   getDisplaySymbolAtMapLocation(mapX,mapY) {
     // console.log('in getDisplaySymbolAtMapLocation -> ' + mapX + ', ' + mapY);
@@ -189,6 +206,7 @@ class Map{
 }
 
 let TILE_GRID_GENERATOR = {
+
   basicCaves: function(xdim,ydim,rngState) {
     let origRngState = ROT.RNG.getState();
     ROT.RNG.setState(rngState);
@@ -205,14 +223,14 @@ let TILE_GRID_GENERATOR = {
     gen.connect(function(x,y,isWall) {
       tg[x][y] = (isWall || x==0 || y==0 || x==xdim-1 || y==ydim-1) ? TILES.WALL : TILES.FLOOR;
     });
-    ROT.RNG.setState(origRngState);
+    // ROT.RNG.setState(origRngState);
     return tg;
   }
 }
 
 export function makeMap(mapData) {
   if (mapData.mapType == 'basicCaves' || !mapData.mapType){
-    mapData.visibilityRange = 6;
+    mapData.visibilityRange = 10;
   }
   let m = new Map(mapData.xdim, mapData.ydim, mapData.mapType, mapData.visibilityRange);
   if (mapData.id !== undefined) { m.attr = mapData; }

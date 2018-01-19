@@ -152,7 +152,6 @@ export let Game = {
     //Handle event recieved
     if (this.curMode !== null && this.curMode != ''){
       if (this.curMode.handleInput(eventType, evt)){
-        console.log('this.curmode.handleinput = true');
         this.render();
       }
     }

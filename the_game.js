@@ -15373,14 +15373,24 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'render',
     value: function render() {
       this.display.clear();
+      if (this.checkGamestate()) {
+        return;
+      }
       // console.log('in PlayMode.render()')
       // console.dir(DATASTORE.MAPS);
       // console.dir(this._GAMESTATE_);
       console.dir(this.display);
       _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       this.game.renderDisplayAvatar();
-      // this.avatarSymbol.drawOn(this.display, this._GAMESTATE_.cameraDisplayLoc.x, this._GAMESTATE_.cameraDisplayLoc.y);
-      // console.log("rendering PlayMode");
+    }
+  }, {
+    key: 'checkGamestate',
+    value: function checkGamestate() {
+      var avatar = this.getAvatar();
+      if (!avatar) {
+        this.game.switchMode('lose');
+        return true;
+      }
     }
   }, {
     key: 'handleInput',
@@ -15418,14 +15428,14 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       display.clear();
       display.drawText(0, 0, "AVATAR");
       display.drawText(0, 2, "Time: " + this.getAvatar().getTime());
+      display.drawText(0, 4, "HP: " + this.getAvatar().getCurHP());
     }
   }, {
     key: 'move',
     value: function move(x, y) {
-      console.dir(this.getAvatar());
-      //WHY DOESN'T THIS WORK???
-      // this.getAvatar().trywalk(x, y);
-      _datastore.DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].tryWalk(x, y);
+      // console.log('moving avatar');
+      // console.dir(this.getAvatar());
+      this.getAvatar().tryWalk(x, y);
       this.cameraToAvatar();
       this.render();
     }
@@ -15433,8 +15443,10 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
     key: 'cameraToAvatar',
     value: function cameraToAvatar() {
       // console.log('centering camera on avatar');
-      this._GAMESTATE_.cameraMapLoc.x = this.getAvatar().getX();
-      this._GAMESTATE_.cameraMapLoc.y = this.getAvatar().getY();
+      if (this.getAvatar()) {
+        this._GAMESTATE_.cameraMapLoc.x = this.getAvatar().getX();
+        this._GAMESTATE_.cameraMapLoc.y = this.getAvatar().getY();
+      }
       // console.log('camera centered. cameraMapLoc.x : ' + this._GAMESTATE_.cameraMapLoc.x
       // + ' cameraMapLoc.y: ' + this._GAMESTATE_.cameraMapLoc.y);
     }
@@ -15729,8 +15741,8 @@ var Map = function () {
       this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
     }
   }, {
-    key: 'removeEntitiy',
-    value: function removeEntitiy(ent) {
+    key: 'removeEntity',
+    value: function removeEntity(ent) {
       ent.setMapID('');
       delete this.attr.entityIDToLocation[ent.getID()];
       delete this.attr.locationToEntityID[ent.getPos()];
@@ -15821,6 +15833,7 @@ var Map = function () {
         // console.log('Tile out of bounds');
         return _tile.TILES.NULLTILE;
       }
+
       // console.dir(this.tileGrid[x][y]);
       return this.tileGrid[x][y] || _tile.TILES.NULLTILE;
     }
@@ -15851,6 +15864,9 @@ var Map = function () {
         return _datastore.DATASTORE.ENTITIES[entityId];
       }
       var tile = this.getTile(mapX, mapY);
+      if (!tile) {
+        console.log('tile is undefined');
+      }
       return tile;
     }
   }, {
@@ -16189,7 +16205,7 @@ var Entity = exports.Entity = function (_MixableSymbol) {
     key: 'destroy',
     value: function destroy() {
       this.getMap().removeEntity(this);
-      delete _datastore.DATASTORE.ENTITIES[this.getId()];
+      delete _datastore.DATASTORE.ENTITIES[this.getID()];
       this.isDestroyed = true;
     }
   }]);
@@ -16384,6 +16400,7 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
         return true;
       } else {
         this.raiseMixinEvent('walkBlocked', { reason: "there's something in the way" });
+        this.raiseMixinEvent('damaged', { damageAmount: 1, wasDamagedBy: 'a wall' });
         return false;
       }
     } }
@@ -16403,13 +16420,13 @@ var PlayerMessage = exports.PlayerMessage = {
     'walkBlocked': function walkBlocked(evtData) {
       _messenger.Messenger.send(this.getName() + ' cannot walk there because ' + evtData.reason);
     },
-    'damaged': function damaged(evtData) {
-      _messenger.Messenger.send(evtData.wasDamagedBy + ' damaged ' + this.getName() + ' \' \' ' + evtData.damageAmount + ' points');
+    'damagedMessage': function damagedMessage(evtData) {
+      _messenger.Messenger.send(evtData.wasDamagedBy + ' damaged ' + this.getName() + ' ' + evtData.damageAmount + ' points');
     },
     'healed': function healed(evtData) {
       _messenger.Messenger.send(this.getName() + ' gained ' + evtData.healAmount + ' HP');
     },
-    'killed': function killed(evtData) {
+    'killedMessage': function killedMessage(evtData) {
       _messenger.Messenger.send(evtData.wasDamagedBy + ' killed ' + this.getName() + '!');
     }
   }
@@ -16462,13 +16479,14 @@ var Hitpoints = exports.Hitpoints = {
     'damaged': function damaged(evtData) {
       this.loseHP(evtData.damageAmount);
       // Messenger.send("You were damaged by " + evtData.wasDamagedBy);
-      this.raiseMixinEvent('damaged', { 'damageAmount': evtData.damageAmount, 'wasDamagedBy': evtData.wasDamagedBy });
+      this.raiseMixinEvent('damagedMessage', evtData);
 
-      if (this.attr._HItpoints.curHP <= 0) {
-        this.raiseMixinEvent('killed', { 'killer': evtData.wasDamagedBy });
+      if (this.attr._Hitpoints.curHP <= 0) {
+        this.raiseMixinEvent('killed', evtData);
       }
     },
     'killed': function killed(evtData) {
+      this.raiseMixinEvent('killedMessage', evtData);
       this.destroy();
     }
   }

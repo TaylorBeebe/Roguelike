@@ -71,6 +71,7 @@ export let WalkerCorporeal = {
         return true;
       } else {
       this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
+      this.raiseMixinEvent('damaged', {damageAmount: 1, wasDamagedBy: 'a wall'});
       return false;
       } } }
 };
@@ -89,13 +90,13 @@ export let PlayerMessage = {
     'walkBlocked': function(evtData){
       Messenger.send(`${this.getName()} cannot walk there because ${evtData.reason}`);
     },
-    'damaged': function(evtData){
-      Messenger.send(`${evtData.wasDamagedBy} damaged ${this.getName()} ' ' ${evtData.damageAmount} points`);
+    'damagedMessage': function(evtData){
+      Messenger.send(`${evtData.wasDamagedBy} damaged ${this.getName()} ${evtData.damageAmount} points`);
     },
     'healed': function (evtData){
       Messenger.send(`${this.getName()} gained ${evtData.healAmount} HP`);
     },
-    'killed': function(evtData){
+    'killedMessage': function(evtData){
       Messenger.send(`${evtData.wasDamagedBy} killed ${this.getName()}!`)
     }
   }
@@ -148,13 +149,14 @@ export let PlayerMessage = {
     'damaged': function(evtData){
       this.loseHP(evtData.damageAmount);
       // Messenger.send("You were damaged by " + evtData.wasDamagedBy);
-      this.raiseMixinEvent('damaged', {'damageAmount' : evtData.damageAmount, 'wasDamagedBy' : evtData.wasDamagedBy});
+      this.raiseMixinEvent('damagedMessage', evtData);
 
-      if (this.attr._HItpoints.curHP <= 0){
-        this.raiseMixinEvent('killed', {'killer':evtData.wasDamagedBy});
+      if (this.attr._Hitpoints.curHP <= 0){
+        this.raiseMixinEvent('killed', evtData);
       }
     },
     'killed': function(evtData){
+      this.raiseMixinEvent('killedMessage', evtData)
       this.destroy();
     }
   }

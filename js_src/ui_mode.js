@@ -79,12 +79,21 @@ export class PlayMode extends UIMode{
 
     render(){
       this.display.clear();
+      if (this.checkGamestate()){ return; }
       // console.log('in PlayMode.render()')
       // console.dir(DATASTORE.MAPS);
       // console.dir(this._GAMESTATE_);
-      console.dir(this.display);
       DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       this.game.renderDisplayAvatar();
+
+    }
+
+    checkGamestate(){
+      let avatar = this.getAvatar();
+      if(!avatar){
+        this.game.switchMode('lose');
+        return true;
+      }
     }
 
     handleInput(eventType, inputData){
@@ -135,18 +144,19 @@ export class PlayMode extends UIMode{
 
 
     move(x, y){
-      console.dir(this.getAvatar());
-      //WHY DOESN'T THIS WORK???
-      // this.getAvatar().trywalk(x, y);
-      DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].tryWalk(x,y);
+      // console.log('moving avatar');
+      // console.dir(this.getAvatar());
+      this.getAvatar().tryWalk(x, y);
       this.cameraToAvatar();
       this.render();
     }
 
     cameraToAvatar(){
       // console.log('centering camera on avatar');
-      this._GAMESTATE_.cameraMapLoc.x = this.getAvatar().getX();
-      this._GAMESTATE_.cameraMapLoc.y = this.getAvatar().getY();
+      if(this.getAvatar()){
+        this._GAMESTATE_.cameraMapLoc.x = this.getAvatar().getX();
+        this._GAMESTATE_.cameraMapLoc.y = this.getAvatar().getY();
+      }
       // console.log('camera centered. cameraMapLoc.x : ' + this._GAMESTATE_.cameraMapLoc.x
       // + ' cameraMapLoc.y: ' + this._GAMESTATE_.cameraMapLoc.y);
     }

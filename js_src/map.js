@@ -65,7 +65,7 @@ class Map{
    }
 
 
-  removeEntitiy(ent){
+  removeEntity(ent){
     ent.setMapID('');
     delete this.attr.entityIDToLocation[ent.getID()];
     delete this.attr.locationToEntityID[ent.getPos()];
@@ -142,6 +142,7 @@ class Map{
       // console.log('Tile out of bounds');
       return TILES.NULLTILE;
     }
+
     // console.dir(this.tileGrid[x][y]);
     return this.tileGrid[x][y] || TILES.NULLTILE;
   }
@@ -171,6 +172,7 @@ class Map{
       return DATASTORE.ENTITIES[entityId];
     }
     let tile = this.getTile(mapX, mapY);
+    if(!tile){ console.log('tile is undefined'); }
     return tile;
   }
 

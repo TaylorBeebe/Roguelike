@@ -1,3 +1,1 @@
-# Weed Strike Roguelike
-
-Weed Strike is a simple roguelike game for teaching/demonstration purposes.
+#Roguelike game for Williams Winter Study

@@ -1,9 +1,12 @@
 import {DisplaySymbol} from './display_symbol.js';
 
-export class Tile {
-  constructor(name,symbol) {
-    this._name = name;
-    this._symbol = symbol;
+export class Tile extends DisplaySymbol {
+
+  constructor(template){
+    super(template);
+    this._name = template.name || 'No Name';
+    this._walkable = template.walkable || false;
+    this._opaque = template.opaque || false;
   }
 
   getDisplaySymbol() {
@@ -14,17 +17,22 @@ export class Tile {
     return this._name;
   }
 
-  drawOn(display, dispX, dispY) {
-    this._symbol.drawOn(display, dispX, dispY);
-  }
-
   isA(matchingTile) {
     return this.getName() == matchingTile.getName();
   }
+
+  isWalkable(){
+    return this._walkable;
+  }
+
+  isOpaque(){
+    return this._opaque;
+  }
+
 }
 
 export let TILES = {
-  NULLTILE: new Tile('NULLTILE',new DisplaySymbol()),
-  FLOOR: new Tile('FLOOR',new DisplaySymbol('.')),
-  WALL: new Tile('WALL',new DisplaySymbol('#'))
+  NULLTILE: new Tile({name: 'NULLTILE', chr: '*', walkable: false, opaque: true}),
+  FLOOR: new Tile({name: 'FLOOR', chr: '.', walkable: true, opaque: false}),
+  WALL: new Tile({name: 'WALL', chr: '#', walkable: false, opaque: true})
 }

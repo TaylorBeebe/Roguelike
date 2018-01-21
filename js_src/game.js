@@ -1,7 +1,8 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
 import {StartupMode, PlayMode, LoseMode, WinMode, PersistenceMode} from './ui_mode.js';
-import {Messenger} from './Messenger.js';
+import {Messenger} from './messenger.js';
+import {DATASTORE, initializeDatastore} from './datastore.js';
 
 export let Game = {
 
@@ -36,25 +37,31 @@ export let Game = {
   },
   curMode: '',
 
+  _PERSISTANCE_NAMESPACE: 'ROGUELIKE GAME NAME',
+
+  isPlaying: false,
+  hasSaved: false,
+
+  init: function() {
+
+    this.setupDisplays();
+    this.messageHandler.init(this.getDisplay('message'));
+
+    this.setupModes(this);
+    this.switchMode('startup');
+
+    console.log('GAME object');
+    console.dir(this);
+    console.log('DATASTORE object');
+    console.dir(this);
+  },
+
   getDisplay: function(display){
     if (this.display.hasOwnProperty(display)) {
       return this.display[display].o;
     } else{
       return null;
     }
-  },
-
-  init: function() {
-
-    this.setupNewGame();
-    this.setupDisplays();
-    this.messageHandler.init(this.getDisplay('message'));
-
-    this.setupModes(this);
-    this.switchMode("startup");
-    this.messageHandler.send("hello");
-    console.log("game:");
-    console.dir(this);
   },
 
   setupModes: function(){
@@ -88,10 +95,17 @@ export let Game = {
   },
 
   setupNewGame(){
+
+    console.log("starting new game");
+    initializeDatastore();
+    DATASTORE.GAME = this;
+    console.log("datastore:");
+    console.dir(DATASTORE);
     this._randomSeed = 5 + Math.floor(Math.random()*100000);
     //this._randomSeed = 76250;
     console.log("using random seed "+this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
+    this.modes.play.newGame();
   },
 
   render: function() {
@@ -99,14 +113,15 @@ export let Game = {
   },
 
   renderDisplayAvatar: function() {
-    console.log("renderDisplayAvatar");
+    // console.log("rendering avatar display");
     let d = this.display.avatar.o;
     d.clear();
-    d.drawText(2, 5, "AVATAR DISPLAY");
+    // d.drawText(2, 5, "AVATAR DISPLAY");
+    this.curMode.renderAvatar(d);
   },
 
   renderDisplayMain: function() {
-    console.log("renderDisplayMain");
+    // console.log("rendering main display");
     this.display.main.o.clear();
     if (this.curMode === null || this.curMode == '') {
       return;
@@ -116,15 +131,15 @@ export let Game = {
   },
 
   renderDisplayMessage: function() {
-    console.log("renderDisplayMessage");
+    // console.log("rendering message display");
     this.messageHandler.render();
   },
 
   renderMain: function() {
     console.log("renderMain function");
-    this.renderDisplayAvatar();
     this.renderDisplayMain();
-    this.renderDisplayMessage();
+    // this.renderDisplayAvatar();
+    // this.renderDisplayMessage();
   },
 
   bindEvent: function(eventType){
@@ -137,21 +152,18 @@ export let Game = {
     //Handle event recieved
     if (this.curMode !== null && this.curMode != ''){
       if (this.curMode.handleInput(eventType, evt)){
+
         this.render();
-        //Message.ageMessages();
       }
     }
   },
 
   toJSON: function(){
-    let json = '';
-    json = JSON.stringify({rseed: this._randomSeed});
-    return json;
+    return this.modes.play.toJSON();
   },
 
   fromJSON: function(json){
-    let state = JSON.parse(json);
-    this._randomSeed = state.rseed;
+    this.modes.play.fromJSON(json);
   }
 
 };

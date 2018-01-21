@@ -65,23 +65,17 @@ export class PlayMode extends UIMode{
     this._GAMESTATE_ = {};
     this._GAMESTATE_.avatarId = a.getID();
     this._GAMESTATE_.curMapId = m.getID();
-    // console.log(m.getID());
     this._GAMESTATE_.cameraMapLoc = {};
     this.cameraToAvatar();
     this._GAMESTATE_.cameraDisplayLoc = {
       x: Math.round(this.display.getOptions().width/2),
       y: Math.round(this.display.getOptions().height/2)
     };
-    // console.log("new game built._GAMESTATE_ dir is-> ");
-    // console.dir(this._GAMESTATE_);
   }
 
     render(){
       this.display.clear();
       if (this.checkGamestate()){ return; }
-      // console.log('in PlayMode.render()')
-      // console.dir(DATASTORE.MAPS);
-      // console.dir(this._GAMESTATE_);
       DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       this.game.renderDisplayAvatar();
 
@@ -146,12 +140,9 @@ export class PlayMode extends UIMode{
 
 
     move(x, y){
-      // console.log('moving avatar');
-      // console.dir(this.getAvatar());
       this.getAvatar().tryWalk(x, y);
       this.cameraToAvatar();
       Messenger.ageMessages();
-      // this.render();
     }
 
     cameraToAvatar(){

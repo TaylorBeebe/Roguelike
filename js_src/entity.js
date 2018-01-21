@@ -50,16 +50,7 @@ export class Entity extends MixableSymbol {
   setX(x){this.attr.x = x;}
 
   setY(y){this.attr.y = y;}
-
-  // moveBy(dx, dy){
-  //   if (!this.attr.mapID) {
-  //     this.attr.x += dx;
-  //     this.attr.y += dy;
-  //     return true;
-  //   }
-  //   return this.getMap().moveEntityTo(this, this.attr.x + dx, this.attr.y + dy);
-  // }
-
+  
   toJSON(){
     return JSON.stringify(this.attr);
   }

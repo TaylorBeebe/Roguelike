@@ -8566,10 +8566,8 @@ var Messenger = exports.Messenger = {
     this.targetDisplay.clear();
     var y = 0;
     var index = 0;
-    // console.log('now in messenger.render()');
     while (y < this.targetDisplay._options.height && index < this.targetDisplay._options.height && this.messageQueue[index]) {
       if (this.messageQueue[index].age < this.fades.length) {
-        // console.log('fading message');
         var messageColor = '%c{' + this.fades[this.messageQueue[index].age] + '}';
         y += Math.max(1, this.targetDisplay.drawText(1, y, '' + messageColor + this.messageQueue[index].txt + _colors.Color.DEFAULT));
       }index++;
@@ -8577,9 +8575,7 @@ var Messenger = exports.Messenger = {
   },
 
   send: function send(msg) {
-    // console.log('in messenger.send()');
     this.messageQueue.unshift({ 'txt': msg, 'age': 0 });
-    // console.log(this.messageQueue);
     while (this.messageQueue.length > this.maxLength) {
       this.messageQueue.pop();
     }
@@ -15213,7 +15209,6 @@ var Game = exports.Game = {
     // console.log("rendering avatar display");
     var d = this.display.avatar.o;
     d.clear();
-    // d.drawText(2, 5, "AVATAR DISPLAY");
     this.curMode.renderAvatar(d);
   },
 
@@ -15248,7 +15243,6 @@ var Game = exports.Game = {
   },
 
   eventHandler: function eventHandler(eventType, evt) {
-    //Handle event recieved
     if (this.curMode !== null && this.curMode != '') {
       if (this.curMode.handleInput(eventType, evt)) {
 
@@ -15399,15 +15393,12 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       this._GAMESTATE_ = {};
       this._GAMESTATE_.avatarId = a.getID();
       this._GAMESTATE_.curMapId = m.getID();
-      // console.log(m.getID());
       this._GAMESTATE_.cameraMapLoc = {};
       this.cameraToAvatar();
       this._GAMESTATE_.cameraDisplayLoc = {
         x: Math.round(this.display.getOptions().width / 2),
         y: Math.round(this.display.getOptions().height / 2)
       };
-      // console.log("new game built._GAMESTATE_ dir is-> ");
-      // console.dir(this._GAMESTATE_);
     }
   }, {
     key: 'render',
@@ -15416,9 +15407,6 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       if (this.checkGamestate()) {
         return;
       }
-      // console.log('in PlayMode.render()')
-      // console.dir(DATASTORE.MAPS);
-      // console.dir(this._GAMESTATE_);
       _datastore.DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
       this.game.renderDisplayAvatar();
     }
@@ -15484,12 +15472,9 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
   }, {
     key: 'move',
     value: function move(x, y) {
-      // console.log('moving avatar');
-      // console.dir(this.getAvatar());
       this.getAvatar().tryWalk(x, y);
       this.cameraToAvatar();
       _messenger.Messenger.ageMessages();
-      // this.render();
     }
   }, {
     key: 'cameraToAvatar',
@@ -16093,8 +16078,8 @@ EntityFactory.learn({
   descr: 'A mighty ogre',
   chr: '&',
   fg: '#7d6',
-  maxHP: 10,
-  mixins: ['WalkerCorporeal', 'Hitpoints']
+  maxHP: 20,
+  mixins: ['WalkerCorporeal', 'Hitpoints', 'Stats']
 });
 
 /***/ }),
@@ -16267,16 +16252,6 @@ var Entity = exports.Entity = function (_MixableSymbol) {
     value: function setY(y) {
       this.attr.y = y;
     }
-
-    // moveBy(dx, dy){
-    //   if (!this.attr.mapID) {
-    //     this.attr.x += dx;
-    //     this.attr.y += dy;
-    //     return true;
-    //   }
-    //   return this.getMap().moveEntityTo(this, this.attr.x + dx, this.attr.y + dy);
-    // }
-
   }, {
     key: 'toJSON',
     value: function toJSON() {
@@ -16501,11 +16476,6 @@ var PlayerMessage = exports.PlayerMessage = {
     mixinName: 'PlayerMessage',
     mixinGroupName: 'Messenger'
   },
-  // METHODS:{
-  //   method1: function(p){
-  //
-  //   }
-  // }
   LISTENERS: {
     'walkBlocked': function walkBlocked(evtData) {
       _messenger.Messenger.send(this.getName() + ' cannot walk there because ' + evtData.reason);
@@ -16518,6 +16488,61 @@ var PlayerMessage = exports.PlayerMessage = {
     },
     'killedMessage': function killedMessage(evtData) {
       _messenger.Messenger.send(evtData.wasDamagedBy + ' killed ' + this.getName() + '!');
+    },
+    'expChangedMessage': function expChangedMessage(evtData) {
+      if (evtData.deltaExp > 0) {
+        _messenger.Messenger.send(this.getName() + ' gained ' + evtData.deltaExp + ' experience.');
+      } else if (evtData.deltaExp < 0) {
+        _messenger.Messenger.send(this.getName() + ' lost ' + evtData.deltaExp + ' experience.');
+      }
+    },
+    'gainedStatsPoint': function gainedStatsPoint(evtData) {
+      _messenger.Messenger.send(this.getName() + ' gained 1 ' + evtData.deltaStat + ' point!');
+    }
+  }
+};
+
+var Stats = {
+  META: {
+    mixinName: 'Stats',
+    mixinGroupName: 'Stats',
+    stateNamespace: '_Stats',
+    stateModel: {
+      agility: 0,
+      strength: 0,
+      intelligence: 0
+    },
+    initialize: function initialize(template) {
+      this.attr._Stats.agility = template.agility || 10;
+      this.attr._Stats.strength = template.strength || 10;
+      this.attr._Stats.intelligence = template.intelligence || 10;
+      this.attr._Stats.experience = template.experience || 0;
+    }
+  },
+
+  METHODS: {
+    deltaIntelligence: function deltaIntelligence(deltaInt) {
+      this.attr._Stats.intelligence += deltaInt;
+    },
+
+    deltaStrength: function deltaStrength(deltaStr) {
+      this.attr._Stats.strength += deltaStr;
+    },
+
+    deltaAgility: function deltaAgility(deltaAgi) {
+      this.attr._Stats.agility += deltaAgi;
+    },
+    getStats: function getStats() {
+      return { agility: this.attr._Stats.agility, strength: this.attr._Stats.strength,
+        intelligence: this.attr._Stats.intelligence };
+    },
+    getExp: function getExp() {
+      return this.attr._Stats.experience;
+    }
+  },
+  LISTENERS: {
+    'deltaExp': function deltaExp(evtData) {
+      this.deltaExp(evtData.deltaExp);
     }
   }
 };
@@ -16565,10 +16590,10 @@ var Hitpoints = exports.Hitpoints = {
       return this.attr._Hitpoints.maxHP;
     }
   },
+
   LISTENERS: {
     'damaged': function damaged(evtData) {
       this.loseHP(evtData.damageAmount);
-      // Messenger.send("You were damaged by " + evtData.wasDamagedBy);
       this.raiseMixinEvent('damagedMessage', evtData);
 
       if (this.attr._Hitpoints.curHP <= 0) {

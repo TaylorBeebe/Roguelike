@@ -17,6 +17,6 @@ EntityFactory.learn({
   descr: 'A mighty ogre',
   chr: '&',
   fg: '#7d6',
-  maxHP: 10,
-  mixins: ['WalkerCorporeal', 'Hitpoints']
+  maxHP: 20,
+  mixins: ['WalkerCorporeal', 'Hitpoints', 'Stats']
 });

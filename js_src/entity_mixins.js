@@ -80,11 +80,6 @@ export let PlayerMessage = {
     mixinName: 'PlayerMessage',
     mixinGroupName: 'Messenger',
   },
-  // METHODS:{
-  //   method1: function(p){
-  //
-  //   }
-  // }
   LISTENERS:{
     'walkBlocked': function(evtData){
       Messenger.send(`${this.getName()} cannot walk there because ${evtData.reason}`);
@@ -97,9 +92,65 @@ export let PlayerMessage = {
     },
     'killedMessage': function(evtData){
       Messenger.send(`${evtData.wasDamagedBy} killed ${this.getName()}!`)
+    },
+    'expChangedMessage': function(evtData){
+      if(evtData.deltaExp > 0){
+        Messenger.send(`${this.getName()} gained ${evtData.deltaExp} experience.`);
+      } else if (evtData.deltaExp < 0){
+        Messenger.send(`${this.getName()} lost ${evtData.deltaExp} experience.`);
+      }
+    },
+    'gainedStatsPoint': function(evtData){
+      Messenger.send(`${this.getName()} gained 1 ${evtData.deltaStat} point!`);
     }
   }
 }
+
+let Stats = {
+  META:{
+    mixinName: 'Stats',
+    mixinGroupName: 'Stats',
+    stateNamespace: '_Stats',
+    stateModel: {
+      agility: 0,
+      strength: 0,
+      intelligence: 0
+    },
+    initialize: function(template) {
+      this.attr._Stats.agility = template.agility || 10;
+      this.attr._Stats.strength = template.strength || 10;
+      this.attr._Stats.intelligence = template.intelligence || 10;
+      this.attr._Stats.experience = template.experience || 0;
+    }
+  },
+
+  METHODS:{
+    deltaIntelligence: function(deltaInt){
+      this.attr._Stats.intelligence += deltaInt;
+    },
+
+    deltaStrength: function(deltaStr){
+        this.attr._Stats.strength += deltaStr;
+    },
+
+    deltaAgility: function(deltaAgi){
+      this.attr._Stats.agility += deltaAgi;
+    },
+    getStats: function(){
+      return {agility: this.attr._Stats.agility, strength: this.attr._Stats.strength,
+         intelligence: this.attr._Stats.intelligence};
+    },
+    getExp: function(){
+      return this.attr._Stats.experience;
+    }
+  },
+  LISTENERS:{
+    'deltaExp': function(evtData){
+      this.deltaExp(evtData.deltaExp);
+
+    }
+  }
+};
 
   export let Hitpoints = {
 
@@ -144,10 +195,10 @@ export let PlayerMessage = {
         return this.attr._Hitpoints.maxHP;
       }
   },
+
   LISTENERS:{
     'damaged': function(evtData){
       this.loseHP(evtData.damageAmount);
-      // Messenger.send("You were damaged by " + evtData.wasDamagedBy);
       this.raiseMixinEvent('damagedMessage', evtData);
 
       if (this.attr._Hitpoints.curHP <= 0){
@@ -157,6 +208,6 @@ export let PlayerMessage = {
     'killed': function(evtData){
       this.raiseMixinEvent('killedMessage', evtData)
       this.destroy();
+      }
     }
-  }
-};
+  };

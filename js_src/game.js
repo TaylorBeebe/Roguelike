@@ -116,7 +116,6 @@ export let Game = {
     // console.log("rendering avatar display");
     let d = this.display.avatar.o;
     d.clear();
-    // d.drawText(2, 5, "AVATAR DISPLAY");
     this.curMode.renderAvatar(d);
   },
 
@@ -149,7 +148,6 @@ export let Game = {
   },
 
   eventHandler: function (eventType, evt) {
-    //Handle event recieved
     if (this.curMode !== null && this.curMode != ''){
       if (this.curMode.handleInput(eventType, evt)){
 

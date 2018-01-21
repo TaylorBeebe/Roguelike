@@ -6,6 +6,7 @@ export class Tile extends DisplaySymbol {
     super(template);
     this._name = template.name || 'No Name';
     this._walkable = template.walkable || false;
+    this._opaque = template.opaque || false;
   }
 
   getDisplaySymbol() {
@@ -24,10 +25,14 @@ export class Tile extends DisplaySymbol {
     return this._walkable;
   }
 
+  isOpaque(){
+    return this._opaque;
+  }
+
 }
 
 export let TILES = {
-  NULLTILE: new Tile({name: 'NULLTILE', chr: '*', walkable: false}),
-  FLOOR: new Tile({name: 'FLOOR', chr: '.', walkable: true}),
-  WALL: new Tile({name: 'WALL', chr: '#', walkable: false})
+  NULLTILE: new Tile({name: 'NULLTILE', chr: '*', walkable: false, opaque: false}),
+  FLOOR: new Tile({name: 'FLOOR', chr: '.', walkable: true, opaque: true}),
+  WALL: new Tile({name: 'WALL', chr: '#', walkable: false, opaque: false})
 }

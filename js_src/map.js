@@ -21,21 +21,15 @@ class Map{
     this.attr.locationToEntityID = {};
     this.attr.entityIDToLocation = {};
     this.attr.visibilityRange =  visibilityRange;
+    this.attr.lastSeenGrid = {};
     // console.dir(this.attr);
     console.log('exiting map.constructor()');
 
   }
 
-  // var lightPasses = function(x, y) {
-  //   var key = x+","+y;
-  //   if (key in data) { return (data[key] == 0); }
-  //     return false;
-  // }
-
   setUp(){
     this.rng.setState(this.attr.rngBaseState);
     this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
-    this.lastSeenGrid = this.tileGrid;
     // console.log('Tile Grid -> ');
     // console.dir(this.tileGrid);
   }
@@ -155,34 +149,87 @@ class Map{
     return this.tileGrid[x][y] || TILES.NULLTILE;
   }
 
+  // renderOn(display, camX, camY) {
+  //
+  //   // var fov = new ROT.FOV.PreciseShadowcasting(lightPasses(camX, camY));
+  //   //console.log('camX: ' + camX + ' camY: ' + camY);
+  //   let o = display.getOptions();
+  //   let xStart = camX-Math.round(o.width/2);
+  //   let yStart = camY-Math.round(o.height/2);
+  //   // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
+  //   for (let x=0;x<o.width;x++) {
+  //     for (let y=0;y<o.height;y++) {
+  //       // console.log(Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))));
+  //       // console.log('camX = ' + camX + ' curx = ' + x + ' camY = ' + camY + ' cury = ' + y);
+  //       let tile = this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart);
+  //
+  //       } else {
+  //         if ((x+xStart < 0) || (x+xStart >= this.attr.xdim) || (y+yStart < 0) || (y+yStart >= this.attr.ydim)) {
+  //           let tile = TILES.NULLTILE;
+  //         } else {
+  //         let tile = this.lastSeenGrid[x+xStart][y+yStart];
+  //       } }
+  //       tile.drawOn(display, x, y);
+  //     }
+  //   }
+  // }
+
   renderOn(display, camX, camY) {
+   //console.log('camX: ' + camX + ' camY: ' + camY);
+   let o = display.getOptions();
+   let xStart = camX-Math.round(o.width/2);
+   let yStart = camY-Math.round(o.height/2);
+   let xIndex = 0;
+   let yIndex = 0;
+   let m = this.getID();
 
-    // var fov = new ROT.FOV.PreciseShadowcasting(lightPasses(camX, camY));
-    //console.log('camX: ' + camX + ' camY: ' + camY);
-    let o = display.getOptions();
-    let xStart = camX-Math.round(o.width/2);
-    let yStart = camY-Math.round(o.height/2);
-    // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
-    for (let x=0;x<o.width;x++) {
-      for (let y=0;y<o.height;y++) {
-        // console.log(Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))));
-        // console.log('camX = ' + camX + ' curx = ' + x + ' camY = ' + camY + ' cury = ' + y);
+   var lightPasses = function(x, y) {
+     if (DATASTORE.MAPS[m].getTile(x, y).isOpaque()){
+       // console.log('light passes through: ' + DATASTORE.MAPS[m].getTile(x, y).getName());
+       return true;
+     }
+     // console.log('light does not pass through: ' +  DATASTORE.MAPS[m].getTile(x, y).getName());
+     return false;
+   }
+   let visibleTiles = {};
+   // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
+   let fov = new ROT.FOV.RecursiveShadowcasting(lightPasses);
 
-        if (Math.abs(Math.sqrt(Math.pow(camX - (x+xStart), 2) + Math.pow(camY - (y+yStart), 2))) <= this.attr.visibilityRange){
-          let tile = this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart);
-          if (tile != TILES.NULLTILE){
-            this.lastSeenGrid[x+xStart][y+yStart] = tile;
-          }
-        } else {
-          if ((x+xStart < 0) || (x+xStart >= this.attr.xdim) || (y+yStart < 0) || (y+yStart >= this.attr.ydim)) {
-            let tile = TILES.NULLTILE;
-          } else {
-          let tile = this.lastSeenGrid[x+xStart][y+yStart];
-        } }
-        tile.drawOn(display, x, y);
-      }
-    }
-  }
+   // console.log(DATASTORE.MAPS[m].attr);
+   fov.compute(camX, camY, DATASTORE.MAPS[m].attr.visibilityRange, function(x, y, r, visibility){
+     // console.log('in fov.compute');
+     // console.log(x, y)
+     visibleTiles[`${x},${y}`] = true;
+     DATASTORE.MAPS[m].attr.lastSeenGrid[`${x},${y}`] = DATASTORE.MAPS[m].getDisplaySymbolAtMapLocation(x, y);
+   })
+
+   for (let x=0;x<o.width;x++) {
+     xIndex = x + xStart;
+     for (let y=0;y<o.height;y++) {
+       yIndex = y + yStart;
+       if (!((xIndex < 0) || (xIndex >= this.attr.xdim) || (yIndex < 0) || (yIndex >= this.attr.ydim))){
+         // console.log(`${xIndex}, ${yIndex}`);
+         // console.log(visibleTiles[`${xIndex}, ${yIndex}`]);
+         if (!visibleTiles[`${xIndex},${yIndex}`]){
+           // console.log('tile being rendered is not visible');
+           // console.log(DATASTORE.MAPS[m].attr.lastSeenGrid[`${xIndex}, ${yIndex}`]);
+           // console.log(this.attr.lastSeenGrid[`${xIndex}`][`${yIndex}`]);
+           // console.log(`${xIndex},${yIndex}`);
+           if(this.attr.lastSeenGrid[`${xIndex},${yIndex}`]){
+             // console.log('tile being rendered has been seen before');
+             this.attr.lastSeenGrid[`${xIndex},${yIndex}`].drawOnGrey(display,x,y);
+           }
+         } else {
+           this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart).drawOn(display,x,y);
+         }
+       }
+     }
+   }
+   // console.log('Visible tiles -> ');
+   // console.dir(visibleTiles);
+   // console.log('Last seen grid ->');
+   // console.dir(this.attr.lastSeenGrid);
+ }
 
   getDisplaySymbolAtMapLocation(mapX,mapY) {
     // console.log('in getDisplaySymbolAtMapLocation -> ' + mapX + ', ' + mapY);
@@ -196,7 +243,6 @@ class Map{
       return DATASTORE.ENTITIES[entityId];
     }
     let tile = this.getTile(mapX, mapY);
-    if(!tile){ console.log('tile is undefined'); }
     return tile;
   }
 
@@ -238,3 +284,10 @@ export function makeMap(mapData) {
   DATASTORE.MAPS[m.getID()] = m;
   return m;
 }
+
+// export function lightPasses(x,  y) {
+//   if (this.getTile(x, y).isOpaque()){
+//     return true;
+//   }
+//   return false;
+// }

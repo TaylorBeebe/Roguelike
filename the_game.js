@@ -8497,6 +8497,7 @@ var DisplaySymbol = exports.DisplaySymbol = function () {
     console.dir(template);
     this._chr = template.chr || ' ';
     this._fgHexColor = template.fg || _colors.Color.FG;
+    console.log(this._fgHexColor);
     this._bgHexColor = template.bg || _colors.Color.BG;
   }
 
@@ -8508,10 +8509,12 @@ var DisplaySymbol = exports.DisplaySymbol = function () {
   }, {
     key: 'drawOn',
     value: function drawOn(display, dispX, dispY) {
-
-      // console.log('entering display_symbol.drawOn(). x: ' + dispX + ", y: " + dispY);
-      // console.dir(this._chr);
       display.draw(dispX, dispY, this._chr, this._fgHexColor, this._bgHexColor);
+    }
+  }, {
+    key: 'drawOnGrey',
+    value: function drawOnGrey(display, dispX, dispY) {
+      display.draw(dispX, dispY, this._chr, _colors.Color.GREYFG, this._bgHexColor);
     }
   }]);
 
@@ -8528,10 +8531,12 @@ var DisplaySymbol = exports.DisplaySymbol = function () {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var Color = exports.Color = {};
-Color.FG = '#fff';
-Color.BG = '#000';
-Color.DEFAULT = '%c{' + Color.FG + '}%b{' + Color.BG + '}';
+var Color = exports.Color = {
+  FG: '#fff',
+  BG: '#000',
+  GREYFG: '#555'
+  // DEFAULT: '%c{'+Color.FG+'}%b{'+Color.BG+'}'
+};
 
 /***/ }),
 /* 96 */
@@ -15205,7 +15210,7 @@ var Game = exports.Game = {
   },
 
   renderDisplayAvatar: function renderDisplayAvatar() {
-    console.log("rendering avatar display");
+    // console.log("rendering avatar display");
     var d = this.display.avatar.o;
     d.clear();
     // d.drawText(2, 5, "AVATAR DISPLAY");
@@ -15213,7 +15218,7 @@ var Game = exports.Game = {
   },
 
   renderDisplayMain: function renderDisplayMain() {
-    console.log("rendering main display");
+    // console.log("rendering main display");
     this.display.main.o.clear();
     if (this.curMode === null || this.curMode == '') {
       return;
@@ -15223,15 +15228,15 @@ var Game = exports.Game = {
   },
 
   renderDisplayMessage: function renderDisplayMessage() {
-    console.log("rendering message display");
+    // console.log("rendering message display");
     this.messageHandler.render();
   },
 
   renderMain: function renderMain() {
     console.log("renderMain function");
     this.renderDisplayMain();
-    this.renderDisplayAvatar();
-    this.renderDisplayMessage();
+    // this.renderDisplayAvatar();
+    // this.renderDisplayMessage();
   },
 
   bindEvent: function bindEvent(eventType) {
@@ -15431,29 +15436,40 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       if (eventType == 'keyup') {
         if (inputData.key == 'l' || inputData.key == 'L') {
           this.game.switchMode('lose');
+          return true;
         } else if (inputData.key == 'w' || inputData.key == 'W') {
           this.game.switchMode('win');
+          return true;
         } else if (inputData.key == '=') {
           this.game.switchMode('persistence');
+          return true;
         } else if (inputData.key == '1') {
           this.move(-1, 1);
+          return true;
         } else if (inputData.key == '2') {
           this.move(0, 1);
+          return true;
         } else if (inputData.key == '3') {
           this.move(1, 1);
+          return true;
         } else if (inputData.key == '4') {
           this.move(-1, 0);
+          return true;
         } else if (inputData.key == '6') {
           this.move(1, 0);
+          return true;
         } else if (inputData.key == '7') {
           this.move(-1, -1);
+          return true;
         } else if (inputData.key == '8') {
           this.move(0, -1);
+          return true;
         } else if (inputData.key == '9') {
           this.move(1, -1);
+          return true;
         }
       }
-      return true;
+      return false;
     }
   }, {
     key: 'renderAvatar',
@@ -15472,7 +15488,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       this.getAvatar().tryWalk(x, y);
       this.cameraToAvatar();
       _messenger.Messenger.ageMessages();
-      this.render();
+      // this.render();
     }
   }, {
     key: 'cameraToAvatar',
@@ -15694,7 +15710,7 @@ var _rotJs2 = _interopRequireDefault(_rotJs);
 
 var _util = __webpack_require__(65);
 
-var _tile4 = __webpack_require__(338);
+var _tile = __webpack_require__(338);
 
 var _datastore = __webpack_require__(46);
 
@@ -15726,22 +15742,16 @@ var Map = function () {
     this.attr.locationToEntityID = {};
     this.attr.entityIDToLocation = {};
     this.attr.visibilityRange = visibilityRange;
+    this.attr.lastSeenGrid = {};
     // console.dir(this.attr);
     console.log('exiting map.constructor()');
   }
-
-  // var lightPasses = function(x, y) {
-  //   var key = x+","+y;
-  //   if (key in data) { return (data[key] == 0); }
-  //     return false;
-  // }
 
   _createClass(Map, [{
     key: 'setUp',
     value: function setUp() {
       this.rng.setState(this.attr.rngBaseState);
       this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
-      this.lastSeenGrid = this.tileGrid;
       // console.log('Tile Grid -> ');
       // console.dir(this.tileGrid);
     }
@@ -15875,42 +15885,95 @@ var Map = function () {
       // console.log('x: ' + x + " y: " + y);
       if (x < 0 || x >= this.attr.xdim || y < 0 || y >= this.attr.ydim) {
         // console.log('Tile out of bounds');
-        return _tile4.TILES.NULLTILE;
+        return _tile.TILES.NULLTILE;
       }
 
       // console.dir(this.tileGrid[x][y]);
-      return this.tileGrid[x][y] || _tile4.TILES.NULLTILE;
+      return this.tileGrid[x][y] || _tile.TILES.NULLTILE;
     }
+
+    // renderOn(display, camX, camY) {
+    //
+    //   // var fov = new ROT.FOV.PreciseShadowcasting(lightPasses(camX, camY));
+    //   //console.log('camX: ' + camX + ' camY: ' + camY);
+    //   let o = display.getOptions();
+    //   let xStart = camX-Math.round(o.width/2);
+    //   let yStart = camY-Math.round(o.height/2);
+    //   // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
+    //   for (let x=0;x<o.width;x++) {
+    //     for (let y=0;y<o.height;y++) {
+    //       // console.log(Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))));
+    //       // console.log('camX = ' + camX + ' curx = ' + x + ' camY = ' + camY + ' cury = ' + y);
+    //       let tile = this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart);
+    //
+    //       } else {
+    //         if ((x+xStart < 0) || (x+xStart >= this.attr.xdim) || (y+yStart < 0) || (y+yStart >= this.attr.ydim)) {
+    //           let tile = TILES.NULLTILE;
+    //         } else {
+    //         let tile = this.lastSeenGrid[x+xStart][y+yStart];
+    //       } }
+    //       tile.drawOn(display, x, y);
+    //     }
+    //   }
+    // }
+
   }, {
     key: 'renderOn',
     value: function renderOn(display, camX, camY) {
-
-      // var fov = new ROT.FOV.PreciseShadowcasting(lightPasses(camX, camY));
       //console.log('camX: ' + camX + ' camY: ' + camY);
       var o = display.getOptions();
       var xStart = camX - Math.round(o.width / 2);
       var yStart = camY - Math.round(o.height / 2);
-      // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
-      for (var x = 0; x < o.width; x++) {
-        for (var y = 0; y < o.height; y++) {
-          // console.log(Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))));
-          // console.log('camX = ' + camX + ' curx = ' + x + ' camY = ' + camY + ' cury = ' + y);
+      var xIndex = 0;
+      var yIndex = 0;
+      var m = this.getID();
 
-          if (Math.abs(Math.sqrt(Math.pow(camX - (x + xStart), 2) + Math.pow(camY - (y + yStart), 2))) <= this.attr.visibilityRange) {
-            var _tile = this.getDisplaySymbolAtMapLocation(x + xStart, y + yStart);
-            if (_tile != _tile4.TILES.NULLTILE) {
-              this.lastSeenGrid[x + xStart][y + yStart] = _tile;
-            }
-          } else {
-            if (x + xStart < 0 || x + xStart >= this.attr.xdim || y + yStart < 0 || y + yStart >= this.attr.ydim) {
-              var _tile2 = _tile4.TILES.NULLTILE;
+      var lightPasses = function lightPasses(x, y) {
+        if (_datastore.DATASTORE.MAPS[m].getTile(x, y).isOpaque()) {
+          // console.log('light passes through: ' + DATASTORE.MAPS[m].getTile(x, y).getName());
+          return true;
+        }
+        // console.log('light does not pass through: ' +  DATASTORE.MAPS[m].getTile(x, y).getName());
+        return false;
+      };
+      var visibleTiles = {};
+      // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
+      var fov = new _rotJs2.default.FOV.RecursiveShadowcasting(lightPasses);
+
+      // console.log(DATASTORE.MAPS[m].attr);
+      fov.compute(camX, camY, _datastore.DATASTORE.MAPS[m].attr.visibilityRange, function (x, y, r, visibility) {
+        // console.log('in fov.compute');
+        // console.log(x, y)
+        visibleTiles[x + ',' + y] = true;
+        _datastore.DATASTORE.MAPS[m].attr.lastSeenGrid[x + ',' + y] = _datastore.DATASTORE.MAPS[m].getDisplaySymbolAtMapLocation(x, y);
+      });
+
+      for (var x = 0; x < o.width; x++) {
+        xIndex = x + xStart;
+        for (var y = 0; y < o.height; y++) {
+          yIndex = y + yStart;
+          if (!(xIndex < 0 || xIndex >= this.attr.xdim || yIndex < 0 || yIndex >= this.attr.ydim)) {
+            // console.log(`${xIndex}, ${yIndex}`);
+            // console.log(visibleTiles[`${xIndex}, ${yIndex}`]);
+            if (!visibleTiles[xIndex + ',' + yIndex]) {
+              // console.log('tile being rendered is not visible');
+              // console.log(DATASTORE.MAPS[m].attr.lastSeenGrid[`${xIndex}, ${yIndex}`]);
+              // console.log(this.attr.lastSeenGrid[`${xIndex}`][`${yIndex}`]);
+              // console.log(`${xIndex},${yIndex}`);
+              if (this.attr.lastSeenGrid[xIndex + ',' + yIndex]) {
+                // console.log('tile being rendered has been seen before');
+                this.attr.lastSeenGrid[xIndex + ',' + yIndex].drawOnGrey(display, x, y);
+              }
             } else {
-              var _tile3 = this.lastSeenGrid[x + xStart][y + yStart];
+              this.getDisplaySymbolAtMapLocation(x + xStart, y + yStart).drawOn(display, x, y);
             }
           }
-          tile.drawOn(display, x, y);
         }
       }
+      // console.log('Visible tiles -> ');
+      // console.dir(visibleTiles);
+      // console.log('Last seen grid ->');
+      // console.dir(this.attr.lastSeenGrid);
     }
   }, {
     key: 'getDisplaySymbolAtMapLocation',
@@ -15926,9 +15989,6 @@ var Map = function () {
         return _datastore.DATASTORE.ENTITIES[entityId];
       }
       var tile = this.getTile(mapX, mapY);
-      if (!tile) {
-        console.log('tile is undefined');
-      }
       return tile;
     }
   }, {
@@ -15946,7 +16006,7 @@ var TILE_GRID_GENERATOR = {
   basicCaves: function basicCaves(xdim, ydim, rngState) {
     var origRngState = _rotJs2.default.RNG.getState();
     _rotJs2.default.RNG.setState(rngState);
-    var tg = (0, _util.init2DArray)(xdim, ydim, _tile4.TILES.NULLTILE);
+    var tg = (0, _util.init2DArray)(xdim, ydim, _tile.TILES.NULLTILE);
     var gen = new _rotJs2.default.Map.Cellular(xdim, ydim, { connected: true });
     gen.randomize(.4);
     for (var i = 0; i <= 3; i++) {
@@ -15960,7 +16020,7 @@ var TILE_GRID_GENERATOR = {
       }
     }
     gen.connect(function (x, y, isWall) {
-      tg[x][y] = isWall || x == 0 || y == 0 || x == xdim - 1 || y == ydim - 1 ? _tile4.TILES.WALL : _tile4.TILES.FLOOR;
+      tg[x][y] = isWall || x == 0 || y == 0 || x == xdim - 1 || y == ydim - 1 ? _tile.TILES.WALL : _tile.TILES.FLOOR;
     });
     // ROT.RNG.setState(origRngState);
     return tg;
@@ -15979,6 +16039,13 @@ function makeMap(mapData) {
   _datastore.DATASTORE.MAPS[m.getID()] = m;
   return m;
 }
+
+// export function lightPasses(x,  y) {
+//   if (this.getTile(x, y).isOpaque()){
+//     return true;
+//   }
+//   return false;
+// }
 
 /***/ }),
 /* 338 */
@@ -16012,6 +16079,7 @@ var Tile = exports.Tile = function (_DisplaySymbol) {
 
     _this._name = template.name || 'No Name';
     _this._walkable = template.walkable || false;
+    _this._opaque = template.opaque || false;
     return _this;
   }
 
@@ -16035,15 +16103,20 @@ var Tile = exports.Tile = function (_DisplaySymbol) {
     value: function isWalkable() {
       return this._walkable;
     }
+  }, {
+    key: 'isOpaque',
+    value: function isOpaque() {
+      return this._opaque;
+    }
   }]);
 
   return Tile;
 }(_display_symbol.DisplaySymbol);
 
 var TILES = exports.TILES = {
-  NULLTILE: new Tile({ name: 'NULLTILE', chr: '*', walkable: false }),
-  FLOOR: new Tile({ name: 'FLOOR', chr: '.', walkable: true }),
-  WALL: new Tile({ name: 'WALL', chr: '#', walkable: false })
+  NULLTILE: new Tile({ name: 'NULLTILE', chr: '*', walkable: false, opaque: false }),
+  FLOOR: new Tile({ name: 'FLOOR', chr: '.', walkable: true, opaque: true }),
+  WALL: new Tile({ name: 'WALL', chr: '#', walkable: false, opaque: false })
 };
 
 /***/ }),
@@ -16367,7 +16440,7 @@ var MixableSymbol = exports.MixableSymbol = function (_DisplaySymbol) {
   _createClass(MixableSymbol, [{
     key: 'raiseMixinEvent',
     value: function raiseMixinEvent(evtLabel, evtData) {
-      console.log('raiseMixinEvent -> ' + evtLabel);
+      // console.log('raiseMixinEvent -> ' + evtLabel);
       for (var mi = 0; mi < this.mixins.length; mi++) {
         var m = this.mixins[mi];
         // console.log('m.LISTENERS -> ' + m.LISTENERS);

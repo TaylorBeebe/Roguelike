@@ -7,6 +7,7 @@ export class DisplaySymbol {
     console.dir(template);
     this._chr = template.chr || ' ';
     this._fgHexColor = template.fg || Color.FG;
+    console.log(this._fgHexColor);
     this._bgHexColor = template.bg || Color.BG;
   }
 
@@ -16,10 +17,11 @@ export class DisplaySymbol {
   }
 
   drawOn(display, dispX, dispY) {
-
-    // console.log('entering display_symbol.drawOn(). x: ' + dispX + ", y: " + dispY);
-    // console.dir(this._chr);
     display.draw(dispX, dispY, this._chr, this._fgHexColor, this._bgHexColor);
+  }
+
+  drawOnGrey(display, dispX, dispY){
+    display.draw(dispX, dispY, this._chr, Color.GREYFG, this._bgHexColor);
   }
 
 }

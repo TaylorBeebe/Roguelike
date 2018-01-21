@@ -99,38 +99,40 @@ export class PlayMode extends UIMode{
       if (eventType == 'keyup'){
         if(inputData.key == 'l' || inputData.key == 'L'){
           this.game.switchMode('lose');
+          return true;
         } else if (inputData.key == 'w'|| inputData.key == 'W'){
           this.game.switchMode('win');
-        }
-        else if (inputData.key == '='){
+          return true;
+        } else if (inputData.key == '='){
           this.game.switchMode('persistence')
-        }
-        else if (inputData.key == '1') {
+          return true;
+        } else if (inputData.key == '1') {
         this.move(-1,1);
-        }
-        else if (inputData.key == '2') {
+        return true;
+        } else if (inputData.key == '2') {
           this.move(0,1);
-        }
-        else if (inputData.key == '3') {
+          return true;
+        } else if (inputData.key == '3') {
           this.move(1,1);
-        }
-        else if (inputData.key == '4') {
+          return true;
+        } else if (inputData.key == '4') {
           this.move(-1,0);
-        }
-        else if (inputData.key == '6') {
+          return true;
+        } else if (inputData.key == '6') {
           this.move(1,0);
-        }
-        else if (inputData.key == '7') {
+          return true;
+        } else if (inputData.key == '7') {
           this.move(-1,-1);
-        }
-        else if (inputData.key == '8') {
+          return true;
+        } else if (inputData.key == '8') {
           this.move(0,-1);
-        }
-        else if (inputData.key == '9') {
+          return true;
+        } else if (inputData.key == '9') {
           this.move(1,-1);
+          return true;
         }
       }
-      return true;
+      return false;
     }
 
 
@@ -149,7 +151,7 @@ export class PlayMode extends UIMode{
       this.getAvatar().tryWalk(x, y);
       this.cameraToAvatar();
       Messenger.ageMessages();
-      this.render();
+      // this.render();
     }
 
     cameraToAvatar(){

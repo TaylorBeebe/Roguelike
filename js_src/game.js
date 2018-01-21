@@ -113,7 +113,7 @@ export let Game = {
   },
 
   renderDisplayAvatar: function() {
-    console.log("rendering avatar display");
+    // console.log("rendering avatar display");
     let d = this.display.avatar.o;
     d.clear();
     // d.drawText(2, 5, "AVATAR DISPLAY");
@@ -121,7 +121,7 @@ export let Game = {
   },
 
   renderDisplayMain: function() {
-    console.log("rendering main display");
+    // console.log("rendering main display");
     this.display.main.o.clear();
     if (this.curMode === null || this.curMode == '') {
       return;
@@ -131,15 +131,15 @@ export let Game = {
   },
 
   renderDisplayMessage: function() {
-    console.log("rendering message display");
+    // console.log("rendering message display");
     this.messageHandler.render();
   },
 
   renderMain: function() {
     console.log("renderMain function");
     this.renderDisplayMain();
-    this.renderDisplayAvatar();
-    this.renderDisplayMessage();
+    // this.renderDisplayAvatar();
+    // this.renderDisplayMessage();
   },
 
   bindEvent: function(eventType){

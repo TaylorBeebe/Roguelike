@@ -34,7 +34,7 @@ export let Messenger = {
   },
 
   ageMessages: function(){
-    console.log('aging messages');
+    // console.log('aging messages');
     for (let i=0;i<10;i++) {
       if (this.messageQueue[i] && this.messageQueue[i].age < this.fades.length) {
         this.messageQueue[i].age++;

@@ -2,14 +2,23 @@ import {Factory} from './factory.js';
 import {Entity} from './entity.js';
 
 export let EntityFactory = new Factory('ENTITIES', Entity);
-console.log("Learning Entites");
+// console.log("Learning Entites");
 EntityFactory.learn({
   name: 'avatar',
   descr: 'A mighty mage',
   chr: '@',
   fg: '#eb4',
   maxHP: 100,
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'Hitpoints']
+  mixinNames: [
+    'TimeTracker',
+    'WalkerCorporeal',
+    'PlayerMessage',
+    'Hitpoints',
+    'Stats',
+    'StrengthAttack',
+    'IntelligenceAttack',
+    'AgilityAttack'
+  ]
 });
 
 EntityFactory.learn({
@@ -18,5 +27,5 @@ EntityFactory.learn({
   chr: '&',
   fg: '#7d6',
   maxHP: 20,
-  mixins: ['WalkerCorporeal', 'Hitpoints', 'Stats']
+  mixins: ['WalkerCorporeal', 'Hitpoints', 'Stats', 'StrengthAttack']
 });

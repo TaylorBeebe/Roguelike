@@ -85,9 +85,13 @@ export let PlayerMessage = {
       Messenger.send(`${this.getName()} cannot walk there because ${evtData.reason}`);
     },
     'damagedMessage': function(evtData){
-      Messenger.send(`${evtData.wasDamagedBy} damaged ${this.getName()} ${evtData.damageAmount} points`);
+      if(evtData.attackType != 'Strength'){
+      Messenger.send(`${evtData.wasDamagedBy} damaged ${this.getName()} ${evtData.damageAmount} points with an ${evtData.attackType} attack`);
+      } else{
+      Messenger.send(`${evtData.wasDamagedBy} damaged ${this.getName()} ${evtData.damageAmount} points with a ${evtData.attackType} attack`);
+      }
     },
-    'healed': function (evtData){
+    'healedMessage': function (evtData){
       Messenger.send(`${this.getName()} gained ${evtData.healAmount} HP`);
     },
     'killedMessage': function(evtData){
@@ -100,13 +104,16 @@ export let PlayerMessage = {
         Messenger.send(`${this.getName()} lost ${evtData.deltaExp} experience.`);
       }
     },
-    'gainedStatsPoint': function(evtData){
+    'gainedStatsPointMessage': function(evtData){
       Messenger.send(`${this.getName()} gained 1 ${evtData.deltaStat} point!`);
+    },
+    'attackedMessage': function(evtData){
+      Messenger.send(`${evtData.attacker} attacked ${evtData.victim}`);
     }
   }
 }
 
-let Stats = {
+export let Stats = {
   META:{
     mixinName: 'Stats',
     mixinGroupName: 'Stats',
@@ -114,7 +121,8 @@ let Stats = {
     stateModel: {
       agility: 0,
       strength: 0,
-      intelligence: 0
+      intelligence: 0,
+      experience: 0
     },
     initialize: function(template) {
       this.attr._Stats.agility = template.agility || 10;
@@ -137,6 +145,8 @@ let Stats = {
       this.attr._Stats.agility += deltaAgi;
     },
     getStats: function(){
+      console.log('fetching stats');
+      console.dir(this.attr._Stats);
       return {agility: this.attr._Stats.agility, strength: this.attr._Stats.strength,
          intelligence: this.attr._Stats.intelligence};
     },
@@ -145,14 +155,26 @@ let Stats = {
     }
   },
   LISTENERS:{
+    //evtData contain -> deltaExp (exp change amount)
     'deltaExp': function(evtData){
       this.deltaExp(evtData.deltaExp);
-
+      this.raiseMixinEvent('expChangedMessage', evtData);
+    },
+    //evtData contain -> deltaStat (stat changed)
+    'deltaStats': function(evtData){
+      if(evtData.deltaStat == 'Strength'){
+        this.deltaStrength(1);
+      } else if(evtData.deltaStat == 'Agility'){
+        this.deltaAgility(1);
+      } else if(evtData.deltaStat == 'Intelligence'){
+        this.deltaIntelligence(1);
+      }
+      raiseMixinEvent('gainedStatsPointMessage', evtData);
     }
   }
 };
 
-  export let Hitpoints = {
+export let Hitpoints = {
 
     META:{
       mixinName: 'Hitpoints',
@@ -176,7 +198,7 @@ let Stats = {
         } else{
           this.attr._Hitpoints.curHP = this.attr._Hitpoints.maxHP;
         }
-        this.raiseMixinEvent('healed', {'healAmount' : hp})
+        this.raiseMixinEvent('healedMessage', {'healAmount' : hp})
       },
 
       loseHP: function(hp) {
@@ -202,12 +224,99 @@ let Stats = {
       this.raiseMixinEvent('damagedMessage', evtData);
 
       if (this.attr._Hitpoints.curHP <= 0){
-        this.raiseMixinEvent('killed', evtData);
+        this.raiseMixinEvent('killedMessage', evtData);
       }
     },
     'killed': function(evtData){
       this.raiseMixinEvent('killedMessage', evtData)
       this.destroy();
-      }
     }
-  };
+  }
+};
+
+export let StrengthAttack = {
+  META:{
+    mixinName: 'StrengthAttack',
+    mixinGroupName: 'Combat',
+    stateNamespace: '_StrengthAttack',
+    stateModel: {
+      strengthAttackDamage: 1
+    },
+    initialize: function(template) {
+      this.attr._StrengthAttack.strengthAttackDamage = template.strengthAttackDamage || 1;
+    }
+  },
+  METHODS:{
+    setstrengthAttackDamage: function(att){
+      this.attr._StrengthAttack.strengthAttackDamage = att;
+    },
+    getStrengthAttackDamage: function(){
+      return this.attr._StrengthAttack.strengthAttackDamage;
+    }
+  },
+  LISTENERS:{
+    //evtData contains -> wasDamagedBy(attacker), attackType(Strenth), victim(victim of attack), damageAmount(amount of damage dealt)
+    'strAttack': function(evtData){
+      this.raiseMixinEvent('attacked', {attacker: this.getName(), victim: evtData.victim});
+      evtData.victim.raiseMixinEvent('damaged', evtData);
+    }
+  }
+};
+
+export let IntelligenceAttack = {
+  META:{
+    mixinName: 'IntelligenceAttack',
+    mixinGroupName: 'Combat',
+    stateNamespace: '_IntelligenceAttack',
+    stateModel: {
+      IntelligenceAttackDamage: 1
+    },
+    initialize: function(template) {
+      this.attr._IntelligenceAttack.IntelligenceAttackDamage = template.IntelligenceAttackDamage || 1;
+    }
+  },
+  METHODS:{
+    setIntelligenceAttackDamage: function(att){
+      this.attr._IntelligenceAttack.IntelligenceAttackDamage = att;
+    },
+    getIntelligenceAttackDamage: function(){
+      return this.attr._IntelligenceAttack.IntelligenceAttackDamage;
+    }
+  },
+  LISTENERS:{
+    //evtData contains -> wasDamagedBy(attacker), attackType(Ingelligence), victim(victim of attack), damageAmount(amount of damage dealt)
+    'intelAttack': function(evtData){
+      this.raiseMixinEvent('attacked', {attacker: this.getName(), victim: evtData.victim});
+      evtData.victim.raiseMixinEvent('damaged', evtData);
+    }
+  }
+};
+
+export let AgilityAttack = {
+  META:{
+    mixinName: 'AgilityAttack',
+    mixinGroupName: 'Combat',
+    stateNamespace: '_AgilityAttack',
+    stateModel: {
+      AgilityAttackDamage: 1
+    },
+    initialize: function(template) {
+      this.attr._AgilityAttack.AgilityAttackDamage = template.AgilityAttackDamage || 1;
+    }
+  },
+  METHODS:{
+    setAgilityAttackDamage: function(att){
+      this.attr._AgilityAttack.AgilityAttackDamage = att;
+    },
+    getAgilityAttackDamage: function(){
+      return this.attr._AgilityAttack.AgilityAttackDamage;
+    }
+  },
+  LISTENERS:{
+    //evtData contains -> wasDamagedBy(attacker), attackType(Agility), victim(victim of attack), damageAmount(amount of damage dealt)
+    'agilAttack': function(evtData){
+      this.raiseMixinEvent('attacked', {attacker: this.getName(), victim: evtData.victim});
+      evtData.victim.raiseMixinEvent('damaged', evtData);
+    }
+  }
+};

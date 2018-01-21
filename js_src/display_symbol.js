@@ -3,11 +3,10 @@ import {Color} from './colors.js';
 export class DisplaySymbol {
 
   constructor(template){
-    console.log('In DisplaySymbol.constructor()');
-    console.dir(template);
+    // console.log('In DisplaySymbol.constructor()');
+    // console.dir(template);
     this._chr = template.chr || ' ';
     this._fgHexColor = template.fg || Color.FG;
-    console.log(this._fgHexColor);
     this._bgHexColor = template.bg || Color.BG;
   }
 

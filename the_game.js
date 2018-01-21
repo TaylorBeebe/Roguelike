@@ -8493,11 +8493,10 @@ var DisplaySymbol = exports.DisplaySymbol = function () {
   function DisplaySymbol(template) {
     _classCallCheck(this, DisplaySymbol);
 
-    console.log('In DisplaySymbol.constructor()');
-    console.dir(template);
+    // console.log('In DisplaySymbol.constructor()');
+    // console.dir(template);
     this._chr = template.chr || ' ';
     this._fgHexColor = template.fg || _colors.Color.FG;
-    console.log(this._fgHexColor);
     this._bgHexColor = template.bg || _colors.Color.BG;
   }
 
@@ -8587,7 +8586,7 @@ var Messenger = exports.Messenger = {
   },
 
   ageMessages: function ageMessages() {
-    console.log('aging messages');
+    // console.log('aging messages');
     for (var i = 0; i < 10; i++) {
       if (this.messageQueue[i] && this.messageQueue[i].age < this.fades.length) {
         this.messageQueue[i].age++;
@@ -15468,6 +15467,10 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       display.drawText(0, 0, "AVATAR");
       display.drawText(0, 2, "Time: " + this.getAvatar().getTime());
       display.drawText(0, 4, "HP: " + this.getAvatar().getCurHP());
+      display.drawText(0, 6, "Str: " + this.getAvatar().getStats().strength);
+      display.drawText(0, 8, "Int: " + this.getAvatar().getStats().intelligence);
+      display.drawText(0, 10, "Agil: " + this.getAvatar().getStats().agility);
+      display.drawText(0, 12, "Exp: " + this.getAvatar().getExp());
     }
   }, {
     key: 'move',
@@ -16063,14 +16066,14 @@ var _factory = __webpack_require__(340);
 var _entity = __webpack_require__(341);
 
 var EntityFactory = exports.EntityFactory = new _factory.Factory('ENTITIES', _entity.Entity);
-console.log("Learning Entites");
+// console.log("Learning Entites");
 EntityFactory.learn({
   name: 'avatar',
   descr: 'A mighty mage',
   chr: '@',
   fg: '#eb4',
   maxHP: 100,
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'Hitpoints']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'Hitpoints', 'Stats', 'StrengthAttack', 'IntelligenceAttack', 'AgilityAttack']
 });
 
 EntityFactory.learn({
@@ -16079,7 +16082,7 @@ EntityFactory.learn({
   chr: '&',
   fg: '#7d6',
   maxHP: 20,
-  mixins: ['WalkerCorporeal', 'Hitpoints', 'Stats']
+  mixins: ['WalkerCorporeal', 'Hitpoints', 'Stats', 'StrengthAttack']
 });
 
 /***/ }),
@@ -16113,8 +16116,8 @@ var Factory = exports.Factory = function () {
     key: 'learn',
     value: function learn(template) {
       this.knownTemplates[template.templateName ? template.templateName : template.name] = template;
-      // console.log("Known templates are: ");
-      // console.dir(this.knownTemplates);
+      //   console.log("Known templates are: ");
+      //   console.dir(this.knownTemplates);
     }
   }, {
     key: 'create',
@@ -16392,7 +16395,7 @@ var MixableSymbol = exports.MixableSymbol = function (_DisplaySymbol) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Hitpoints = exports.PlayerMessage = exports.WalkerCorporeal = exports.TimeTracker = undefined;
+exports.AgilityAttack = exports.IntelligenceAttack = exports.StrengthAttack = exports.Hitpoints = exports.Stats = exports.PlayerMessage = exports.WalkerCorporeal = exports.TimeTracker = undefined;
 
 var _messenger = __webpack_require__(96);
 
@@ -16481,9 +16484,13 @@ var PlayerMessage = exports.PlayerMessage = {
       _messenger.Messenger.send(this.getName() + ' cannot walk there because ' + evtData.reason);
     },
     'damagedMessage': function damagedMessage(evtData) {
-      _messenger.Messenger.send(evtData.wasDamagedBy + ' damaged ' + this.getName() + ' ' + evtData.damageAmount + ' points');
+      if (evtData.attackType != 'Strength') {
+        _messenger.Messenger.send(evtData.wasDamagedBy + ' damaged ' + this.getName() + ' ' + evtData.damageAmount + ' points with an ' + evtData.attackType + ' attack');
+      } else {
+        _messenger.Messenger.send(evtData.wasDamagedBy + ' damaged ' + this.getName() + ' ' + evtData.damageAmount + ' points with a ' + evtData.attackType + ' attack');
+      }
     },
-    'healed': function healed(evtData) {
+    'healedMessage': function healedMessage(evtData) {
       _messenger.Messenger.send(this.getName() + ' gained ' + evtData.healAmount + ' HP');
     },
     'killedMessage': function killedMessage(evtData) {
@@ -16496,13 +16503,16 @@ var PlayerMessage = exports.PlayerMessage = {
         _messenger.Messenger.send(this.getName() + ' lost ' + evtData.deltaExp + ' experience.');
       }
     },
-    'gainedStatsPoint': function gainedStatsPoint(evtData) {
+    'gainedStatsPointMessage': function gainedStatsPointMessage(evtData) {
       _messenger.Messenger.send(this.getName() + ' gained 1 ' + evtData.deltaStat + ' point!');
+    },
+    'attackedMessage': function attackedMessage(evtData) {
+      _messenger.Messenger.send(evtData.attacker + ' attacked ' + evtData.victim);
     }
   }
 };
 
-var Stats = {
+var Stats = exports.Stats = {
   META: {
     mixinName: 'Stats',
     mixinGroupName: 'Stats',
@@ -16510,7 +16520,8 @@ var Stats = {
     stateModel: {
       agility: 0,
       strength: 0,
-      intelligence: 0
+      intelligence: 0,
+      experience: 0
     },
     initialize: function initialize(template) {
       this.attr._Stats.agility = template.agility || 10;
@@ -16533,6 +16544,8 @@ var Stats = {
       this.attr._Stats.agility += deltaAgi;
     },
     getStats: function getStats() {
+      console.log('fetching stats');
+      console.dir(this.attr._Stats);
       return { agility: this.attr._Stats.agility, strength: this.attr._Stats.strength,
         intelligence: this.attr._Stats.intelligence };
     },
@@ -16541,8 +16554,21 @@ var Stats = {
     }
   },
   LISTENERS: {
+    //evtData contain -> deltaExp (exp change amount)
     'deltaExp': function deltaExp(evtData) {
       this.deltaExp(evtData.deltaExp);
+      this.raiseMixinEvent('expChangedMessage', evtData);
+    },
+    //evtData contain -> deltaStat (stat changed)
+    'deltaStats': function deltaStats(evtData) {
+      if (evtData.deltaStat == 'Strength') {
+        this.deltaStrength(1);
+      } else if (evtData.deltaStat == 'Agility') {
+        this.deltaAgility(1);
+      } else if (evtData.deltaStat == 'Intelligence') {
+        this.deltaIntelligence(1);
+      }
+      raiseMixinEvent('gainedStatsPointMessage', evtData);
     }
   }
 };
@@ -16571,7 +16597,7 @@ var Hitpoints = exports.Hitpoints = {
       } else {
         this.attr._Hitpoints.curHP = this.attr._Hitpoints.maxHP;
       }
-      this.raiseMixinEvent('healed', { 'healAmount': hp });
+      this.raiseMixinEvent('healedMessage', { 'healAmount': hp });
     },
 
     loseHP: function loseHP(hp) {
@@ -16597,12 +16623,99 @@ var Hitpoints = exports.Hitpoints = {
       this.raiseMixinEvent('damagedMessage', evtData);
 
       if (this.attr._Hitpoints.curHP <= 0) {
-        this.raiseMixinEvent('killed', evtData);
+        this.raiseMixinEvent('killedMessage', evtData);
       }
     },
     'killed': function killed(evtData) {
       this.raiseMixinEvent('killedMessage', evtData);
       this.destroy();
+    }
+  }
+};
+
+var StrengthAttack = exports.StrengthAttack = {
+  META: {
+    mixinName: 'StrengthAttack',
+    mixinGroupName: 'Combat',
+    stateNamespace: '_StrengthAttack',
+    stateModel: {
+      strengthAttackDamage: 1
+    },
+    initialize: function initialize(template) {
+      this.attr._StrengthAttack.strengthAttackDamage = template.strengthAttackDamage || 1;
+    }
+  },
+  METHODS: {
+    setstrengthAttackDamage: function setstrengthAttackDamage(att) {
+      this.attr._StrengthAttack.strengthAttackDamage = att;
+    },
+    getStrengthAttackDamage: function getStrengthAttackDamage() {
+      return this.attr._StrengthAttack.strengthAttackDamage;
+    }
+  },
+  LISTENERS: {
+    //evtData contains -> wasDamagedBy(attacker), attackType(Strenth), victim(victim of attack), damageAmount(amount of damage dealt)
+    'strAttack': function strAttack(evtData) {
+      this.raiseMixinEvent('attacked', { attacker: this.getName(), victim: evtData.victim });
+      evtData.victim.raiseMixinEvent('damaged', evtData);
+    }
+  }
+};
+
+var IntelligenceAttack = exports.IntelligenceAttack = {
+  META: {
+    mixinName: 'IntelligenceAttack',
+    mixinGroupName: 'Combat',
+    stateNamespace: '_IntelligenceAttack',
+    stateModel: {
+      IntelligenceAttackDamage: 1
+    },
+    initialize: function initialize(template) {
+      this.attr._IntelligenceAttack.IntelligenceAttackDamage = template.IntelligenceAttackDamage || 1;
+    }
+  },
+  METHODS: {
+    setIntelligenceAttackDamage: function setIntelligenceAttackDamage(att) {
+      this.attr._IntelligenceAttack.IntelligenceAttackDamage = att;
+    },
+    getIntelligenceAttackDamage: function getIntelligenceAttackDamage() {
+      return this.attr._IntelligenceAttack.IntelligenceAttackDamage;
+    }
+  },
+  LISTENERS: {
+    //evtData contains -> wasDamagedBy(attacker), attackType(Ingelligence), victim(victim of attack), damageAmount(amount of damage dealt)
+    'intelAttack': function intelAttack(evtData) {
+      this.raiseMixinEvent('attacked', { attacker: this.getName(), victim: evtData.victim });
+      evtData.victim.raiseMixinEvent('damaged', evtData);
+    }
+  }
+};
+
+var AgilityAttack = exports.AgilityAttack = {
+  META: {
+    mixinName: 'AgilityAttack',
+    mixinGroupName: 'Combat',
+    stateNamespace: '_AgilityAttack',
+    stateModel: {
+      AgilityAttackDamage: 1
+    },
+    initialize: function initialize(template) {
+      this.attr._AgilityAttack.AgilityAttackDamage = template.AgilityAttackDamage || 1;
+    }
+  },
+  METHODS: {
+    setAgilityAttackDamage: function setAgilityAttackDamage(att) {
+      this.attr._AgilityAttack.AgilityAttackDamage = att;
+    },
+    getAgilityAttackDamage: function getAgilityAttackDamage() {
+      return this.attr._AgilityAttack.AgilityAttackDamage;
+    }
+  },
+  LISTENERS: {
+    //evtData contains -> wasDamagedBy(attacker), attackType(Agility), victim(victim of attack), damageAmount(amount of damage dealt)
+    'agilAttack': function agilAttack(evtData) {
+      this.raiseMixinEvent('attacked', { attacker: this.getName(), victim: evtData.victim });
+      evtData.victim.raiseMixinEvent('damaged', evtData);
     }
   }
 };

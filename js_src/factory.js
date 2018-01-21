@@ -11,8 +11,8 @@ export class Factory{
   learn(template){
     this.knownTemplates[template.templateName ? template.templateName :
     template.name] = template;
-    // console.log("Known templates are: ");
-    // console.dir(this.knownTemplates);
+  //   console.log("Known templates are: ");
+  //   console.dir(this.knownTemplates);
   }
 
   create(templateName, restorationState){

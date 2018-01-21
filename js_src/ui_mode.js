@@ -137,7 +137,7 @@ export class PlayMode extends UIMode{
 
 
     renderAvatar(display){
-      console.log('in PlayMode.renderAvatar()');
+      // console.log('in PlayMode.renderAvatar()');
       display.clear();
       display.drawText(0,0, "AVATAR");
       display.drawText(0,2,"Time: " + this.getAvatar().getTime());
@@ -155,13 +155,10 @@ export class PlayMode extends UIMode{
     }
 
     cameraToAvatar(){
-      // console.log('centering camera on avatar');
       if(this.getAvatar()){
         this._GAMESTATE_.cameraMapLoc.x = this.getAvatar().getX();
         this._GAMESTATE_.cameraMapLoc.y = this.getAvatar().getY();
       }
-      // console.log('camera centered. cameraMapLoc.x : ' + this._GAMESTATE_.cameraMapLoc.x
-      // + ' cameraMapLoc.y: ' + this._GAMESTATE_.cameraMapLoc.y);
     }
 
     toJSON(){

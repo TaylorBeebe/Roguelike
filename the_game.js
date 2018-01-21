@@ -15251,6 +15251,7 @@ var Game = exports.Game = {
     //Handle event recieved
     if (this.curMode !== null && this.curMode != '') {
       if (this.curMode.handleInput(eventType, evt)) {
+
         this.render();
       }
     }
@@ -15474,7 +15475,7 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
   }, {
     key: 'renderAvatar',
     value: function renderAvatar(display) {
-      console.log('in PlayMode.renderAvatar()');
+      // console.log('in PlayMode.renderAvatar()');
       display.clear();
       display.drawText(0, 0, "AVATAR");
       display.drawText(0, 2, "Time: " + this.getAvatar().getTime());
@@ -15493,13 +15494,10 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
   }, {
     key: 'cameraToAvatar',
     value: function cameraToAvatar() {
-      // console.log('centering camera on avatar');
       if (this.getAvatar()) {
         this._GAMESTATE_.cameraMapLoc.x = this.getAvatar().getX();
         this._GAMESTATE_.cameraMapLoc.y = this.getAvatar().getY();
       }
-      // console.log('camera centered. cameraMapLoc.x : ' + this._GAMESTATE_.cameraMapLoc.x
-      // + ' cameraMapLoc.y: ' + this._GAMESTATE_.cameraMapLoc.y);
     }
   }, {
     key: 'toJSON',
@@ -15743,7 +15741,6 @@ var Map = function () {
     this.attr.entityIDToLocation = {};
     this.attr.visibilityRange = visibilityRange;
     this.attr.lastSeenGrid = {};
-    // console.dir(this.attr);
     console.log('exiting map.constructor()');
   }
 
@@ -15752,8 +15749,6 @@ var Map = function () {
     value: function setUp() {
       this.rng.setState(this.attr.rngBaseState);
       this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
-      // console.log('Tile Grid -> ');
-      // console.dir(this.tileGrid);
     }
   }, {
     key: 'getID',
@@ -15882,41 +15877,12 @@ var Map = function () {
   }, {
     key: 'getTile',
     value: function getTile(x, y) {
-      // console.log('x: ' + x + " y: " + y);
       if (x < 0 || x >= this.attr.xdim || y < 0 || y >= this.attr.ydim) {
-        // console.log('Tile out of bounds');
+
         return _tile.TILES.NULLTILE;
       }
-
-      // console.dir(this.tileGrid[x][y]);
       return this.tileGrid[x][y] || _tile.TILES.NULLTILE;
     }
-
-    // renderOn(display, camX, camY) {
-    //
-    //   // var fov = new ROT.FOV.PreciseShadowcasting(lightPasses(camX, camY));
-    //   //console.log('camX: ' + camX + ' camY: ' + camY);
-    //   let o = display.getOptions();
-    //   let xStart = camX-Math.round(o.width/2);
-    //   let yStart = camY-Math.round(o.height/2);
-    //   // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
-    //   for (let x=0;x<o.width;x++) {
-    //     for (let y=0;y<o.height;y++) {
-    //       // console.log(Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))));
-    //       // console.log('camX = ' + camX + ' curx = ' + x + ' camY = ' + camY + ' cury = ' + y);
-    //       let tile = this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart);
-    //
-    //       } else {
-    //         if ((x+xStart < 0) || (x+xStart >= this.attr.xdim) || (y+yStart < 0) || (y+yStart >= this.attr.ydim)) {
-    //           let tile = TILES.NULLTILE;
-    //         } else {
-    //         let tile = this.lastSeenGrid[x+xStart][y+yStart];
-    //       } }
-    //       tile.drawOn(display, x, y);
-    //     }
-    //   }
-    // }
-
   }, {
     key: 'renderOn',
     value: function renderOn(display, camX, camY) {
@@ -15929,21 +15895,17 @@ var Map = function () {
       var m = this.getID();
 
       var lightPasses = function lightPasses(x, y) {
-        if (_datastore.DATASTORE.MAPS[m].getTile(x, y).isOpaque()) {
-          // console.log('light passes through: ' + DATASTORE.MAPS[m].getTile(x, y).getName());
+        if (!_datastore.DATASTORE.MAPS[m].getTile(x, y).isOpaque()) {
           return true;
         }
-        // console.log('light does not pass through: ' +  DATASTORE.MAPS[m].getTile(x, y).getName());
+
         return false;
       };
       var visibleTiles = {};
-      // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
+
       var fov = new _rotJs2.default.FOV.RecursiveShadowcasting(lightPasses);
 
-      // console.log(DATASTORE.MAPS[m].attr);
       fov.compute(camX, camY, _datastore.DATASTORE.MAPS[m].attr.visibilityRange, function (x, y, r, visibility) {
-        // console.log('in fov.compute');
-        // console.log(x, y)
         visibleTiles[x + ',' + y] = true;
         _datastore.DATASTORE.MAPS[m].attr.lastSeenGrid[x + ',' + y] = _datastore.DATASTORE.MAPS[m].getDisplaySymbolAtMapLocation(x, y);
       });
@@ -15953,13 +15915,7 @@ var Map = function () {
         for (var y = 0; y < o.height; y++) {
           yIndex = y + yStart;
           if (!(xIndex < 0 || xIndex >= this.attr.xdim || yIndex < 0 || yIndex >= this.attr.ydim)) {
-            // console.log(`${xIndex}, ${yIndex}`);
-            // console.log(visibleTiles[`${xIndex}, ${yIndex}`]);
             if (!visibleTiles[xIndex + ',' + yIndex]) {
-              // console.log('tile being rendered is not visible');
-              // console.log(DATASTORE.MAPS[m].attr.lastSeenGrid[`${xIndex}, ${yIndex}`]);
-              // console.log(this.attr.lastSeenGrid[`${xIndex}`][`${yIndex}`]);
-              // console.log(`${xIndex},${yIndex}`);
               if (this.attr.lastSeenGrid[xIndex + ',' + yIndex]) {
                 // console.log('tile being rendered has been seen before');
                 this.attr.lastSeenGrid[xIndex + ',' + yIndex].drawOnGrey(display, x, y);
@@ -15978,14 +15934,8 @@ var Map = function () {
   }, {
     key: 'getDisplaySymbolAtMapLocation',
     value: function getDisplaySymbolAtMapLocation(mapX, mapY) {
-      // console.log('in getDisplaySymbolAtMapLocation -> ' + mapX + ', ' + mapY);
-      // console.log('creating entityid in map.getDisplaySymbolAtMapLocation()');
-      // console.dir(this.attr);
-      // console.dir(this.attr.locationToEntityID);
       var entityId = this.attr.locationToEntityID[mapX + ',' + mapY];
-      // console.dir(entityId);
       if (entityId) {
-        // console.log('entity at this location: ' + mapX + ', ' + mapY);
         return _datastore.DATASTORE.ENTITIES[entityId];
       }
       var tile = this.getTile(mapX, mapY);
@@ -16022,7 +15972,6 @@ var TILE_GRID_GENERATOR = {
     gen.connect(function (x, y, isWall) {
       tg[x][y] = isWall || x == 0 || y == 0 || x == xdim - 1 || y == ydim - 1 ? _tile.TILES.WALL : _tile.TILES.FLOOR;
     });
-    // ROT.RNG.setState(origRngState);
     return tg;
   }
 };
@@ -16039,13 +15988,6 @@ function makeMap(mapData) {
   _datastore.DATASTORE.MAPS[m.getID()] = m;
   return m;
 }
-
-// export function lightPasses(x,  y) {
-//   if (this.getTile(x, y).isOpaque()){
-//     return true;
-//   }
-//   return false;
-// }
 
 /***/ }),
 /* 338 */
@@ -16114,9 +16056,9 @@ var Tile = exports.Tile = function (_DisplaySymbol) {
 }(_display_symbol.DisplaySymbol);
 
 var TILES = exports.TILES = {
-  NULLTILE: new Tile({ name: 'NULLTILE', chr: '*', walkable: false, opaque: false }),
-  FLOOR: new Tile({ name: 'FLOOR', chr: '.', walkable: true, opaque: true }),
-  WALL: new Tile({ name: 'WALL', chr: '#', walkable: false, opaque: false })
+  NULLTILE: new Tile({ name: 'NULLTILE', chr: '*', walkable: false, opaque: true }),
+  FLOOR: new Tile({ name: 'FLOOR', chr: '.', walkable: true, opaque: false }),
+  WALL: new Tile({ name: 'WALL', chr: '#', walkable: false, opaque: true })
 };
 
 /***/ }),
@@ -16139,10 +16081,20 @@ var EntityFactory = exports.EntityFactory = new _factory.Factory('ENTITIES', _en
 console.log("Learning Entites");
 EntityFactory.learn({
   name: 'avatar',
-  descr: '',
+  descr: 'A mighty mage',
   chr: '@',
   fg: '#eb4',
+  maxHP: 100,
   mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'Hitpoints']
+});
+
+EntityFactory.learn({
+  templateName: 'ogre',
+  descr: 'A mighty ogre',
+  chr: '&',
+  fg: '#7d6',
+  maxHP: 10,
+  mixins: ['WalkerCorporeal', 'Hitpoints']
 });
 
 /***/ }),

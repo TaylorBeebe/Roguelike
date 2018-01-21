@@ -22,7 +22,6 @@ class Map{
     this.attr.entityIDToLocation = {};
     this.attr.visibilityRange =  visibilityRange;
     this.attr.lastSeenGrid = {};
-    // console.dir(this.attr);
     console.log('exiting map.constructor()');
 
   }
@@ -30,8 +29,7 @@ class Map{
   setUp(){
     this.rng.setState(this.attr.rngBaseState);
     this.tileGrid = TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.rngBaseState);
-    // console.log('Tile Grid -> ');
-    // console.dir(this.tileGrid);
+
   }
 
   getID(){
@@ -139,40 +137,12 @@ class Map{
   }
 
   getTile(x,y) {
-    // console.log('x: ' + x + " y: " + y);
     if ((x < 0) || (x >= this.attr.xdim) || (y < 0) || (y >= this.attr.ydim)) {
-      // console.log('Tile out of bounds');
+
       return TILES.NULLTILE;
     }
-
-    // console.dir(this.tileGrid[x][y]);
     return this.tileGrid[x][y] || TILES.NULLTILE;
   }
-
-  // renderOn(display, camX, camY) {
-  //
-  //   // var fov = new ROT.FOV.PreciseShadowcasting(lightPasses(camX, camY));
-  //   //console.log('camX: ' + camX + ' camY: ' + camY);
-  //   let o = display.getOptions();
-  //   let xStart = camX-Math.round(o.width/2);
-  //   let yStart = camY-Math.round(o.height/2);
-  //   // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
-  //   for (let x=0;x<o.width;x++) {
-  //     for (let y=0;y<o.height;y++) {
-  //       // console.log(Math.abs(Math.sqrt(Math.pow(camX - x, 2) + Math.pow(camY - y, 2))));
-  //       // console.log('camX = ' + camX + ' curx = ' + x + ' camY = ' + camY + ' cury = ' + y);
-  //       let tile = this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart);
-  //
-  //       } else {
-  //         if ((x+xStart < 0) || (x+xStart >= this.attr.xdim) || (y+yStart < 0) || (y+yStart >= this.attr.ydim)) {
-  //           let tile = TILES.NULLTILE;
-  //         } else {
-  //         let tile = this.lastSeenGrid[x+xStart][y+yStart];
-  //       } }
-  //       tile.drawOn(display, x, y);
-  //     }
-  //   }
-  // }
 
   renderOn(display, camX, camY) {
    //console.log('camX: ' + camX + ' camY: ' + camY);
@@ -184,21 +154,17 @@ class Map{
    let m = this.getID();
 
    var lightPasses = function(x, y) {
-     if (DATASTORE.MAPS[m].getTile(x, y).isOpaque()){
-       // console.log('light passes through: ' + DATASTORE.MAPS[m].getTile(x, y).getName());
+     if (!DATASTORE.MAPS[m].getTile(x, y).isOpaque()){
        return true;
      }
-     // console.log('light does not pass through: ' +  DATASTORE.MAPS[m].getTile(x, y).getName());
+
      return false;
    }
    let visibleTiles = {};
-   // console.log('xStart: ' + xStart + ' yStart: ' + yStart);
+
    let fov = new ROT.FOV.RecursiveShadowcasting(lightPasses);
 
-   // console.log(DATASTORE.MAPS[m].attr);
    fov.compute(camX, camY, DATASTORE.MAPS[m].attr.visibilityRange, function(x, y, r, visibility){
-     // console.log('in fov.compute');
-     // console.log(x, y)
      visibleTiles[`${x},${y}`] = true;
      DATASTORE.MAPS[m].attr.lastSeenGrid[`${x},${y}`] = DATASTORE.MAPS[m].getDisplaySymbolAtMapLocation(x, y);
    })
@@ -208,13 +174,7 @@ class Map{
      for (let y=0;y<o.height;y++) {
        yIndex = y + yStart;
        if (!((xIndex < 0) || (xIndex >= this.attr.xdim) || (yIndex < 0) || (yIndex >= this.attr.ydim))){
-         // console.log(`${xIndex}, ${yIndex}`);
-         // console.log(visibleTiles[`${xIndex}, ${yIndex}`]);
          if (!visibleTiles[`${xIndex},${yIndex}`]){
-           // console.log('tile being rendered is not visible');
-           // console.log(DATASTORE.MAPS[m].attr.lastSeenGrid[`${xIndex}, ${yIndex}`]);
-           // console.log(this.attr.lastSeenGrid[`${xIndex}`][`${yIndex}`]);
-           // console.log(`${xIndex},${yIndex}`);
            if(this.attr.lastSeenGrid[`${xIndex},${yIndex}`]){
              // console.log('tile being rendered has been seen before');
              this.attr.lastSeenGrid[`${xIndex},${yIndex}`].drawOnGrey(display,x,y);
@@ -232,14 +192,8 @@ class Map{
  }
 
   getDisplaySymbolAtMapLocation(mapX,mapY) {
-    // console.log('in getDisplaySymbolAtMapLocation -> ' + mapX + ', ' + mapY);
-    // console.log('creating entityid in map.getDisplaySymbolAtMapLocation()');
-    // console.dir(this.attr);
-    // console.dir(this.attr.locationToEntityID);
     let entityId = this.attr.locationToEntityID[`${mapX},${mapY}`];
-    // console.dir(entityId);
     if (entityId) {
-      // console.log('entity at this location: ' + mapX + ', ' + mapY);
       return DATASTORE.ENTITIES[entityId];
     }
     let tile = this.getTile(mapX, mapY);
@@ -269,7 +223,6 @@ let TILE_GRID_GENERATOR = {
     gen.connect(function(x,y,isWall) {
       tg[x][y] = (isWall || x==0 || y==0 || x==xdim-1 || y==ydim-1) ? TILES.WALL : TILES.FLOOR;
     });
-    // ROT.RNG.setState(origRngState);
     return tg;
   }
 }
@@ -284,10 +237,3 @@ export function makeMap(mapData) {
   DATASTORE.MAPS[m.getID()] = m;
   return m;
 }
-
-// export function lightPasses(x,  y) {
-//   if (this.getTile(x, y).isOpaque()){
-//     return true;
-//   }
-//   return false;
-// }

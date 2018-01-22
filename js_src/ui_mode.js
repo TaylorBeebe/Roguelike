@@ -106,8 +106,8 @@ export class PlayMode extends UIMode{
           this.game.switchMode('persistence')
           return true;
         } else if (inputData.key == '1') {
-        this.move(-1,1);
-        return true;
+          this.move(-1,1);
+          return true;
         } else if (inputData.key == '2') {
           this.move(0,1);
           return true;
@@ -216,34 +216,34 @@ export class PersistenceMode extends UIMode{
 
   handleInput(inputType,inputData) {
 
-  if (inputType == 'keyup') {
-    if (inputData.key == 'n' || inputData.key == 'N') {
-      this.game.setupNewGame();
-      this.game.messageHandler.send("New game started");
-      this.game.switchMode('play');
-    }
-    else if (inputData.key == 's' || inputData.key == 'S') {
-      if (this.game.isPlaying) {
-        this.handleSave();
-        this.game.messageHandler.send("Game saved");
+    if (inputType == 'keyup') {
+      if (inputData.key == 'n' || inputData.key == 'N') {
+        this.game.setupNewGame();
+        this.game.messageHandler.send("New game started");
         this.game.switchMode('play');
       }
-    }
-    else if (inputData.key == 'l' || inputData.key == 'L') {
-      if (this.game.hasSaved) {
-        this.handleLoad();
-        this.game.messageHandler.send("Game loaded");
-        this.game.switchMode('play');
+      else if (inputData.key == 's' || inputData.key == 'S') {
+        if (this.game.isPlaying) {
+          this.handleSave();
+          this.game.messageHandler.send("Game saved");
+          this.game.switchMode('play');
+        }
       }
-    }
-    else if (inputData.key == 'Escape') {
-      if (this.game.isPlaying) {
-        this.game.switchMode('play');
+      else if (inputData.key == 'l' || inputData.key == 'L') {
+        if (this.game.hasSaved) {
+          this.handleLoad();
+          this.game.messageHandler.send("Game loaded");
+          this.game.switchMode('play');
+        }
       }
+      else if (inputData.key == 'Escape') {
+        if (this.game.isPlaying) {
+          this.game.switchMode('play');
+        }
+      }
+      return false;
     }
-    return false;
   }
-}
 
   handleSave(){
     console.log('saving game');
@@ -288,16 +288,56 @@ export class PersistenceMode extends UIMode{
 
 
   localStorageAvailable() {
-  // NOTE: see https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
-  try {
-    var x = '__storage_test__';
-    window.localStorage.setItem( x, x);
-    window.localStorage.removeItem(x);
-    return true;
-  }
-  catch(e) {
-    this.game.messageHandler.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
-    return false;
+    // NOTE: see https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
+    try {
+      var x = '__storage_test__';
+      window.localStorage.setItem( x, x);
+      window.localStorage.removeItem(x);
+      return true;
+    }
+    catch(e) {
+      this.game.messageHandler.send('Sorry, no local data storage is available for this browser so game save/load is not possible');
+      return false;
+    }
   }
 }
-}
+
+export class AttackMode extends UIMode{
+
+  enter(){//evtData){
+    super.enter();
+    // this.evtData = evtData;
+  }
+
+  exit(){
+    super.exit();
+  }
+
+  render(evtData){
+    let display = this.game.getDisplay('main')
+    display.clear();
+    display.drawText(3, 3, "Press Z to attempt a strength attack");
+    display.drawText(3, 5, "Press X to attempt an intelligence attack");
+    display.drawText(3, 7, "Press C to attempt an agility attack");
+  }
+
+  handleInput(inputType,inputData) {
+    if (inputType == 'keyup') {
+      if (inputData.key == 'z' || inputData.key == 'Z') {
+        this.evtData.attackType = 'Strength';
+        DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].raiseMixinEvent('strAttack', this.evtData);
+        this.game.switchMode('play');
+      } else if (inputData.key == 'x' || inputData.key == 'X') {
+        this.evtData.attackType = 'Intelligence';
+        DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].raiseMixinEvent('intelAttack', this.evtData);
+        this.game.switchMode('play');
+      } else if (inputData.key == 'c' || inputData.key == 'C') {
+        this.evtData.attackType = 'Agility';
+        DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].raiseMixinEvent('agilAttack', this.evtData);
+        this.game.switchMode('play');
+      } else {
+        display.drawText(0, 3, "Invalid Input...");
+      } }
+
+     }
+  }

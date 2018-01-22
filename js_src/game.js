@@ -33,7 +33,8 @@ export let Game = {
     play: '',
     lose: '',
     win: '',
-    persistence : ''
+    persistence : '',
+    attack: ''
   },
   curMode: '',
 
@@ -70,7 +71,8 @@ export let Game = {
     this.modes.lose = new LoseMode(this);
     this.modes.win = new WinMode(this);
     this.modes.persistence = new PersistenceMode(this);
-    console.log("Setup modes");
+    this.modes.attack = new AttackMode(this);
+    console.log("Modes initialized");
   },
 
   setupDisplays: function() {
@@ -150,7 +152,6 @@ export let Game = {
   eventHandler: function (eventType, evt) {
     if (this.curMode !== null && this.curMode != ''){
       if (this.curMode.handleInput(eventType, evt)){
-
         this.render();
       }
     }

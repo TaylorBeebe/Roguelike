@@ -75,7 +75,7 @@ class Map{
       return false;
     }
     if (this.testLocationBlocked(x,y)){
-      console.log('position is blocked [map.moveEntityTo()]');
+      // console.log('position is blocked [map.moveEntityTo()]');
       return false;
     }
     // console.log('entity can move to this location. moving...')
@@ -132,7 +132,10 @@ class Map{
 
 
   testLocationBlocked(x, y) {
-    return (this.attr.locationToEntityID[`${x}, ${y}`] || !this.getTile(x, y).isWalkable());
+    return (this.attr.locationToEntityID[`${x},${y}`] || !this.getTile(x, y).isWalkable());
+  }
+  getEntityAtMapLocation(x,y){
+    return this.attr.locationToEntityID[`${x},${y}`];
   }
 
   getTile(x,y) {

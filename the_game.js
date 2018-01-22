@@ -15124,7 +15124,8 @@ var Game = exports.Game = {
     play: '',
     lose: '',
     win: '',
-    persistence: ''
+    persistence: '',
+    attack: ''
   },
   curMode: '',
 
@@ -15161,7 +15162,8 @@ var Game = exports.Game = {
     this.modes.lose = new _ui_mode.LoseMode(this);
     this.modes.win = new _ui_mode.WinMode(this);
     this.modes.persistence = new _ui_mode.PersistenceMode(this);
-    console.log("Setup modes");
+    this.modes.attack = new AttackMode(this);
+    console.log("Modes initialized");
   },
 
   setupDisplays: function setupDisplays() {
@@ -15244,7 +15246,6 @@ var Game = exports.Game = {
   eventHandler: function eventHandler(eventType, evt) {
     if (this.curMode !== null && this.curMode != '') {
       if (this.curMode.handleInput(eventType, evt)) {
-
         this.render();
       }
     }
@@ -15270,7 +15271,7 @@ var Game = exports.Game = {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PersistenceMode = exports.LoseMode = exports.WinMode = exports.PlayMode = exports.StartupMode = undefined;
+exports.AttackMode = exports.PersistenceMode = exports.LoseMode = exports.WinMode = exports.PlayMode = exports.StartupMode = undefined;
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
@@ -15680,6 +15681,62 @@ var PersistenceMode = exports.PersistenceMode = function (_UIMode5) {
   return PersistenceMode;
 }(UIMode);
 
+var AttackMode = exports.AttackMode = function (_UIMode6) {
+  _inherits(AttackMode, _UIMode6);
+
+  function AttackMode() {
+    _classCallCheck(this, AttackMode);
+
+    return _possibleConstructorReturn(this, (AttackMode.__proto__ || Object.getPrototypeOf(AttackMode)).apply(this, arguments));
+  }
+
+  _createClass(AttackMode, [{
+    key: 'enter',
+    value: function enter() {
+      //evtData){
+      _get(AttackMode.prototype.__proto__ || Object.getPrototypeOf(AttackMode.prototype), 'enter', this).call(this);
+      // this.evtData = evtData;
+    }
+  }, {
+    key: 'exit',
+    value: function exit() {
+      _get(AttackMode.prototype.__proto__ || Object.getPrototypeOf(AttackMode.prototype), 'exit', this).call(this);
+    }
+  }, {
+    key: 'render',
+    value: function render(evtData) {
+      var display = this.game.getDisplay('main');
+      display.clear();
+      display.drawText(3, 3, "Press Z to attempt a strength attack");
+      display.drawText(3, 5, "Press X to attempt an intelligence attack");
+      display.drawText(3, 7, "Press C to attempt an agility attack");
+    }
+  }, {
+    key: 'handleInput',
+    value: function handleInput(inputType, inputData) {
+      if (inputType == 'keyup') {
+        if (inputData.key == 'z' || inputData.key == 'Z') {
+          this.evtData.attackType = 'Strength';
+          _datastore.DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].raiseMixinEvent('strAttack', this.evtData);
+          this.game.switchMode('play');
+        } else if (inputData.key == 'x' || inputData.key == 'X') {
+          this.evtData.attackType = 'Intelligence';
+          _datastore.DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].raiseMixinEvent('intelAttack', this.evtData);
+          this.game.switchMode('play');
+        } else if (inputData.key == 'c' || inputData.key == 'C') {
+          this.evtData.attackType = 'Agility';
+          _datastore.DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].raiseMixinEvent('agilAttack', this.evtData);
+          this.game.switchMode('play');
+        } else {
+          display.drawText(0, 3, "Invalid Input...");
+        }
+      }
+    }
+  }]);
+
+  return AttackMode;
+}(UIMode);
+
 /***/ }),
 /* 337 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -15796,7 +15853,7 @@ var Map = function () {
         return false;
       }
       if (this.testLocationBlocked(x, y)) {
-        console.log('position is blocked [map.moveEntityTo()]');
+        // console.log('position is blocked [map.moveEntityTo()]');
         return false;
       }
       // console.log('entity can move to this location. moving...')
@@ -15865,7 +15922,12 @@ var Map = function () {
   }, {
     key: 'testLocationBlocked',
     value: function testLocationBlocked(x, y) {
-      return this.attr.locationToEntityID[x + ', ' + y] || !this.getTile(x, y).isWalkable();
+      return this.attr.locationToEntityID[x + ',' + y] || !this.getTile(x, y).isWalkable();
+    }
+  }, {
+    key: 'getEntityAtMapLocation',
+    value: function getEntityAtMapLocation(x, y) {
+      return this.attr.locationToEntityID[x + ',' + y];
     }
   }, {
     key: 'getTile',
@@ -16460,10 +16522,7 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
     mixinGroupName: 'Walker'
   },
   METHODS: {
-
-    //tryWalk from class
     tryWalk: function tryWalk(dx, dy) {
-      // console.log('now in the entity_mixins.tryWalk() function');
       var newX = this.attr.x * 1 + dx * 1;
       var newY = this.attr.y * 1 + dy * 1;
 
@@ -16472,6 +16531,11 @@ var WalkerCorporeal = exports.WalkerCorporeal = {
         this.raiseMixinEvent('turnTaken', { timeUsed: 1 });
         // console.log(this.getTime());
         return true;
+      } else if (this.getMap().getEntityAtMapLocation(newX, newY)) {
+        // this.raiseMixinEvent('entityCollision', {
+        //   wasAttackedBy: this,
+        //   victim: this.getMap().getEntityAtMapLocation(newX, newY),
+        // });
       } else {
         this.raiseMixinEvent('walkBlocked', { reason: "there's something in the way" });
         return false;
@@ -16661,7 +16725,8 @@ var StrengthAttack = exports.StrengthAttack = {
   LISTENERS: {
     //evtData contains -> wasDamagedBy(attacker), attackType(Strenth), victim(victim of attack), damageAmount(amount of damage dealt)
     'strAttack': function strAttack(evtData) {
-      this.raiseMixinEvent('attacked', { attacker: this.getName(), victim: evtData.victim });
+      evtData.damageAmount = this.getStrengthAttackDamage();
+      this.raiseMixinEvent('attacked', evtData);
       evtData.victim.raiseMixinEvent('damaged', evtData);
     }
   }
@@ -16690,7 +16755,8 @@ var IntelligenceAttack = exports.IntelligenceAttack = {
   LISTENERS: {
     //evtData contains -> wasDamagedBy(attacker), attackType(Ingelligence), victim(victim of attack), damageAmount(amount of damage dealt)
     'intelAttack': function intelAttack(evtData) {
-      this.raiseMixinEvent('attacked', { attacker: this.getName(), victim: evtData.victim });
+      evtData.damageAmount = this.getIntelligenceAttackDamage();
+      this.raiseMixinEvent('attacked', evtData);
       evtData.victim.raiseMixinEvent('damaged', evtData);
     }
   }
@@ -16719,11 +16785,66 @@ var AgilityAttack = exports.AgilityAttack = {
   LISTENERS: {
     //evtData contains -> wasDamagedBy(attacker), attackType(Agility), victim(victim of attack), damageAmount(amount of damage dealt)
     'agilAttack': function agilAttack(evtData) {
-      this.raiseMixinEvent('attacked', { attacker: this.getName(), victim: evtData.victim });
+      evtData.damageAmount = this.getAgilityAttackDamage();
+      this.raiseMixinEvent('attacked', evtData);
       evtData.victim.raiseMixinEvent('damaged', evtData);
     }
   }
 };
+
+// export let Collision = {
+//   META:{
+//     mixinName: 'Collision',
+//     mixinGroupName: 'Combat',
+//     stateNamespace: '_Collision',
+//     stateModel: {
+//
+//     },
+//   },
+//   LISTENERS:{
+//     'entityCollision': function(evtData){
+//       let display = DATASTORE.GAME.getDisplay('main');
+//       display.clear();
+//       display.drawText(3, 3, "Press Z to attempt a strength attack");
+//       display.drawText(3, 5, "Press X to attempt an intelligence attack");
+//       display.drawText(3, 7, "Press C to attempt an agility attack");
+//       let attackType = '';
+//       while(true){
+//         if (inputType == 'keyup') {
+//           if (inputData.key == 'z' || inputData.key == 'Z') {
+//             attackType = 'Strength';
+//             break;
+//           } else if (inputData.key == 'x' || inputData.key == 'X') {
+//             attackType = 'Intelligence';
+//             break;
+//           } else if (inputData.key == 'c' || inputData.key == 'C') {
+//             attackType = 'Agility';
+//             break;
+//           } else{
+//             display.drawText(0, 3, "Invalid Input...")
+//           } } }
+//       evtData.attackType = attackType;
+//       if (attackType == 'Strength'){
+//         this.raiseMixinEvent('strAttack', evtData);
+//       } else if(attackType == 'Intelligence'){
+//         this.raiseMixinEvent('intelAttack', evtData);
+//       } else if (attackType == 'Agility'){
+//         this.raiseMixinEvent('agilAttack', evtData);
+//       }
+//     }
+//   }
+// };
+
+// export let randomWalk = {
+//   META:{
+//     mixinName: 'randomWalk',
+//     mixinGroupName: 'randomWalk',
+//   },
+//   METHODS:{
+//     method1: function(p){
+//     }
+//   }
+// }
 
 /***/ })
 /******/ ]);

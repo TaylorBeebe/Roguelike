@@ -17,7 +17,8 @@ EntityFactory.learn({
     'Stats',
     'StrengthAttack',
     'IntelligenceAttack',
-    'AgilityAttack'
+    'AgilityAttack',
+    // 'Collision'
   ]
 });
 

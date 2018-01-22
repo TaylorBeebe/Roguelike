@@ -40,7 +40,7 @@ export let Game = {
   },
   curMode: '',
 
-  _PERSISTANCE_NAMESPACE: 'ROGUELIKE GAME NAME',
+  _PERSISTANCE_NAMESPACE: 'CaveCrawler',
 
   isPlaying: false,
   hasSaved: false,

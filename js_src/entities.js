@@ -25,7 +25,7 @@ EntityFactory.learn({
   templateName: 'ogre',
   descr: 'A mighty ogre',
   chr: '&',
-  fg: '#7d6',
+  fg: '#c21515',
   maxHP: 20,
   mixins: ['WalkerCorporeal', 'Hitpoints', 'Stats', 'StrengthAttack']
 });

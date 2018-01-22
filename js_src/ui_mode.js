@@ -62,6 +62,11 @@ export class PlayMode extends UIMode{
     let m = makeMap({xdim: 60, ydim:20});
     a.setPos(m.getUnblockedPerimeterLocation());
     m.addEntity(a);
+    for (let x = 0; x < 5; x++){
+      let b = EntityFactory.create('ogre');
+      b.setPos(m.getRandomUnblockedPosition());
+      m.addEntity(b);
+    }
     this._GAMESTATE_ = {};
     this._GAMESTATE_.avatarId = a.getID();
     this._GAMESTATE_.curMapId = m.getID();

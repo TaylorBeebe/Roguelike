@@ -15389,6 +15389,11 @@ var PlayMode = exports.PlayMode = function (_UIMode2) {
       var m = (0, _map.makeMap)({ xdim: 60, ydim: 20 });
       a.setPos(m.getUnblockedPerimeterLocation());
       m.addEntity(a);
+      for (var x = 0; x < 5; x++) {
+        var b = _entities.EntityFactory.create('ogre');
+        b.setPos(m.getRandomUnblockedPosition());
+        m.addEntity(b);
+      }
       this._GAMESTATE_ = {};
       this._GAMESTATE_.avatarId = a.getID();
       this._GAMESTATE_.curMapId = m.getID();
@@ -16080,7 +16085,7 @@ EntityFactory.learn({
   templateName: 'ogre',
   descr: 'A mighty ogre',
   chr: '&',
-  fg: '#7d6',
+  fg: '#c21515',
   maxHP: 20,
   mixins: ['WalkerCorporeal', 'Hitpoints', 'Stats', 'StrengthAttack']
 });
@@ -16544,8 +16549,8 @@ var Stats = exports.Stats = {
       this.attr._Stats.agility += deltaAgi;
     },
     getStats: function getStats() {
-      console.log('fetching stats');
-      console.dir(this.attr._Stats);
+      // console.log('fetching stats');
+      // console.dir(this.attr._Stats);
       return { agility: this.attr._Stats.agility, strength: this.attr._Stats.strength,
         intelligence: this.attr._Stats.intelligence };
     },

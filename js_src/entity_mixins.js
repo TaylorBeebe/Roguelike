@@ -145,8 +145,8 @@ export let Stats = {
       this.attr._Stats.agility += deltaAgi;
     },
     getStats: function(){
-      console.log('fetching stats');
-      console.dir(this.attr._Stats);
+      // console.log('fetching stats');
+      // console.dir(this.attr._Stats);
       return {agility: this.attr._Stats.agility, strength: this.attr._Stats.strength,
          intelligence: this.attr._Stats.intelligence};
     },

@@ -64,7 +64,6 @@ class Map{
     this.attr.locationToEntityID[ent.getxcy()] = ent.getID();
    }
 
-
   removeEntity(ent){
     ent.setMapID('');
     delete this.attr.entityIDToLocation[ent.getID()];

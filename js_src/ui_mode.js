@@ -33,10 +33,20 @@ export class StartupMode extends UIMode {
 
   enter(){
     super.enter();
-    this.game.messageHandler.send("Welcome to ROGUELIKE GAME NAME");
+    this.game.messageHandler.send("Welcome to Cave Crawler!");
   }
 
   render(){
+    this.display.drawText(2,5, '   ______     ______     __   __   ______ ');
+    this.display.drawText(1,6, '  /\\  ___\    /\\  __ \\   /\\ \\ / /  /\\  ___\\');
+    this.display.drawText(1,7, '  \\ \\ \\____  \\ \\  __ \\  \\ \\ \\\'/   \\ \\  __\\');
+    this.display.drawText(2,8, '   \\ \\_____\\  \\ \\_\\ \\_\\  \\ \\__|    \\ \\_____\\ ');
+    this.display.drawText(3,9, '    \\/_____/   \\/_/\\/_/   \\/_/      \\/_____/')
+    this.display.drawText(2,10, '   ______     ______     ______     __     __     __         ______     ______');
+    this.display.drawText(1,11, '  /\\  ___\\   /\\  == \\   /\\  __ \\   /\\ \\  _ \\ \\   /\\ \\       /\\  ___\\   /\\  == \\');
+    this.display.drawText(1,12, '  \\ \\ \\____  \\ \\  __<   \\ \\  __ \\  \\ \\ \\/ ".\\ \\  \\ \\ \\____  \\ \\  __\\   \\ \\  __<');
+    this.display.drawText(2,13, '   \\ \\_____\\  \\ \\_\\ \\_\\  \\ \\_\\ \\_\\  \\ \\__/".~\\_\\  \\ \\_____\\  \\ \\_____\\  \\ \\_\\ \\_\\ ');
+    this.display.drawText(3,14, '    \\/_____/   \\/_/ /_/   \\/_/\\/_/   \\/_/   \\/_/   \\/_____/   \\/_____/   \\/_/ /_/ ');
     this.display.drawText(33, 1, "Press any key to advance");
     console.log("rendering StartupMode");
   }

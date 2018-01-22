@@ -102,9 +102,10 @@ export let PlayerMessage = {
     'expChangedMessage': function(evtData){
       if(evtData.deltaExp > 0){
         Messenger.send(`${this.getName()} gained ${evtData.deltaExp} experience.`);
-      } else if (evtData.deltaExp < 0){
-        Messenger.send(`${this.getName()} lost ${evtData.deltaExp} experience.`);
       }
+      // } else if (evtData.deltaExp < 0){
+      //   Messenger.send(`${this.getName()} lost ${evtData.deltaExp} experience.`);
+      // }
     },
     'gainedStatsPointMessage': function(evtData){
       Messenger.send(`${this.getName()} gained 1 ${evtData.deltaStat} point!`);
@@ -154,12 +155,15 @@ export let Stats = {
     },
     getExp: function(){
       return this.attr._Stats.experience;
+    },
+    gainExp: function(deltaExp){
+      this.attr._Stats.experience += deltaExp;
     }
   },
   LISTENERS:{
     //evtData contain -> deltaExp (exp change amount)
     'deltaExp': function(evtData){
-      this.deltaExp(evtData.deltaExp);
+      this.gainExp(evtData.deltaExp);
       this.raiseMixinEvent('expChangedMessage', evtData);
     },
     //evtData contain -> deltaStat (stat changed)
@@ -233,6 +237,8 @@ export let Hitpoints = {
     'killed': function(evtData){
       console.log('entity killed mixin event');
       Messenger.send(`${evtData.wasDamagedBy.name} killed ${evtData.victim.name}!`);
+      evtData.deltaExp = 20;
+      evtData.wasDamagedBy.raiseMixinEvent('deltaExp', evtData);
       this.destroy();
     }
   }

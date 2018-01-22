@@ -78,96 +78,94 @@ export class PlayMode extends UIMode{
     };
   }
 
-    render(){
-      this.display.clear();
-      if (this.checkGamestate()){ return; }
-      DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
-      this.game.renderDisplayAvatar();
 
-    }
-
-    checkGamestate(){
-      let avatar = this.getAvatar();
-      if(!avatar){
-        this.game.switchMode('lose');
-        return true;
-      }
-    }
-
-    handleInput(eventType, inputData){
-      if (eventType == 'keyup'){
-        if(inputData.key == 'l' || inputData.key == 'L'){
-          this.game.switchMode('lose');
-        } else if (inputData.key == 'w'|| inputData.key == 'W'){
-          this.game.switchMode('win');
-        } else if (inputData.key == '='){
-          this.game.switchMode('persistence')
-        } else if (inputData.key == '1') {
-          this.move(-1,1);
-        } else if (inputData.key == '2') {
-          this.move(0,1);
-        } else if (inputData.key == '3') {
-          this.move(1,1);
-        } else if (inputData.key == '4') {
-          this.move(-1,0);
-        } else if (inputData.key == '6') {
-          this.move(1,0);
-        } else if (inputData.key == '7') {
-          this.move(-1,-1);
-        } else if (inputData.key == '8') {
-          this.move(0,-1);
-        } else if (inputData.key == '9') {
-          this.move(1,-1);
-        } else{
-          return false;
-        } return true;
-      }
-    }
-
-
-    renderAvatar(display){
-      // console.log('in PlayMode.renderAvatar()');
-      display.clear();
-      display.drawText(0,0, "AVATAR");
-      display.drawText(0,2,"Time: " + this.getAvatar().getTime());
-      display.drawText(0,4, "HP: " + this.getAvatar().getCurHP());
-      display.drawText(0,6, "Str: " + this.getAvatar().getStats().strength);
-      display.drawText(0,8, "Int: " + this.getAvatar().getStats().intelligence);
-      display.drawText(0,10, "Agil: " + this.getAvatar().getStats().agility);
-      display.drawText(0,12, "Exp: " + this.getAvatar().getExp());
-    }
-
-
-    move(x, y){
-      this.getAvatar().tryWalk(x, y);
-      this.cameraToAvatar();
-
-    }
-
-    cameraToAvatar(){
-      if(this.getAvatar()){
-        this._GAMESTATE_.cameraMapLoc.x = this.getAvatar().getX();
-        this._GAMESTATE_.cameraMapLoc.y = this.getAvatar().getY();
-      }
-    }
-
-    toJSON(){
-      return JSON.stringify(this._GAMESTATE_);
-    }
-
-    fromJSON(json){
-      this._GAMESTATE_ = JSON.parse(json);
-    }
-
-    getAvatar(){
-      if (this._GAMESTATE_.avatarId) { return DATASTORE.ENTITIES[this._GAMESTATE_.avatarId]; }
-      else {
-        console.log('avatar not available! cannot fetch avatar reference!')
-        return false;
-      }
-    }
-
+  render(){
+    this.display.clear();
+    if (this.checkGamestate()){ return; }
+    DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
+    this.game.renderDisplayAvatar();
   }
+
+  checkGamestate(){
+    let avatar = this.getAvatar();
+    if(!avatar){
+      this.game.switchMode('lose');
+      return true;
+    }
+  }
+
+  handleInput(eventType, inputData){
+    if (eventType == 'keyup'){
+      if(inputData.key == 'l' || inputData.key == 'L'){
+        this.game.switchMode('lose');
+      } else if (inputData.key == 'w'|| inputData.key == 'W'){
+        this.game.switchMode('win');
+      } else if (inputData.key == '='){
+        this.game.switchMode('persistence')
+      } else if (inputData.key == '1') {
+        this.move(-1,1);
+      } else if (inputData.key == '2') {
+        this.move(0,1);
+      } else if (inputData.key == '3') {
+        this.move(1,1);
+      } else if (inputData.key == '4') {
+        this.move(-1,0);
+      } else if (inputData.key == '6') {
+        this.move(1,0);
+      } else if (inputData.key == '7') {
+        this.move(-1,-1);
+      } else if (inputData.key == '8') {
+        this.move(0,-1);
+      } else if (inputData.key == '9') {
+        this.move(1,-1);
+      } else{
+        return false;
+      } return true;
+    }
+  }
+
+  renderAvatar(display){
+    // console.log('in PlayMode.renderAvatar()');
+    display.clear();
+    display.drawText(0,0, "AVATAR");
+    display.drawText(0,2,"Time: " + this.getAvatar().getTime());
+    display.drawText(0,4, "HP: " + this.getAvatar().getCurHP());
+    display.drawText(0,6, "Str: " + this.getAvatar().getStats().strength);
+    display.drawText(0,8, "Int: " + this.getAvatar().getStats().intelligence);
+    display.drawText(0,10, "Agil: " + this.getAvatar().getStats().agility);
+    display.drawText(0,12, "Exp: " + this.getAvatar().getExp());
+  }
+
+
+  move(x, y){
+    this.getAvatar().tryWalk(x, y);
+    this.cameraToAvatar();
+    }
+
+  cameraToAvatar(){
+    if(this.getAvatar()){
+      this._GAMESTATE_.cameraMapLoc.x = this.getAvatar().getX();
+      this._GAMESTATE_.cameraMapLoc.y = this.getAvatar().getY();
+    }
+  }
+
+  toJSON(){
+    return JSON.stringify(this._GAMESTATE_);
+  }
+
+  fromJSON(json){
+    this._GAMESTATE_ = JSON.parse(json);
+  }
+
+  getAvatar(){
+    if (this._GAMESTATE_.avatarId) { return DATASTORE.ENTITIES[this._GAMESTATE_.avatarId]; }
+    else {
+      console.log('avatar not available! cannot fetch avatar reference!')
+      return false;
+    }
+  }
+
+}
 
 export class WinMode extends UIMode{
   render(){
@@ -293,7 +291,7 @@ export class PersistenceMode extends UIMode{
 
 export class AttackMode extends UIMode{
 
-  enter(evtData){//evtData){
+  enter(evtData){
     this.evtData = evtData;
   }
 
@@ -329,3 +327,13 @@ export class AttackMode extends UIMode{
       } }
      }
   }
+
+export class LevelUpMode extends UIMode{
+  enter(evtData){
+    this.evtData = evtData;
+  }
+
+
+
+
+}

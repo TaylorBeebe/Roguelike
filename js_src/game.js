@@ -1,6 +1,7 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode, PlayMode, LoseMode, WinMode, PersistenceMode, AttackMode} from './ui_mode.js';
+import {StartupMode, PlayMode, LoseMode, WinMode,
+  PersistenceMode, AttackMode, LevelUpMode} from './ui_mode.js';
 import {Messenger} from './messenger.js';
 import {DATASTORE, initializeDatastore} from './datastore.js';
 
@@ -34,7 +35,8 @@ export let Game = {
     lose: '',
     win: '',
     persistence : '',
-    attack: ''
+    attack: '',
+    levelup: ''
   },
   curMode: '',
 
@@ -99,7 +101,14 @@ export let Game = {
   enterAttackMode: function(evtData){
     console.log('entering attack mode');
     if(this.curMode != this.modes['play']) { return; }
-    this.curMode = this.modes['attack']
+    this.curMode = this.modes['attack'];
+    this.curMode.enter(evtData);
+  },
+
+  enterLevelUpMode: function(evtData){
+    console.log('entering level up mode');
+    if(this.curMode != this.modes['play']) { return; }
+    this.curMode = this.modes['levelup'];
     this.curMode.enter(evtData);
   },
 

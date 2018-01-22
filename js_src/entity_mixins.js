@@ -99,9 +99,6 @@ export let PlayerMessage = {
     'healedMessage': function (evtData){
       Messenger.send(`${this.getName()} gained ${evtData.healAmount} HP`);
     },
-    'killedMessage': function(evtData){
-      Messenger.send(`${evtData.wasDamagedBy} killed ${this.getName()}!`)
-    },
     'expChangedMessage': function(evtData){
       if(evtData.deltaExp > 0){
         Messenger.send(`${this.getName()} gained ${evtData.deltaExp} experience.`);
@@ -234,7 +231,8 @@ export let Hitpoints = {
       }
     },
     'killed': function(evtData){
-      this.raiseMixinEvent('killedMessage', evtData)
+      console.log('entity killed mixin event');
+      Messenger.send(`${evtData.wasDamagedBy.name} killed ${evtData.victim.name}!`);
       this.destroy();
     }
   }

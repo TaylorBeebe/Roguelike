@@ -67,7 +67,7 @@ class Map{
   removeEntity(ent){
     ent.setMapID('');
     delete this.attr.entityIDToLocation[ent.getID()];
-    delete this.attr.locationToEntityID[ent.getPos()];
+    delete this.attr.locationToEntityID[ent.getxcy()];
   }
 
   moveEntityTo(ent, x, y){

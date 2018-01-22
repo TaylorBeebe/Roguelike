@@ -1,6 +1,6 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode, PlayMode, LoseMode, WinMode, PersistenceMode} from './ui_mode.js';
+import {StartupMode, PlayMode, LoseMode, WinMode, PersistenceMode, AttackMode} from './ui_mode.js';
 import {Messenger} from './messenger.js';
 import {DATASTORE, initializeDatastore} from './datastore.js';
 
@@ -94,6 +94,13 @@ export let Game = {
       this.curMode.enter();
     }
     this.render();
+  },
+
+  enterAttackMode: function(evtData){
+    console.log('entering attack mode');
+    if(this.curMode != this.modes['play']) { return; }
+    this.curMode = this.modes['attack']
+    this.curMode.enter(evtData);
   },
 
   setupNewGame(){

@@ -18,7 +18,7 @@ EntityFactory.learn({
     'StrengthAttack',
     'IntelligenceAttack',
     'AgilityAttack',
-    // 'Collision'
+    'PlayerAttack'
   ]
 });
 
@@ -27,6 +27,6 @@ EntityFactory.learn({
   descr: 'A mighty ogre',
   chr: '&',
   fg: '#c21515',
-  maxHP: 20,
-  mixins: ['WalkerCorporeal', 'Hitpoints', 'Stats', 'StrengthAttack']
+  maxHP: 5,
+  mixinNames: ['Hitpoints', 'Stats', 'StrengthAttack']
 });

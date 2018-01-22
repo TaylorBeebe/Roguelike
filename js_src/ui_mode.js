@@ -98,40 +98,30 @@ export class PlayMode extends UIMode{
       if (eventType == 'keyup'){
         if(inputData.key == 'l' || inputData.key == 'L'){
           this.game.switchMode('lose');
-          return true;
         } else if (inputData.key == 'w'|| inputData.key == 'W'){
           this.game.switchMode('win');
-          return true;
         } else if (inputData.key == '='){
           this.game.switchMode('persistence')
-          return true;
         } else if (inputData.key == '1') {
           this.move(-1,1);
-          return true;
         } else if (inputData.key == '2') {
           this.move(0,1);
-          return true;
         } else if (inputData.key == '3') {
           this.move(1,1);
-          return true;
         } else if (inputData.key == '4') {
           this.move(-1,0);
-          return true;
         } else if (inputData.key == '6') {
           this.move(1,0);
-          return true;
         } else if (inputData.key == '7') {
           this.move(-1,-1);
-          return true;
         } else if (inputData.key == '8') {
           this.move(0,-1);
-          return true;
         } else if (inputData.key == '9') {
           this.move(1,-1);
-          return true;
-        }
+        } else{
+          return false;
+        } return true;
       }
-      return false;
     }
 
 
@@ -151,7 +141,7 @@ export class PlayMode extends UIMode{
     move(x, y){
       this.getAvatar().tryWalk(x, y);
       this.cameraToAvatar();
-      Messenger.ageMessages();
+
     }
 
     cameraToAvatar(){
@@ -274,7 +264,6 @@ export class PersistenceMode extends UIMode{
     }
     console.log('all maps restored');
 
-    //CHECK ACCURATE VARIABLE NAMES
     console.log('loading entities');
     for (let savedEntityId in saved_GAMESTATE_.ENTITIES){
       let entState = JSON.parse(saved_GAMESTATE_.ENTITIES[savedEntityId]);
@@ -304,40 +293,39 @@ export class PersistenceMode extends UIMode{
 
 export class AttackMode extends UIMode{
 
-  enter(){//evtData){
-    super.enter();
-    // this.evtData = evtData;
+  enter(evtData){//evtData){
+    this.evtData = evtData;
   }
 
   exit(){
     super.exit();
   }
 
-  render(evtData){
+  render(){
     let display = this.game.getDisplay('main')
     display.clear();
     display.drawText(3, 3, "Press Z to attempt a strength attack");
     display.drawText(3, 5, "Press X to attempt an intelligence attack");
     display.drawText(3, 7, "Press C to attempt an agility attack");
+    console.dir(DATASTORE);
   }
 
   handleInput(inputType,inputData) {
     if (inputType == 'keyup') {
       if (inputData.key == 'z' || inputData.key == 'Z') {
         this.evtData.attackType = 'Strength';
-        DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].raiseMixinEvent('strAttack', this.evtData);
+        DATASTORE.ENTITIES[this.evtData.avatarID].raiseMixinEvent('strAttack', this.evtData);
         this.game.switchMode('play');
       } else if (inputData.key == 'x' || inputData.key == 'X') {
         this.evtData.attackType = 'Intelligence';
-        DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].raiseMixinEvent('intelAttack', this.evtData);
+        DATASTORE.ENTITIES[this.evtData.avatarID].raiseMixinEvent('intelAttack', this.evtData);
         this.game.switchMode('play');
       } else if (inputData.key == 'c' || inputData.key == 'C') {
         this.evtData.attackType = 'Agility';
-        DATASTORE.ENTITIES[this._GAMESTATE_.avatarId].raiseMixinEvent('agilAttack', this.evtData);
+        DATASTORE.ENTITIES[this.evtData.avatarID].raiseMixinEvent('agilAttack', this.evtData);
         this.game.switchMode('play');
       } else {
-        display.drawText(0, 3, "Invalid Input...");
+        this.game.getDisplay('main').drawText(3, 0, "Invalid Input...");
       } }
-
      }
   }

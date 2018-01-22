@@ -22,6 +22,7 @@ export let Messenger = {
   },
 
   send: function(msg){
+    this.ageMessages();
     this.messageQueue.unshift({'txt':msg,'age':0});
     while(this.messageQueue.length > this.maxLength){
       this.messageQueue.pop();

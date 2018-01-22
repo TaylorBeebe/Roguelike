@@ -68,10 +68,12 @@ export let WalkerCorporeal = {
         // console.log(this.getTime());
         return true;
       } else if(this.getMap().getEntityAtMapLocation(newX, newY)){
-        // this.raiseMixinEvent('entityCollision', {
-        //   wasAttackedBy: this,
-        //   victim: this.getMap().getEntityAtMapLocation(newX, newY),
-        // });
+        // console.log('entity at desired position');
+        this.raiseMixinEvent('chooseAttack', {
+          wasDamagedBy: this,
+          victim: DATASTORE.ENTITIES[this.getMap().getEntityAtMapLocation(newX, newY)],
+          avatarID: this.getID()
+        });
       } else {
       this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
       return false;
@@ -111,7 +113,7 @@ export let PlayerMessage = {
       Messenger.send(`${this.getName()} gained 1 ${evtData.deltaStat} point!`);
     },
     'attackedMessage': function(evtData){
-      Messenger.send(`${evtData.attacker} attacked ${evtData.victim}`);
+      Messenger.send(`${evtData.wasDamagedBy.name} hit ${evtData.victim.name} with a ${evtData.attackType} attack and dealt ${evtData.damageAmount} damage`);
     }
   }
 }
@@ -224,10 +226,11 @@ export let Hitpoints = {
   LISTENERS:{
     'damaged': function(evtData){
       this.loseHP(evtData.damageAmount);
+      console.log('Attack Successful! ' + evtData.victim.name + " now has " + evtData.victim.getCurHP() + ' HP');
       this.raiseMixinEvent('damagedMessage', evtData);
 
-      if (this.attr._Hitpoints.curHP <= 0){
-        this.raiseMixinEvent('killedMessage', evtData);
+      if (this.getCurHP() <= 0){
+        this.raiseMixinEvent('killed', evtData);
       }
     },
     'killed': function(evtData){
@@ -262,7 +265,8 @@ export let StrengthAttack = {
     //evtData contains -> wasDamagedBy(attacker), attackType(Strenth), victim(victim of attack), damageAmount(amount of damage dealt)
     'strAttack': function(evtData){
       evtData.damageAmount = this.getStrengthAttackDamage();
-      this.raiseMixinEvent('attacked', evtData);
+      this.raiseMixinEvent('attackedMessage', evtData);
+      console.dir(evtData.victim);
       evtData.victim.raiseMixinEvent('damaged', evtData);
     }
   }
@@ -293,7 +297,7 @@ export let IntelligenceAttack = {
     //evtData contains -> wasDamagedBy(attacker), attackType(Ingelligence), victim(victim of attack), damageAmount(amount of damage dealt)
     'intelAttack': function(evtData){
       evtData.damageAmount = this.getIntelligenceAttackDamage();
-      this.raiseMixinEvent('attacked', evtData);
+      this.raiseMixinEvent('attackedMessage', evtData);
       evtData.victim.raiseMixinEvent('damaged', evtData);
     }
   }
@@ -324,54 +328,27 @@ export let AgilityAttack = {
     //evtData contains -> wasDamagedBy(attacker), attackType(Agility), victim(victim of attack), damageAmount(amount of damage dealt)
     'agilAttack': function(evtData){
       evtData.damageAmount = this.getAgilityAttackDamage();
-      this.raiseMixinEvent('attacked', evtData);
+      this.raiseMixinEvent('attackedMessage', evtData);
       evtData.victim.raiseMixinEvent('damaged', evtData);
     }
   }
 };
 
-// export let Collision = {
-//   META:{
-//     mixinName: 'Collision',
-//     mixinGroupName: 'Combat',
-//     stateNamespace: '_Collision',
-//     stateModel: {
-//
-//     },
-//   },
-//   LISTENERS:{
-//     'entityCollision': function(evtData){
-//       let display = DATASTORE.GAME.getDisplay('main');
-//       display.clear();
-//       display.drawText(3, 3, "Press Z to attempt a strength attack");
-//       display.drawText(3, 5, "Press X to attempt an intelligence attack");
-//       display.drawText(3, 7, "Press C to attempt an agility attack");
-//       let attackType = '';
-//       while(true){
-//         if (inputType == 'keyup') {
-//           if (inputData.key == 'z' || inputData.key == 'Z') {
-//             attackType = 'Strength';
-//             break;
-//           } else if (inputData.key == 'x' || inputData.key == 'X') {
-//             attackType = 'Intelligence';
-//             break;
-//           } else if (inputData.key == 'c' || inputData.key == 'C') {
-//             attackType = 'Agility';
-//             break;
-//           } else{
-//             display.drawText(0, 3, "Invalid Input...")
-//           } } }
-//       evtData.attackType = attackType;
-//       if (attackType == 'Strength'){
-//         this.raiseMixinEvent('strAttack', evtData);
-//       } else if(attackType == 'Intelligence'){
-//         this.raiseMixinEvent('intelAttack', evtData);
-//       } else if (attackType == 'Agility'){
-//         this.raiseMixinEvent('agilAttack', evtData);
-//       }
-//     }
-//   }
-// };
+export let PlayerAttack = {
+  META:{
+    mixinName: 'PlayerAttack',
+    mixinGroupName: 'Combat',
+    stateNamespace: '_PlayerAttack',
+    stateModel: {
+    },
+  },
+  LISTENERS:{
+    'chooseAttack': function(evtData){
+      console.log('choosing attack');
+      DATASTORE.GAME.enterAttackMode(evtData);
+    }
+  }
+};
 
 // export let randomWalk = {
 //   META:{

@@ -156,7 +156,7 @@ export let Stats = {
     getExp: function(){
       return this.attr._Stats.experience;
     },
-    gainExp: function(deltaExp){
+    deltaExp: function(deltaExp){
       this.attr._Stats.experience += deltaExp;
     },
     getRequiredUpgradePoints: function(stat){
@@ -172,7 +172,7 @@ export let Stats = {
   LISTENERS:{
     //evtData contain -> deltaExp (exp change amount)
     'deltaExp': function(evtData){
-      this.gainExp(evtData.deltaExp);
+      this.deltaExp(evtData.deltaExp);
       this.raiseMixinEvent('expChangedMessage', evtData);
     },
     //evtData contain -> deltaStat (stat changed)

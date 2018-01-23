@@ -344,31 +344,106 @@ export class LevelUpMode extends UIMode{
 
   enter(){
     this.avatar = DATASTORE.ENTITIES[DATASTORE.GAME.modes.play._GAMESTATE_.avatarId];
+    this.intelExpReq = this.avatar.getRequiredUpgradePoints('intelligence');
+    this.strExpReq = this.avatar.getRequiredUpgradePoints('strength');
+    this.agilExpReq = this.avatar.getRequiredUpgradePoints('agility');
+    this.exp = this.avatar.getExp();
   }
 
   render(){
-    let intelExpReq = this.avatar.getRequiredUpgradePoints('intelligence');
-    let strExpReq = this.avatar.getRequiredUpgradePoints('strength');
-    let agilExpReq = this.avatar.getRequiredUpgradePoints('agility');
-
     console.dir(DATASTORE.GAME.modes);
-    this.display.drawText(2, 0, 'You have '
-    + this.avatar.getExp() + ' experience points.');
-    this.display.drawText(0, 2, '--------------------------------------------------------------------------------');
-    this.display.drawText(60, 3,'|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|');
-    this.display.drawText(20, 4, 'Strength: ' + this.avatar.getStats().strength + ' (' + strExpReq + ' exp to upgrade)');
-    this.display.drawText(20, 6, 'Intelligence: ' + this.avatar.getStats().intelligence + ' (' + intelExpReq + ' exp to upgrade)');
-    this.display.drawText(20, 8, 'Agility: ' + this.avatar.getStats().agility + ' (' + agilExpReq + ' exp to upgrade)');
+    this.display.drawText(2, 0, 'You have ' + this.exp + ' experience points.');
+    this.display.drawText(0, 1, '-------------------------------------------');
+    this.display.drawText(42, 0,'|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|');
+    this.display.drawText(30, 2, 'STATS');
+    this.display.drawText(7, 4, 'Strength: ' + this.avatar.getStats().strength + ' (' + this.strExpReq + ' exp to upgrade)');
+    this.display.drawText(7, 7, 'Intelligence: ' + this.avatar.getStats().intelligence + ' (' + this.intelExpReq + ' exp to upgrade)');
+    this.display.drawText(7, 10, 'Agility: ' + this.avatar.getStats().agility + ' (' + this.agilExpReq + ' exp to upgrade)');
+    if (this.strExpReq <= this.exp){
+      // this.display.drawText(0, 3, 'Press 1 to upgrade:');
+      this.display.drawText(1, 3, '%c{#7CFC00}Press 1 to upgrade:%c{}');
 
+    }
+    if (this.intelExpReq <= this.exp){
+      this.display.drawText(1, 6, '%c{#7CFC00}Press 2 to upgrade:%c{}');
+    }
+    if (this.agilExpReq <= this.exp){
+      this.display.drawText(1, 9, '%c{#7CFC00}Press 3 to upgrade:%c{}');
+    }
   }
 
   handleInput(inputType,inputData) {
     if (inputType == 'keyup') {
       if (inputData.key == 'Escape'){
         this.game.switchMode('play');
+      } else if (inputData.key == '1' && this.strExpReq <= this.exp){
+        this.avatar.deltaStrength(1);
+        this.avatar.deltaExp(-this.strExpReq);
+      } else if (inputData.key == '2' && this.intelExpReq <= this.exp){
+        this.avatar.deltaIntelligence(1);
+        this.avatar.deltaExp(-this.intelExpReq);
+      } else if (inputData.key == '3' && this.agilExpReq <= this.exp){
+        this.avatar.deltaAgility(1);
+        this.avatar.deltaExp(-this.agilExpReq);
+      } else{
+        return false;
       }
     }
+    this.intelExpReq = this.avatar.getRequiredUpgradePoints('intelligence');
+    this.strExpReq = this.avatar.getRequiredUpgradePoints('strength');
+    this.agilExpReq = this.avatar.getRequiredUpgradePoints('agility');
+    this.exp = this.avatar.getExp();
+    return true;
   }
+
+
+//                   {}
+//   ,   A           {}
+//  / \, | ,        .--.
+// |    =|= >      /.--.\
+//  \ /` | `       |====|
+//   `   |         |`::`|
+//       |     .-;`\..../`;_.-^-._
+//      /\\/  /  |...::..|`   :   `|
+//      |:'\ |   /'''::''|   .:.   |
+//       \ /\;-,/\   ::  |..     ..|
+//       |\ <` >  >._::_.| ':   :' |
+//       | `""`  /   ^^  |   ':'   |
+//       |       |       \    :    /
+//       |       |        \   :   /
+//       |       |___/\___|`-.:.-`
+//       |        \_ || _/    `
+//       |        <_ >< _>
+//       |        |  ||  |
+//       |        |  ||  |
+//       |       _\.:||:./_
+//       |      /____/\____\
+
+
+//                      .
+//                     /:\           .  ( (. *.) .
+//                    /:.:\        .  .  )  *
+//                   /:.:.:\         .*   /.  .    *
+//                  |wwWWWww|            /   .
+//                  (((""")))           /
+//                  (. @ @ .)          /
+//                  (( (_) ))      __ /
+//                 .-)))o(((-.    |:.\
+//                /.:((()))):.:\  /.:.\
+//              /.:.:)))((:.:.:\/.:.:.|
+//             /.:.:.((()).:.:./.:.\.:|
+//            /.:.:.:.))((:.:.:.:./  \|
+//           /.:.:.:Y:((().Y.:.:./
+//          /.:.:.:/:.:)).:\:.:.|
+//         /.:.:.:/|.:.(.:.:\:./
+//        /.:.:.:/ |:.:.:.:.|\'
+//        `;.:./   |.:.:.:.:|
+//          |./'   |:.:.:.:.|
+//                |:.:.:.:.:.|
+//               |.:.:.:.:.:.:|
+//               |:.:.:.:.:.:.|
+//               `-:.:.:.:.:.-'
+
 
 
 }

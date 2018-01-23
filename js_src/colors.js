@@ -7,5 +7,6 @@ STRENGTH: '%c{red}',
 EXP: '%c{#A9E6FF}',
 INTELLIGENCE: '%c{#33DDFF}',
 AGILITY: '%c{yellow}',
-HP: '%c{#FF334C}'
+HP: '%c{#FF334C}',
+UPGRADE: '%c{#7CFC00}'
 }

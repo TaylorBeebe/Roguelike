@@ -220,6 +220,7 @@ export class PersistenceMode extends UIMode{
     if (inputType == 'keyup') {
       if (inputData.key == 'n' || inputData.key == 'N') {
         this.game.setupNewGame();
+        this.game.messageHandler.clear();
         this.game.messageHandler.send("New game started");
         this.game.switchMode('play');
       }
@@ -352,28 +353,44 @@ export class LevelUpMode extends UIMode{
     this.strExpReq = this.avatar.getRequiredUpgradePoints('strength');
     this.agilExpReq = this.avatar.getRequiredUpgradePoints('agility');
     this.exp = this.avatar.getExp();
-
   }
 
   render(){
-    console.dir(DATASTORE.GAME.modes);
+    this.display.clear();
+    console.log(this.display);
+    let strength = this.avatar.getStats().strength;
+    let intelligence = this.avatar.getStats().intelligence;
+    let agility = this.avatar.getStats().agility;
+
     this.display.drawText(2, 0, 'You have ' + this.exp + ` ${Color.EXP}Experience${Color.DEFAULT} points to spend`);
     this.display.drawText(0, 1, '-------------------------------------------');
     this.display.drawText(42, 0,'|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|');
-    this.display.drawText(30, 2, 'STATS');
-    this.display.drawText(7, 4, `${Color.STRENGTH}Strength${Color.DEFAULT}: ` + this.avatar.getStats().strength + ' (' + this.strExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
-    this.display.drawText(7, 7, `${Color.INTELLIGENCE}Intelligence${Color.DEFAULT}: ` + this.avatar.getStats().intelligence + ' (' + this.intelExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
-    this.display.drawText(7, 10, `${Color.AGILITY}Agility${Color.DEFAULT}: ` + this.avatar.getStats().agility + ' (' + this.agilExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
-    this.renderPeaChar();
+    this.display.drawText(19, 2, 'STATS');
+    this.display.drawText(7, 4, `${Color.STRENGTH}Strength${Color.DEFAULT}: ` + strength + ' (' + this.strExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    this.display.drawText(7, 7, `${Color.INTELLIGENCE}Intelligence${Color.DEFAULT}: ` + intelligence + ' (' + this.intelExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    this.display.drawText(7, 10, `${Color.AGILITY}Agility${Color.DEFAULT}: ` + agility + ' (' + this.agilExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+
+    // this.display.drawText()
+
+
+    if(strength >= 10 && strength >= intelligence && strength >= agility){
+      this.renderStrChar();
+    } else if (intelligence >= 10 && intelligence > strength && intelligence > agility){
+      this.renderIntChar();
+    } else if (agility >= 10 && agility > strength && agility > intelligence){
+      this.renderAgiChar();
+    } else {
+      this.renderPeaChar();
+    }
     if (this.strExpReq <= this.exp){
-      this.display.drawText(1, 3, '%c{#7CFC00}Press 1 to upgrade:%c{}');
+      this.display.drawText(1, 3, `${Color.UPGRADE}Press 1 to upgrade:`);
 
     }
     if (this.intelExpReq <= this.exp){
-      this.display.drawText(1, 6, '%c{#7CFC00}Press 2 to upgrade:%c{}');
+      this.display.drawText(1, 6, `${Color.UPGRADE}Press 2 to upgrade:`);
     }
     if (this.agilExpReq <= this.exp){
-      this.display.drawText(1, 9, '%c{#7CFC00}Press 3 to upgrade:%c{}');
+      this.display.drawText(1, 9, `${Color.UPGRADE}Press 3 to upgrade:`);
     }
   }
 

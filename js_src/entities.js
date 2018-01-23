@@ -5,7 +5,7 @@ export let EntityFactory = new Factory('ENTITIES', Entity);
 // console.log("Learning Entites");
 EntityFactory.learn({
   name: 'avatar',
-  descr: 'A mighty mage',
+  descr: 'the chosen one',
   chr: '@',
   fg: '#eb4',
   maxHP: 100,
@@ -28,5 +28,6 @@ EntityFactory.learn({
   chr: '&',
   fg: '#c21515',
   maxHP: 5,
+  strength: 10,
   mixinNames: ['Hitpoints', 'Stats', 'StrengthAttack']
 });

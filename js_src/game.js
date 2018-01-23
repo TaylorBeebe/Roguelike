@@ -74,6 +74,7 @@ export let Game = {
     this.modes.win = new WinMode(this);
     this.modes.persistence = new PersistenceMode(this);
     this.modes.attack = new AttackMode(this);
+    this.modes.levelup = new LevelUpMode(this);
     console.log("Modes initialized");
   },
 
@@ -102,13 +103,6 @@ export let Game = {
     console.log('entering attack mode');
     if(this.curMode != this.modes['play']) { return; }
     this.curMode = this.modes['attack'];
-    this.curMode.enter(evtData);
-  },
-
-  enterLevelUpMode: function(evtData){
-    console.log('entering level up mode');
-    if(this.curMode != this.modes['play']) { return; }
-    this.curMode = this.modes['levelup'];
     this.curMode.enter(evtData);
   },
 
@@ -155,8 +149,6 @@ export let Game = {
   renderMain: function() {
     console.log("renderMain function");
     this.renderDisplayMain();
-    // this.renderDisplayAvatar();
-    // this.renderDisplayMessage();
   },
 
   bindEvent: function(eventType){

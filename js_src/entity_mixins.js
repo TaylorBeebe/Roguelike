@@ -128,9 +128,9 @@ export let Stats = {
       experience: 0
     },
     initialize: function(template) {
-      this.attr._Stats.agility = template.agility || 10;
-      this.attr._Stats.strength = template.strength || 10;
-      this.attr._Stats.intelligence = template.intelligence || 10;
+      this.attr._Stats.agility = template.agility || 1;
+      this.attr._Stats.strength = template.strength || 1;
+      this.attr._Stats.intelligence = template.intelligence || 1;
       this.attr._Stats.experience = template.experience || 0;
     }
   },
@@ -158,6 +158,15 @@ export let Stats = {
     },
     gainExp: function(deltaExp){
       this.attr._Stats.experience += deltaExp;
+    },
+    getRequiredUpgradePoints: function(stat){
+      if (stat == 'strength'){
+        return this.attr._Stats.strength * 2;
+      } else if(stat == 'intelligence'){
+        return this.attr._Stats.intelligence * 2;
+      } else if (stat == 'agility'){
+        return this.attr._Stats.agility * 2;
+      }
     }
   },
   LISTENERS:{

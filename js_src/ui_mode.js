@@ -111,7 +111,7 @@ export class PlayMode extends UIMode{
       } else if (inputData.key == 'w'|| inputData.key == 'W'){
         this.game.switchMode('win');
       } else if (inputData.key == '='){
-        this.game.switchMode('persistence')
+        this.game.switchMode('persistence');
       } else if (inputData.key == '1') {
         this.move(-1,1);
       } else if (inputData.key == '2') {
@@ -128,6 +128,8 @@ export class PlayMode extends UIMode{
         this.move(0,-1);
       } else if (inputData.key == '9') {
         this.move(1,-1);
+      } else if (inputData.key == '-'){
+        this.game.switchMode('levelup');
       } else{
         return false;
       } return true;
@@ -339,11 +341,34 @@ export class AttackMode extends UIMode{
   }
 
 export class LevelUpMode extends UIMode{
-  enter(evtData){
-    this.evtData = evtData;
+
+  enter(){
+    this.avatar = DATASTORE.ENTITIES[DATASTORE.GAME.modes.play._GAMESTATE_.avatarId];
   }
 
+  render(){
+    let intelExpReq = this.avatar.getRequiredUpgradePoints('intelligence');
+    let strExpReq = this.avatar.getRequiredUpgradePoints('strength');
+    let agilExpReq = this.avatar.getRequiredUpgradePoints('agility');
 
+    console.dir(DATASTORE.GAME.modes);
+    this.display.drawText(2, 0, 'You have '
+    + this.avatar.getExp() + ' experience points.');
+    this.display.drawText(0, 2, '--------------------------------------------------------------------------------');
+    this.display.drawText(60, 3,'|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|');
+    this.display.drawText(20, 4, 'Strength: ' + this.avatar.getStats().strength + ' (' + strExpReq + ' exp to upgrade)');
+    this.display.drawText(20, 6, 'Intelligence: ' + this.avatar.getStats().intelligence + ' (' + intelExpReq + ' exp to upgrade)');
+    this.display.drawText(20, 8, 'Agility: ' + this.avatar.getStats().agility + ' (' + agilExpReq + ' exp to upgrade)');
+
+  }
+
+  handleInput(inputType,inputData) {
+    if (inputType == 'keyup') {
+      if (inputData.key == 'Escape'){
+        this.game.switchMode('play');
+      }
+    }
+  }
 
 
 }

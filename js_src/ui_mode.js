@@ -149,7 +149,6 @@ export class PlayMode extends UIMode{
     display.drawText(0,12, `${Color.EXP}Exp${Color.DEFAULT}: ` + this.getAvatar().getExp());
   }
 
-
   move(x, y){
     this.getAvatar().tryWalk(x, y);
     this.cameraToAvatar();
@@ -365,10 +364,10 @@ export class LevelUpMode extends UIMode{
     this.display.drawText(2, 0, 'You have ' + this.exp + ` ${Color.EXP}Experience${Color.DEFAULT} points to spend`);
     this.display.drawText(0, 1, '-------------------------------------------');
     this.display.drawText(42, 0,'|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|');
-    this.display.drawText(19, 2, 'STATS');
-    this.display.drawText(7, 4, `${Color.STRENGTH}Strength${Color.DEFAULT}: ` + strength + ' (' + this.strExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
-    this.display.drawText(7, 7, `${Color.INTELLIGENCE}Intelligence${Color.DEFAULT}: ` + intelligence + ' (' + this.intelExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
-    this.display.drawText(7, 10, `${Color.AGILITY}Agility${Color.DEFAULT}: ` + agility + ' (' + this.agilExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    this.display.drawText(15, 2, 'STATS');
+    this.display.drawText(1, 4, `${Color.STRENGTH}Strength${Color.DEFAULT} lvl: ` + strength + ' (' + this.strExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    this.display.drawText(1, 7, `${Color.INTELLIGENCE}Intelligence${Color.DEFAULT} lvl: ` + intelligence + ' (' + this.intelExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    this.display.drawText(1, 10, `${Color.AGILITY}Agility${Color.DEFAULT} lvl: ` + agility + ' (' + this.agilExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
 
     // this.display.drawText()
 

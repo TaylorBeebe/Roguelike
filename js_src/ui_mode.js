@@ -364,7 +364,7 @@ export class LevelUpMode extends UIMode{
     this.display.drawText(7, 4, `${Color.STRENGTH}Strength${Color.DEFAULT}: ` + this.avatar.getStats().strength + ' (' + this.strExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
     this.display.drawText(7, 7, `${Color.INTELLIGENCE}Intelligence${Color.DEFAULT}: ` + this.avatar.getStats().intelligence + ' (' + this.intelExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
     this.display.drawText(7, 10, `${Color.AGILITY}Agility${Color.DEFAULT}: ` + this.avatar.getStats().agility + ' (' + this.agilExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
-    this.renderAgiChar();
+    this.renderPeaChar();
     if (this.strExpReq <= this.exp){
       this.display.drawText(1, 3, '%c{#7CFC00}Press 1 to upgrade:%c{}');
 
@@ -551,12 +551,55 @@ export class LevelUpMode extends UIMode{
 //          \_      :)8888888888888888888a.
 //         /` `-----'  `Y88888888888888888
 //         \____|         `88888888888P'
-  renderPeasChar(){
-
+  renderPeaChar(){
+    this.display.drawText(43, 0, '|               .I.');
+    this.display.drawText(43, 1, '|              / : \\');
+    this.display.drawText(43, 2, '|              / : \\');
+    this.display.drawText(43, 3, '|              |===|');
+    this.display.drawText(43, 4, '|              >._.<');
+    this.display.drawText(43, 5, '|          .=-<     >-=.');
+    this.display.drawText(43, 6, '|         /.\'\`(\`-+-\')\'\`.\\');
+    this.display.drawText(43, 7, '|       _/\`.__/  :  \\__.\'\\_');
+    this.display.drawText(43, 8, '|      ( \`._/\\\`. : .\'/\\_.\' )');
+    this.display.drawText(43, 9, '|       >-(_) \\ \`:\' / (_)-<');
+    this.display.drawText(43, 10, '|       | |  / \\___/ \\  | |');
+    this.display.drawText(43, 11, '|       )^( | .\' : \`. | )^(');
+    this.display.drawText(43, 12, '|      |  / |\`-._:_.-\'| \\  |');
+    this.display.drawText(43, 13, '|      "-"  | :  |  : |  "-"');
+    this.display.drawText(43, 14, '|           | : / \\ : |');
+    this.display.drawText(43, 15, '|          (\'-:-| |-:-\')');
+    this.display.drawText(43, 16, '|           \\_:_/ \\_:_/');
+    this.display.drawText(43, 17, '|           |_:_| |_:_|');
+    this.display.drawText(43, 18, '|           (;__| |__;)');
+    this.display.drawText(43, 19, '|            |: | | :|');
+    this.display.drawText(43, 20, '|            \\: | | :/e');
+    this.display.drawText(43, 21, '|            |==| |==|');
+    this.display.drawText(43, 22, '|           /v-\'( )\`-v\\ ');
+    this.display.drawText(43, 23, '|');
   }
 
-
-
+//          .I.
+//         / : \
+//         |===|
+//         >._.<
+//     .=-<     >-=.
+//    /.'`(`-+-')'`.\
+//  _/`.__/  :  \__.'\_
+// ( `._/\`. : .'/\_.' )
+//  >-(_) \ `:' / (_)-<
+//  | |  / \___/ \  | |
+//  )^( | .' : `. | )^(
+// |  / |`-._:_.-'| \  |
+// "-"  | :  |  : |  "-"
+//      | : / \ : |
+//     ('-:-| |-:-')
+//      \_:_/ \_:_/
+//      |_:_| |_:_|
+//      (;__| |__;)
+//       |: | | :|
+//       \: | | :/
+//       |==| |==|
+//      /v-'( )`-v\
 
 
 

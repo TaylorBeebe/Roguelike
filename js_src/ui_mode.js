@@ -575,10 +575,10 @@ export class LevelUpMode extends UIMode{
     this.display.drawText(43, 4, '|              >._.<');
     this.display.drawText(43, 5, '|          .=-<     >-=.');
     this.display.drawText(43, 6, '|         /.\'\`(\`-+-\')\'\`.\\');
-    this.display.drawText(43, 7, '|       _/\`.__/  :  \\__.\'\\_');
-    this.display.drawText(43, 8, '|      ( \`._/\\\`. : .\'/\\_.\' )');
-    this.display.drawText(43, 9, '|       >-(_) \\ \`:\' / (_)-<');
-    this.display.drawText(43, 10, '|       | |  / \\___/ \\  | |');
+    this.display.drawText(43, 7, '|        /\`.__/  :  \\__.\'\\');
+    this.display.drawText(43, 8, '|       /\`._/\\\`. : .\'/\\_.\'\\ ');
+    this.display.drawText(43, 9, '|      ( - ) |\\ \`:\' /| ( - )');
+    this.display.drawText(43, 10, '|      \\ - / / \\___/ \\ \\ - /');
     this.display.drawText(43, 11, '|       )^( | .\' : \`. | )^(');
     this.display.drawText(43, 12, '|      |  / |\`-._:_.-\'| \\  |');
     this.display.drawText(43, 13, '|      "-"  | :  |  : |  "-"');
@@ -600,10 +600,10 @@ export class LevelUpMode extends UIMode{
 //         >._.<
 //     .=-<     >-=.
 //    /.'`(`-+-')'`.\
-//  _/`.__/  :  \__.'\_
-// ( `._/\`. : .'/\_.' )
-//  >-(_) \ `:' / (_)-<
-//  | |  / \___/ \  | |
+//   /`.__/  :  \__.'\
+//  /`._/\`. : .'/\_.'\
+// ( - ) |\ `:' /| ( - )
+// \ - / / \___/ \ \ - /
 //  )^( | .' : `. | )^(
 // |  / |`-._:_.-'| \  |
 // "-"  | :  |  : |  "-"

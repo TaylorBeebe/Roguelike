@@ -364,7 +364,7 @@ export class LevelUpMode extends UIMode{
     this.display.drawText(7, 4, `${Color.STRENGTH}Strength${Color.DEFAULT}: ` + this.avatar.getStats().strength + ' (' + this.strExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
     this.display.drawText(7, 7, `${Color.INTELLIGENCE}Intelligence${Color.DEFAULT}: ` + this.avatar.getStats().intelligence + ' (' + this.intelExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
     this.display.drawText(7, 10, `${Color.AGILITY}Agility${Color.DEFAULT}: ` + this.avatar.getStats().agility + ' (' + this.agilExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
-    this.renderIntChar();
+    this.renderAgiChar();
     if (this.strExpReq <= this.exp){
       this.display.drawText(1, 3, '%c{#7CFC00}Press 1 to upgrade:%c{}');
 
@@ -476,36 +476,89 @@ export class LevelUpMode extends UIMode{
     this.display.drawText(43, 22, '|       |:.:.:.:.:.:.|');
     this.display.drawText(43, 23, '|       \`-:.:.:.:.:.-\'');
   }
+  //                      .
+  //                     /:\           .  ( (. *.) .
+  //                    /:.:\        .  .  )  *
+  //                   /:.:.:\         .*   /.  .    *
+  //                  |wwWWWww|            /   .
+  //                  (((""")))           /
+  //                  (. @ @ .)          /
+  //                  (( (_) ))      __ /
+  //                 .-)))o(((-.    |:.\
+  //                /.:((()))):.:\  /.:.\
+  //              /.:.:)))((:.:.:\/.:.:.|
+  //             /.:.:.((()).:.:./.:.\.:|
+  //            /.:.:.:.))((:.:.:.:./  \|
+  //           /.:.:.:Y:((().Y.:.:./
+  //          /.:.:.:/:.:)).:\:.:.|
+  //         /.:.:.:/|.:.(.:.:\:./
+  //        /.:.:.:/ |:.:.:.:.|\'
+  //        `;.:./   |.:.:.:.:|
+  //         |./'    |:.:.:.:.|
+  //                |:.:.:.:.:.|
+  //               |.:.:.:.:.:.:|
+  //               |:.:.:.:.:.:.|
+  //               `-:.:.:.:.:.-'
   renderAgiChar(){
+    this.display.drawText(43, 0, '|              __.------.');
+    this.display.drawText(43, 1, '|             (__  ___   )');
+    this.display.drawText(43, 2, '|              .)e  )\\ /');
+    this.display.drawText(43, 3, '|             /_.------');
+    this.display.drawText(43, 4, '|             _/_    _/');
+    this.display.drawText(43, 5, '|         __.\'  / \'   \`-.__');
+    this.display.drawText(43, 6, '|        / <.--\'           \`\\');
+    this.display.drawText(43, 7, '|       /   \\   \\c           |');
+    this.display.drawText(43, 8, '|      /    /    )       x    \\');
+    this.display.drawText(43, 9, '|     |   /\\    |c     / \\.-  \\');
+    this.display.drawText(43, 10, '|     \\__/  )  /(     (   \\   <>\'\\');
+    this.display.drawText(43, 11, '|          / _/ _\\-    \`-. \\/_|_ /<>');
+    this.display.drawText(43, 12, '|         / /--/,-\\     _ \\     <>.\`');
+    this.display.drawText(43, 13, '|         \\/\`--\\_._) - /   \`-/\\    \`.\\');
+    this.display.drawText(43, 14, '|         /        \`.     /   )     \`\\');
+    this.display.drawText(43, 15, '|         \\      \\   \\___/----\'');
+    this.display.drawText(43, 16, '|         |      /    \`(');
+    this.display.drawText(43, 17, '|         \\    ./\\_   _ \\');
+    this.display.drawText(43, 18, '|         /     |  )    \'|');
+    this.display.drawText(43, 19, '|        |     /   \\     \\');
+    this.display.drawText(43, 20, '|       /     |     |____.)');
+    this.display.drawText(43, 21, '|      /      \\  a88a\\___/88888a.');
+    this.display.drawText(43, 22, '|      \\_      :)888888888888888888');
+    this.display.drawText(43, 23, '|     /\` \`-----\'  \`Y88888888888888888');
+  }
+
+//                   __.------.
+//                  (__  ___   )
+//                   .)e  )\ /
+//                  /_.------
+//                  _/_    _/
+//              __.'  / '   `-.__
+//             / <.--'           `\
+//            /   \   \c           |
+//           /    /    )       x    \
+//          |   /\    |c     / \.-  \
+//          \__/  )  /(     (   \   <>'\
+//               / _/ _\-    `-. \/_|_ /<>
+//              / /--/,-\     _ \     <>.`.
+//              \/`--\_._) - /   `-/\    `.\
+//              /        `.     /   )     `\
+//              \      \   \___/----'
+//              |      /    `(
+//              \    ./\_   _ \
+//             /     |  )    '|
+//            |     /   \     \
+//           /     |     |____.)
+//          /      \  a88a\___/88888a.
+//          \_      :)8888888888888888888a.
+//         /` `-----'  `Y88888888888888888
+//         \____|         `88888888888P'
+  renderPeasChar(){
 
   }
 
 
 
 
-//                      .
-//                     /:\           .  ( (. *.) .
-//                    /:.:\        .  .  )  *
-//                   /:.:.:\         .*   /.  .    *
-//                  |wwWWWww|            /   .
-//                  (((""")))           /
-//                  (. @ @ .)          /
-//                  (( (_) ))      __ /
-//                 .-)))o(((-.    |:.\
-//                /.:((()))):.:\  /.:.\
-//              /.:.:)))((:.:.:\/.:.:.|
-//             /.:.:.((()).:.:./.:.\.:|
-//            /.:.:.:.))((:.:.:.:./  \|
-//           /.:.:.:Y:((().Y.:.:./
-//          /.:.:.:/:.:)).:\:.:.|
-//         /.:.:.:/|.:.(.:.:\:./
-//        /.:.:.:/ |:.:.:.:.|\'
-//        `;.:./   |.:.:.:.:|
-//         |./'    |:.:.:.:.|
-//                |:.:.:.:.:.|
-//               |.:.:.:.:.:.:|
-//               |:.:.:.:.:.:.|
-//               `-:.:.:.:.:.-'
+
 
 
 

@@ -141,11 +141,12 @@ export class PlayMode extends UIMode{
     display.clear();
     display.drawText(0,0, "AVATAR");
     display.drawText(0,2,"Time: " + this.getAvatar().getTime());
-    display.drawText(0,4, "HP: " + this.getAvatar().getCurHP());
-    display.drawText(0,6, "Str: " + this.getAvatar().getStats().strength);
-    display.drawText(0,8, "Int: " + this.getAvatar().getStats().intelligence);
-    display.drawText(0,10, "Agil: " + this.getAvatar().getStats().agility);
-    display.drawText(0,12, "Exp: " + this.getAvatar().getExp());
+    display.drawText(0,4, `${Color.HP}HP${Color.DEFAULT}: ` + this.getAvatar().getCurHP());
+
+    display.drawText(0,6, `${Color.STRENGTH}Str${Color.DEFAULT}: ` + this.getAvatar().getStats().strength);
+    display.drawText(0,8, `${Color.INTELLIGENCE}Int${Color.DEFAULT}: ` + this.getAvatar().getStats().intelligence);
+    display.drawText(0,10, `${Color.AGILITY}Agil${Color.DEFAULT}: ` + this.getAvatar().getStats().agility);
+    display.drawText(0,12, `${Color.EXP}Exp${Color.DEFAULT}: ` + this.getAvatar().getExp());
   }
 
 
@@ -314,23 +315,26 @@ export class AttackMode extends UIMode{
   render(){
     let display = this.game.getDisplay('main')
     display.clear();
-    display.drawText(3, 3, "Press Z to attempt a strength attack");
-    display.drawText(3, 5, "Press X to attempt an intelligence attack");
-    display.drawText(3, 7, "Press C to attempt an agility attack");
+    display.drawText(3, 3, `${Color.DEFAULT} Press 1 to attempt a ${Color.STRENGTH}Strength${Color.DEFAULT} attack`);
+    display.drawText(3, 5, `${Color.DEFAULT} Press 2 to attempt an ${Color.INTELLIGENCE}Intelligence${Color.DEFAULT} attack`);
+    display.drawText(3, 7, `${Color.DEFAULT} Press 3 to attempt an ${Color.AGILITY}Agility${Color.DEFAULT} attack`);
     console.dir(DATASTORE);
   }
 
   handleInput(inputType,inputData) {
     if (inputType == 'keyup') {
-      if (inputData.key == 'z' || inputData.key == 'Z') {
+      //if (inputData.key == 'z' || inputData.key == 'Z')
+      if (inputData.key == '1') {
         this.evtData.attackType = 'Strength';
         DATASTORE.ENTITIES[this.evtData.avatarID].raiseMixinEvent('strAttack', this.evtData);
         this.game.switchMode('play');
-      } else if (inputData.key == 'x' || inputData.key == 'X') {
+      } //else if (inputData.key == 'x' || inputData.key == 'X')
+      else if (inputData.key == '2') {
         this.evtData.attackType = 'Intelligence';
         DATASTORE.ENTITIES[this.evtData.avatarID].raiseMixinEvent('intelAttack', this.evtData);
         this.game.switchMode('play');
-      } else if (inputData.key == 'c' || inputData.key == 'C') {
+      } //else if (inputData.key == 'c' || inputData.key == 'C')
+      else if (inputData.key == '3') {
         this.evtData.attackType = 'Agility';
         DATASTORE.ENTITIES[this.evtData.avatarID].raiseMixinEvent('agilAttack', this.evtData);
         this.game.switchMode('play');
@@ -348,19 +352,20 @@ export class LevelUpMode extends UIMode{
     this.strExpReq = this.avatar.getRequiredUpgradePoints('strength');
     this.agilExpReq = this.avatar.getRequiredUpgradePoints('agility');
     this.exp = this.avatar.getExp();
+
   }
 
   render(){
     console.dir(DATASTORE.GAME.modes);
-    this.display.drawText(2, 0, 'You have ' + this.exp + ' experience points.');
+    this.display.drawText(2, 0, 'You have ' + this.exp + ` ${Color.EXP}Experience${Color.DEFAULT} points to spend`);
     this.display.drawText(0, 1, '-------------------------------------------');
-    this.display.drawText(42, 0,'|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|');
+    this.display.drawText(42, 0,'|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|');
     this.display.drawText(30, 2, 'STATS');
-    this.display.drawText(7, 4, 'Strength: ' + this.avatar.getStats().strength + ' (' + this.strExpReq + ' exp to upgrade)');
-    this.display.drawText(7, 7, 'Intelligence: ' + this.avatar.getStats().intelligence + ' (' + this.intelExpReq + ' exp to upgrade)');
-    this.display.drawText(7, 10, 'Agility: ' + this.avatar.getStats().agility + ' (' + this.agilExpReq + ' exp to upgrade)');
+    this.display.drawText(7, 4, `${Color.STRENGTH}Strength${Color.DEFAULT}: ` + this.avatar.getStats().strength + ' (' + this.strExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    this.display.drawText(7, 7, `${Color.INTELLIGENCE}Intelligence${Color.DEFAULT}: ` + this.avatar.getStats().intelligence + ' (' + this.intelExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    this.display.drawText(7, 10, `${Color.AGILITY}Agility${Color.DEFAULT}: ` + this.avatar.getStats().agility + ' (' + this.agilExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    this.renderIntChar();
     if (this.strExpReq <= this.exp){
-      // this.display.drawText(0, 3, 'Press 1 to upgrade:');
       this.display.drawText(1, 3, '%c{#7CFC00}Press 1 to upgrade:%c{}');
 
     }
@@ -393,31 +398,89 @@ export class LevelUpMode extends UIMode{
     this.strExpReq = this.avatar.getRequiredUpgradePoints('strength');
     this.agilExpReq = this.avatar.getRequiredUpgradePoints('agility');
     this.exp = this.avatar.getExp();
+    let d = DATASTORE.GAME.getDisplay('avatar');
+    DATASTORE.GAME.modes.play.renderAvatar(d);
     return true;
   }
 
+  renderStrChar(){
+    this.display.drawText(43, 0, '|');
+    this.display.drawText(43, 1, '|                   {}');
+    this.display.drawText(43, 2, '|   ,   A           {}');
+    this.display.drawText(43, 3, '|  / \\, | ,        .--.');
+    this.display.drawText(43, 4, '| |    =|= >      /.--.\\');
+    this.display.drawText(43, 5, '|  \\ /\` | \`       |====|');
+    this.display.drawText(43, 6, '|   `   |         |`::`|');
+    this.display.drawText(43, 7, '|       |     .-;\`\\..../\`;_.-^-._');
+    this.display.drawText(43, 8, '|      /\\\\/  /  |...::..|`   :   `|');
+    this.display.drawText(43, 9, '|      |:\'\\ |   /\'\'\'::\'\'|   .:.   |');
+    this.display.drawText(43, 10, '|       \\ /\\;-,/\\   ::  |..     ..|');
+    this.display.drawText(43, 11, '|       |\\ <\` >  >._::_.| \':   :\' |');
+    this.display.drawText(43, 12, '|       | `""`  /   ^^  |   \':\'   |');
+    this.display.drawText(43, 13, '|       |       |       \\    :    /');
+    this.display.drawText(43, 14, '|       |       |        \\   :   /');
+    this.display.drawText(43, 15, '|       |       |___/\\___|\`-.:.-\`');
+    this.display.drawText(43, 16, '|       |        \\_ || _/    `');
+    this.display.drawText(43, 17, '|       |        <_ >< _>');
+    this.display.drawText(43, 18, '|       |        |  ||  |');
+    this.display.drawText(43, 19, '|       |        |  ||  |');
+    this.display.drawText(43, 20, '|       |       _\\.:||:./_');
+    this.display.drawText(43, 21, '|       |      /____/\\____\\');
+    this.display.drawText(43, 22, '|');
+    this.display.drawText(43, 23, '|');
+  }
+  //                   {}
+  //   ,   A           {}
+  //  / \, | ,        .--.
+  // |    =|= >      /.--.\
+  //  \ /` | `       |====|
+  //   `   |         |`::`|
+  //       |     .-;`\..../`;_.-^-._
+  //      /\\/  /  |...::..|`   :   `|
+  //      |:'\ |   /'''::''|   .:.   |
+  //       \ /\;-,/\   ::  |..     ..|
+  //       |\ <` >  >._::_.| ':   :' |
+  //       | `""`  /   ^^  |   ':'   |
+  //       |       |       \    :    /
+  //       |       |        \   :   /
+  //       |       |___/\___|`-.:.-`
+  //       |        \_ || _/    `
+  //       |        <_ >< _>
+  //       |        |  ||  |
+  //       |        |  ||  |
+  //       |       _\.:||:./_
+  //       |      /____/\____\
+  renderIntChar(){
+    this.display.drawText(43, 0, '|             .');
+    this.display.drawText(43, 1, '|            /:\\            .  ( (. *.) .');
+    this.display.drawText(43, 2, '|           /:.:\\         .  .  )  *');
+    this.display.drawText(43, 3, '|          /:.:.:\\          .*   /.  .    *');
+    this.display.drawText(43, 4, '|         |wwWWWww|             /   .');
+    this.display.drawText(43, 5, '|         (((""")))            /');
+    this.display.drawText(43, 6, '|         (((""")))           /');
+    this.display.drawText(43, 7, '|         (. @ @ .)          /');
+    this.display.drawText(43, 8, '|         (( (_) ))      __ /');
+    this.display.drawText(43, 9, '|        .-)))o(((-.    |:.\\');
+    this.display.drawText(43, 10, '|       /.:((()))):.:\\  /.:.\\');
+    this.display.drawText(43, 11, '|      /.:.:)))((:.:.:\\/.:.:.|');
+    this.display.drawText(43, 12, '|     /.:.:.((()).:.:./.:.\\.:|');
+    this.display.drawText(43, 13, '|    /.:.:.:.))((:.:.:.:./  \\|');
+    this.display.drawText(43, 14, '|   /.:.:.:Y:((().Y.:.:./');
+    this.display.drawText(43, 15, '|  /.:.:.:/:.:)).:\\:.:.|');
+    this.display.drawText(43, 16, '| /.:.:.:/|.:.(.:.:\\:./');
+    this.display.drawText(43, 17, '|/.:.:.:/ |:.:.:.:.|\\\'');
+    this.display.drawText(43, 18, '|\\\`;.:./  |.:.:.:.:|');
+    this.display.drawText(43, 19, '| |./\'    |:.:.:.:.|');
+    this.display.drawText(43, 20, '|        |:.:.:.:.:.|');
+    this.display.drawText(43, 21, '|       |.:.:.:.:.:.:|');
+    this.display.drawText(43, 22, '|       |:.:.:.:.:.:.|');
+    this.display.drawText(43, 23, '|       \`-:.:.:.:.:.-\'');
+  }
+  renderAgiChar(){
 
-//                   {}
-//   ,   A           {}
-//  / \, | ,        .--.
-// |    =|= >      /.--.\
-//  \ /` | `       |====|
-//   `   |         |`::`|
-//       |     .-;`\..../`;_.-^-._
-//      /\\/  /  |...::..|`   :   `|
-//      |:'\ |   /'''::''|   .:.   |
-//       \ /\;-,/\   ::  |..     ..|
-//       |\ <` >  >._::_.| ':   :' |
-//       | `""`  /   ^^  |   ':'   |
-//       |       |       \    :    /
-//       |       |        \   :   /
-//       |       |___/\___|`-.:.-`
-//       |        \_ || _/    `
-//       |        <_ >< _>
-//       |        |  ||  |
-//       |        |  ||  |
-//       |       _\.:||:./_
-//       |      /____/\____\
+  }
+
+
 
 
 //                      .

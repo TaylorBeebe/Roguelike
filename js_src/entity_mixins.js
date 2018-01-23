@@ -1,5 +1,7 @@
 import {Messenger} from './messenger.js';
 import {DATASTORE} from './datastore.js';
+import {Color} from './colors.js';
+import {getColor} from './util.js';
 
 
 let _exampleMixin = {
@@ -111,7 +113,9 @@ export let PlayerMessage = {
       Messenger.send(`${this.getName()} gained 1 ${evtData.deltaStat} point!`);
     },
     'attackedMessage': function(evtData){
-      Messenger.send(`${evtData.wasDamagedBy.name} hit ${evtData.victim.name} with a ${evtData.attackType} attack and dealt ${evtData.damageAmount} damage`);
+      let stringColor = getColor(evtData.attackType);
+      console.log(stringColor);
+      Messenger.send(`${evtData.wasDamagedBy.name} hit ${evtData.victim.name} with a` + stringColor + ` ${evtData.attackType}${Color.DEFAULT} attack and dealt ${evtData.damageAmount} damage`);
     }
   }
 }

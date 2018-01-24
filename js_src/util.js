@@ -41,6 +41,5 @@ export function uniqueID() {
 }
 
 export function calculateDistance(data){
-  return (Math.abs(Math.sqrt(Math.pow(data.enemyX
-  - data.myX, 2) + Math.pow(data.enemyY - data.myY, 2))));
+  return (Math.abs(Math.sqrt(Math.pow(data.enemyX - data.myX, 2) + Math.pow(data.enemyY - data.myY, 2))));
 }

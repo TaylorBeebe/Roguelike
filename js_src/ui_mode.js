@@ -155,7 +155,7 @@ export class PlayMode extends UIMode{
     display.drawText(0, 5, `${Color.INTELLIGENCE}Int${Color.DEFAULT}: ` + this.getAvatar().getStats().intelligence);
     display.drawText(0, 6.5, `${Color.AGILITY}Agil${Color.DEFAULT}: ` + this.getAvatar().getStats().agility);
     display.drawText(0, 8, `${Color.EXP}Exp${Color.DEFAULT}: ` + this.getAvatar().getExp());
-    console.dir(this.getAvatar());
+    
     display.drawText(0, 9.5, `${Color.ENERGY}Energy${Color.DEFAULT}: ` + this.getAvatar().getCurrentEnergy() + `/` + this.getAvatar().getBaseEnergy());
     display.drawText(0, 10.5, `--------------------`)
   }

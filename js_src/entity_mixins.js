@@ -400,17 +400,6 @@ export let PlayerAttack = {
 //     }
 //   }
 // };
-//
-// export let RandomWalk = {
-//   META:{
-//     mixinName: 'randomWalk',
-//     mixinGroupName: 'randomWalk',
-//   },
-//   METHODS:{
-//     method1: function(p){
-//     }
-//   }
-// };
 
 export let PlayerActor = {
   META:{
@@ -624,14 +613,18 @@ export let AIWalk = {
       let bestDist = Infinity;
       for(let myX = -1; myX < 2; myX++){
         for (let myY = -1; myY < 2; myY++){
-          // console.log(myY);
-          if(calculateDistance({
-            enemyX: avatar.getX(), enemyY: avatar.getY(), myX, myY}) <
-            bestDist && !this.getMap().testLocationBlocked(this.getX() + myX, this.getY() + myY)){
+          // console.log('testing: ' + myX + ',' + myY);
+          let currDistance = calculateDistance({
+            enemyX: avatar.getX(), enemyY: avatar.getY(), myX: myX + this.getX(), myY: myY + this.getY()})
+          if(currDistance<bestDist && !this.getMap().testLocationBlocked(this.getX() + myX, this.getY() + myY)){
+              // console.log(currDistance + ' is less than ' + bestDist);
               bestPos.x = myX;
               bestPos.y = myY;
+              bestDist = currDistance;
           } } }
-      this.raiseMixinEvent('walkAttempt', {dx: bestPos.x, dy: bestPos.y});
+      // this.raiseMixinEvent('walkAttempt', {dx: bestPos.x, dy: bestPos.y});
+      // console.log('Best move is: ' + bestPos.x + ',' + bestPos.y);
+      return {dx: bestPos.x, dy: bestPos.y};
     }
   },
   LISTENERS: {
@@ -641,14 +634,21 @@ export let AIWalk = {
       this.raiseMixinEvent('walkAttempt', {dx, dy});
     },
     'getAgressiveWalk': function(evtData){
+      // console.log('getting agressive walk');
+      // console.dir(this.getMap().attr.visibleTiles);
+      // console.log('my pos is: ');
+      // console.log(this.getxcy());
       if (this.getMap().attr.visibleTiles[this.getxcy()]){
+        // console.log('avatar in sight');
         let avatar = DATASTORE.GAME.modes.play.getAvatar();
         let distFromAvatar = calculateDistance({enemyX: avatar.getX(), enemyY: avatar.getY(), myX: this.getX(), myY: this.getY()});
-        console.log(distFromAvatar);
-        if(distFromAvatar > 5){
-          let walkData = this.getShortestPath(avatar);
+        // console.log('avatar within range');
+        // console.log(distFromAvatar);
+        if(distFromAvatar <= 10){
+          // let walkData = this.getShortestPath(avatar);
+          this.raiseMixinEvent('walkAttempt', this.getShortestPath(avatar));
         }
-        this.raiseMixinEvent('walkAttempt', {dx: 0, dy: 0});
+        this.raiseMixinEvent('getRandomWalk', {});
       }
     }
   }

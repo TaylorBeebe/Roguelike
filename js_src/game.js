@@ -147,7 +147,7 @@ export let Game = {
   },
 
   renderMain: function() {
-    console.log("renderMain function");
+    // console.log("renderMain function");
     this.renderDisplayMain();
   },
 

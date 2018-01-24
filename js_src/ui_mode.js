@@ -148,17 +148,16 @@ export class PlayMode extends UIMode{
   renderAvatar(display){
     // console.log('in PlayMode.renderAvatar()');
     display.clear();
-    display.drawText(0,0, "AVATAR");
-    display.drawText(0,2,"Time: " + this.getAvatar().getTime());
-    display.drawText(0,4, `${Color.HP}HP${Color.DEFAULT}: ` + this.getAvatar().getCurHP());
+    display.drawText(0, 0.5,"Time: " + this.getAvatar().getTime());
+    display.drawText(0, 2, `${Color.HP}HP${Color.DEFAULT}: ` + this.getAvatar().getCurHP());
 
-    display.drawText(0,6, `${Color.STRENGTH}Str${Color.DEFAULT}: ` + this.getAvatar().getStats().strength);
-    display.drawText(0,8, `${Color.INTELLIGENCE}Int${Color.DEFAULT}: ` + this.getAvatar().getStats().intelligence);
-    display.drawText(0,10, `${Color.AGILITY}Agil${Color.DEFAULT}: ` + this.getAvatar().getStats().agility);
-    display.drawText(0,12, `${Color.EXP}Exp${Color.DEFAULT}: ` + this.getAvatar().getExp());
+    display.drawText(0, 3.5, `${Color.STRENGTH}Str${Color.DEFAULT}: ` + this.getAvatar().getStats().strength);
+    display.drawText(0, 5, `${Color.INTELLIGENCE}Int${Color.DEFAULT}: ` + this.getAvatar().getStats().intelligence);
+    display.drawText(0, 6.5, `${Color.AGILITY}Agil${Color.DEFAULT}: ` + this.getAvatar().getStats().agility);
+    display.drawText(0, 8, `${Color.EXP}Exp${Color.DEFAULT}: ` + this.getAvatar().getExp());
     console.dir(this.getAvatar());
-    display.drawText(0, 14, `${Color.ENERGY}Energy${Color.DEFAULT}: ` + this.getAvatar().getCurrentEnergy() + `/` + this.getAvatar().getBaseEnergy());
-
+    display.drawText(0, 9.5, `${Color.ENERGY}Energy${Color.DEFAULT}: ` + this.getAvatar().getCurrentEnergy() + `/` + this.getAvatar().getBaseEnergy());
+    display.drawText(0, 10.5, `--------------------`)
   }
 
   move(x, y){

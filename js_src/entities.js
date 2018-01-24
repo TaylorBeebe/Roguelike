@@ -32,5 +32,11 @@ EntityFactory.learn({
   maxHP: 5,
   strength: 10,
   expGainedForKill: 20,
-  mixinNames: ['Hitpoints', 'Stats', 'StrengthAttack', 'PassiveAIActor']
+  mixinNames: [
+    'Hitpoints',
+    'Stats',
+    'StrengthAttack',
+    'PassiveAIActor',
+    'WalkerCorporeal',
+    'RandomWalk']
 });

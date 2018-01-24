@@ -3,6 +3,7 @@ import {DATASTORE} from './datastore.js';
 import {Color} from './colors.js';
 import {getColor} from './util.js';
 import {TIMING, SCHEDULE} from './turnbased.js';
+import ROT from 'rot-js';
 
 let _exampleMixin = {
   META:{
@@ -68,6 +69,7 @@ export let WalkerCorporeal = {
         this.getMap().moveEntityTo(this, newX, newY);
         this.raiseMixinEvent('turnTaken', {timeUsed: 1});
         // console.log(this.getTime());
+        this.setCurrentActionDuration(50);
         this.raiseMixinEvent('actionDone', {});
         return true;
       } else if(this.getMap().getEntityAtMapLocation(newX, newY)){
@@ -78,9 +80,18 @@ export let WalkerCorporeal = {
           avatarID: this.getID()
         });
       } else {
-      this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
-      return false;
-      } } }
+        if(this.name == 'avatar'){
+          this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
+          return false;
+        } else{
+          return true;
+        }
+    } } },
+  LISTENERS:{
+    'walkAttempt': function (evtData){
+      this.tryWalk(evtData.dx, evtData.dy);
+    }
+  }
 };
 
 export let PlayerMessage = {
@@ -257,6 +268,7 @@ export let Hitpoints = {
       // console.dir(evtData.victim);
       evtData.deltaExp = evtData.victim.expGainedForKill;
       evtData.wasDamagedBy.raiseMixinEvent('deltaExp', evtData);
+      SCHEDULE.remove(this);
       this.destroy();
     }
   }
@@ -447,12 +459,13 @@ export let PlayerActor = {
   LISTENERS: {
     actionDone: function(evtData){
       this.isActing(false);
-      console.dir(SCHEDULE);
+      // console.dir(SCHEDULE);
       if(this.getCurrentActionDuration() != null){
         SCHEDULE.setDuration(this.getCurrentActionDuration());
       } else {
         SCHEDULE.setDuration(this.getDefaultActionDuration());
       }
+      this.setCurrentActionDuration(null);
       setTimeout(function(){
         TIMING.unlock();
       }, 1);
@@ -526,6 +539,7 @@ export let PassiveAIActor = {
       // setTimedUnlocker(true);
 
       this.isActing(true);
+      this.raiseMixinEvent('getRandomWalk');
       SCHEDULE.setDuration(this.getDefaultActionDuration());
       this.isActing(false);
     },
@@ -562,6 +576,35 @@ export let PlayerEnergy = {
     },
     setBaseEnergy: function(set){
       this.attr._PlayerEnergy.baseEnergy = set;
+    }
+  }
+};
+
+export let RandomWalk = {
+  META:{
+    mixinName: 'RandomWalk',
+    mixinGroupName: 'AIWalker',
+    stateNamespace: '_RandomWalk',
+    stateModel: {
+      baseDuration: 100
+    },
+    initialize: function(template) {
+      this.attr._RandomWalk.baseDuration = template.baseDuration || 100;
+    }
+  },
+  METHODS:{
+    getActionDuration: function(){
+      return this.attr._RandomWalk.baseDuration;
+    },
+    setRandomWalkDuration: function(duration){
+      this.attr._RandomWalk.baseDuration = duration;
+    }
+  },
+  LISTENERS: {
+    'getRandomWalk': function(evtData){
+      let dx = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
+      let dy = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
+      this.raiseMixinEvent('walkAttempt', {dx, dy});
     }
   }
 };

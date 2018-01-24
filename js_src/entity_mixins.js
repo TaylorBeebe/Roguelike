@@ -114,7 +114,13 @@ export let PlayerMessage = {
     },
     'attackedMessage': function(evtData){
       let stringColor = getColor(evtData.attackType);
-      Messenger.send(`${evtData.wasDamagedBy.name} hit ${evtData.victim.name} with a` + stringColor + ` ${evtData.attackType}${Color.DEFAULT} attack and dealt ${evtData.damageAmount} damage`);
+      let name = ''
+      if (evtData.wasDamagedBy.name == 'avatar') {
+        name = 'You';
+      } else {
+        name = evtData.wasDamagedBy.name;
+      }
+      Messenger.send(name + ` hit ${evtData.victim.name} with a` + stringColor + ` ${evtData.attackType}${Color.DEFAULT} attack and dealt ${evtData.damageAmount} damage`);
     }
   }
 }
@@ -352,9 +358,7 @@ export let PlayerAttack = {
   META:{
     mixinName: 'PlayerAttack',
     mixinGroupName: 'Combat',
-    stateNamespace: '_PlayerAttack',
-    stateModel: {
-    },
+    stateNamespace: '_PlayerAttack'
   },
   LISTENERS:{
     'chooseAttack': function(evtData){
@@ -364,69 +368,147 @@ export let PlayerAttack = {
   }
 };
 
-export let Debuff = {
+// export let Debuff = {
+//   META:{
+//     mixinName: 'Debuff',
+//     mixinGroupName: 'Buffs',
+//     stateNamespace: '_Debuff',
+//     stateModel: {
+//
+//     },
+//     initialize: function() {
+//       // do any initialization
+//
+//     }
+//   },
+//   METHODS:{
+//     method1: function(p){
+//
+//     }
+//   }
+// };
+//
+// export let RandomWalk = {
+//   META:{
+//     mixinName: 'randomWalk',
+//     mixinGroupName: 'randomWalk',
+//   },
+//   METHODS:{
+//     method1: function(p){
+//     }
+//   }
+// };
+
+export let PlayerActor = {
   META:{
-    mixinName: 'Debuff',
-    mixinGroupName: 'Buffs',
-    stateNamespace: '_Debuff',
+    mixinName: 'PlayerActor',
+    mixinGroupName: 'Player',
+    stateNamespace: '_PlayerActor',
     stateModel: {
+      defaultActionDuration: 1000,
+      currentActionDuration: 1000,
+      isActing: false
+    }
+  },
+  METHODS:{
 
+    getdefaultActionDuration: function(){
+      return this.attr._ActorPlayer.defaultActionDuration;
     },
-    initialize: function() {
-      // do any initialization
-
+    setdefaultActionDuration: function(duration){
+      this.attr._ActorPlayer.defaultActionDuration = duration;
+    },
+    getCurrentActionDuration: function(){
+      return this.attr._ActorPlayer.currentActionDuration;
+    },
+    setCurrentActionDuration: function(duration){
+      this.attr._ActorPlayer.currentActionDuration = duration;
+    },
+    isActing: function(state){
+      if(state !== undefined){
+        this.attr._ActorPlayer.actingState = state;
+      }
+      return this.attr._ActorPlayer.actingState;
+    },
+    act: function(){
+      if(this.isActing()){
+        return;
+      }
+      this.isActing(true);
+      TIME_ENGINE.lock();
+      DATASTORE.GAME.render();
+      //console.log("player is acting");
     }
   },
-  METHODS:{
-    method1: function(p){
-
+  LISTENERS: {
+    actionDone: function(evtData){
+      this.isActing(false);
+      SCHEDULER.setDuration(this.getdefaultActionDuration());
+      setTimeout(function(){
+        TIME_ENGINE.unlock();
+      }, 1);
+      //console.log("end player acting");
     }
   }
 };
 
-export let RandomWalk = {
-  META:{
-    mixinName: 'randomWalk',
-    mixinGroupName: 'randomWalk',
-  },
-  METHODS:{
-    method1: function(p){
-    }
-  }
-};
+// export let AggressiveAIActor = {
+//   META:{
+//     mixinName: 'AggressiveAIActor',
+//     mixinGroupName: 'AI',
+//     stateNamespace: '_AggressiveAIActor',
+//     stateModel: {
+//       defaultActionDuration: 1000,
+//       currentActionDuration: 1000,
+//       isActing: false
+//     },
+//     initialize: function() {
+//
+//     }
+//   },
+//   METHODS:{
+//     setDuration: function(duration){
+//
+//     }
+//     getDuration: function(){
+//
+//     }
+//   }
+// };
 
-export let AggressiveAI = {
+export let PassiveAIActor = {
   META:{
-    mixinName: 'AggressiveAI',
+    mixinName: 'PassiveAIActor',
     mixinGroupName: 'AI',
-    stateNamespace: '_AggressiveAI',
+    stateNamespace: '_PassiveAIActor',
     stateModel: {
-    },
-    initialize: function() {
-
     }
   },
   METHODS:{
-    method1: function(p){
-
-    }
-  }
-};
-
-export let PassiveAI = {
-  META:{
-    mixinName: 'PassiveAI',
-    mixinGroupName: 'AI',
-    stateNamespace: '_PassiveAI',
-    stateModel: {
+    getdefaultActionDuration: function(){
+      return this.attr._AIActor.defaultActionDuration;
     },
-    initialize: function() {
-
-    }
-  },
-  METHODS:{
-    method1: function(p){
-
-    }
+    setdefaultActionDuration: function(duration){
+      this.attr._AIActor.defaultActionDuration = duration;
+    },
+    getCurrentActionDuration: function(){
+      return this.attr._AIActor.currentActionDuration;
+    },
+    setCurrentActionDuration: function(duration){
+      this.attr._AIActor.currentActionDuration = duration;
+    },
+    isActing: function(state){
+      if(state !== undefined){
+        this.attr._AIActor.actingState = state;
+      }
+      return this.attr._AIActor.actingState;
+    },
+    act: function(){
+      if(this.isActing()){
+        return false;
+      }
+      setTimedUnlocker(true);
+      this.isActing(true);
+    },
   }
 };

@@ -4,6 +4,7 @@ export function initializeDatastore() {
   DATASTORE = {
     GAME: {},
     MAPS: {},
-    ENTITIES: {}
+    ENTITIES: {},
+    TIME: {}
   };
 }

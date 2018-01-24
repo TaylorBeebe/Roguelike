@@ -74,6 +74,7 @@ export class PlayMode extends UIMode{
     let m = makeMap({xdim: 100, ydim: 40});
     a.setPos(m.getUnblockedPerimeterLocation());
     m.addEntity(a);
+    console.log('creating ogres');
     for (let x = 0; x < 5; x++){
       let b = EntityFactory.create('ogre');
       b.setPos(m.getRandomUnblockedPosition());

@@ -18,6 +18,8 @@ export class Entity extends MixableSymbol {
     this.attr.mapID = '';
     this.isDestroyed = false;
     this.expGainedForKill = template.expGainedForKill || 0;
+    // this.attr.isAgressive = template.isAgressive || false;
+    // this.attr.inLineOfSightOfPlayer = false;
   }
 
   getName(){return this.name;}

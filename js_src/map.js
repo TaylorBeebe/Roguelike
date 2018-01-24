@@ -22,6 +22,7 @@ class Map{
     this.attr.entityIDToLocation = {};
     this.attr.visibilityRange =  visibilityRange;
     this.attr.lastSeenGrid = {};
+    this.attr.visibleTiles = {};
     console.log('exiting map.constructor()');
 
   }
@@ -162,12 +163,12 @@ class Map{
 
      return false;
    }
-   let visibleTiles = {};
+   this.attr.visibleTiles = {};
 
    let fov = new ROT.FOV.RecursiveShadowcasting(lightPasses);
 
    fov.compute(camX, camY, DATASTORE.MAPS[m].attr.visibilityRange, function(x, y, r, visibility){
-     visibleTiles[`${x},${y}`] = true;
+     DATASTORE.MAPS[m].attr.visibleTiles[`${x},${y}`] = true;
      DATASTORE.MAPS[m].attr.lastSeenGrid[`${x},${y}`] = true;
    })
 
@@ -176,13 +177,15 @@ class Map{
      for (let y=0;y<o.height;y++) {
        yIndex = y + yStart;
        if (!((xIndex < 0) || (xIndex >= this.attr.xdim) || (yIndex < 0) || (yIndex >= this.attr.ydim))){
-         if (!visibleTiles[`${xIndex},${yIndex}`]){
+         if (!this.attr.visibleTiles[`${xIndex},${yIndex}`]){
            if(this.attr.lastSeenGrid[`${xIndex},${yIndex}`]){
              // console.log('tile being rendered has been seen before');
-            DATASTORE.MAPS[m].getDisplaySymbolAtMapLocation(x, y).drawOnGrey(display,x,y);
+            DATASTORE.MAPS[m].getTile(xIndex, yIndex).drawOnGrey(display,x,y);
            }
          } else {
-           this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart).drawOn(display,x,y);
+           let displaySymbol = this.getDisplaySymbolAtMapLocation(xIndex, yIndex);
+           //CHECK IF DISPLAY SYMBOL IS ENTITY
+           displaySymbol.drawOn(display,x,y);
          }
        }
      }

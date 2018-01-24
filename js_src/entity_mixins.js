@@ -1,7 +1,7 @@
 import {Messenger} from './messenger.js';
 import {DATASTORE} from './datastore.js';
 import {Color} from './colors.js';
-import {getColor} from './util.js';
+import {getColor, calculateDistance} from './util.js';
 import {TIMING, SCHEDULE} from './turnbased.js';
 import ROT from 'rot-js';
 
@@ -69,7 +69,7 @@ export let WalkerCorporeal = {
         this.getMap().moveEntityTo(this, newX, newY);
         this.raiseMixinEvent('turnTaken', {timeUsed: 1});
         // console.log(this.getTime());
-        this.setCurrentActionDuration(50);
+        this.setCurrentActionDuration(100);
         this.raiseMixinEvent('actionDone', {});
         return true;
       } else if(this.getMap().getEntityAtMapLocation(newX, newY)){
@@ -474,29 +474,51 @@ export let PlayerActor = {
   }
 };
 
-// export let AggressiveAIActor = {
-//   META:{
-//     mixinName: 'AggressiveAIActor',
-//     mixinGroupName: 'AI',
-//     stateNamespace: '_AggressiveAIActor',
-//     stateModel: {
-//       defaultActionDuration: 1000,
-//       currentActionDuration: 1000,
-//       isActing: false
-//     },
-//     initialize: function() {
-//
-//     }
-//   },
-//   METHODS:{
-//     setDuration: function(duration){
-//
-//     }
-//     getDuration: function(){
-//
-//     }
-//   }
-// };
+export let AggressiveAIActor = {
+  META:{
+    mixinName: 'AggressiveAIActor',
+    mixinGroupName: 'AI',
+    stateNamespace: '_AIActor',
+    stateModel: {
+      defaultActionDuration: 100,
+      currentActionDuration: 100,
+      isActing: false
+    },
+    initialize: function() {
+      SCHEDULE.add(this, true);
+    }
+  },
+  METHODS:{
+    getDefaultActionDuration: function(){
+      return this.attr._AIActor.defaultActionDuration;
+    },
+    setDefaultActionDuration: function(duration){
+      this.attr._AIActor.defaultActionDuration = duration;
+    },
+    getCurrentActionDuration: function(){
+      return this.attr._AIActor.currentActionDuration;
+    },
+    setCurrentActionDuration: function(duration){
+      this.attr._AIActor.currentActionDuration = duration;
+    },
+    isActing: function(state){
+      if(state !== undefined){
+        this.attr._AIActor.actingState = state;
+      }
+      return this.attr._AIActor.actingState;
+    },
+    act: function(){
+      console.log('AI is acting');
+      if(this.isActing()){
+        return false;
+      }
+      this.isActing(true);
+      this.raiseMixinEvent('getAgressiveWalk');
+      SCHEDULE.setDuration(this.getDefaultActionDuration());
+      this.isActing(false);
+    },
+  }
+};
 
 export let PassiveAIActor = {
   META:{
@@ -536,8 +558,6 @@ export let PassiveAIActor = {
       if(this.isActing()){
         return false;
       }
-      // setTimedUnlocker(true);
-
       this.isActing(true);
       this.raiseMixinEvent('getRandomWalk');
       SCHEDULE.setDuration(this.getDefaultActionDuration());
@@ -580,10 +600,10 @@ export let PlayerEnergy = {
   }
 };
 
-export let RandomWalk = {
+export let AIWalk = {
   META:{
-    mixinName: 'RandomWalk',
-    mixinGroupName: 'AIWalker',
+    mixinName: 'AIWalk',
+    mixinGroupName: 'AIWalk',
     stateNamespace: '_RandomWalk',
     stateModel: {
       baseDuration: 100
@@ -593,18 +613,33 @@ export let RandomWalk = {
     }
   },
   METHODS:{
-    getActionDuration: function(){
+    getWalkDuration: function(){
       return this.attr._RandomWalk.baseDuration;
     },
-    setRandomWalkDuration: function(duration){
+    setWalkDuration: function(duration){
       this.attr._RandomWalk.baseDuration = duration;
-    }
+    },
+    getShortestPath: function(){}
   },
   LISTENERS: {
     'getRandomWalk': function(evtData){
       let dx = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       let dy = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       this.raiseMixinEvent('walkAttempt', {dx, dy});
+    },
+    'getAgressiveWalk': function(evtData){
+      if (this.getMap().attr.visibleTiles[this.getxcy()]){
+        console.log('Entity in LOS of player');
+        let avatar = DATASTORE.GAME.modes.play.getAvatar();
+        // let distFromAvatar = (Math.abs(Math.sqrt(Math.pow(avatar.getX()
+        // - this.getX(), 2) + Math.pow(avatar.getY() - this.getY(), 2))));
+        let distFromAvatar = calculateDistance({enemyX: avatar.getX(), enemyY: avatar.getY(), myX: this.getX(), myY: this.getY()});
+        console.log(distFromAvatar);
+        // if(distFromAvatar > 5){
+        //   let walkData = this.getShortestPath();
+        // }
+        this.raiseMixinEvent('walkAttempt', {dx: 0, dy: 0});
+      }
     }
   }
 };

@@ -619,7 +619,20 @@ export let AIWalk = {
     setWalkDuration: function(duration){
       this.attr._RandomWalk.baseDuration = duration;
     },
-    getShortestPath: function(){}
+    getShortestPath: function(avatar){
+      let bestPos = {};
+      let bestDist = Infinity;
+      for(let myX = -1; myX < 2; myX++){
+        for (let myY = -1; myY < 2; myY++){
+          // console.log(myY);
+          if(calculateDistance({
+            enemyX: avatar.getX(), enemyY: avatar.getY(), myX, myY}) <
+            bestDist && !this.getMap().testLocationBlocked(this.getX() + myX, this.getY() + myY)){
+              bestPos.x = myX;
+              bestPos.y = myY;
+          } } }
+      this.raiseMixinEvent('walkAttempt', {dx: bestPos.x, dy: bestPos.y});
+    }
   },
   LISTENERS: {
     'getRandomWalk': function(evtData){
@@ -629,15 +642,12 @@ export let AIWalk = {
     },
     'getAgressiveWalk': function(evtData){
       if (this.getMap().attr.visibleTiles[this.getxcy()]){
-        console.log('Entity in LOS of player');
         let avatar = DATASTORE.GAME.modes.play.getAvatar();
-        // let distFromAvatar = (Math.abs(Math.sqrt(Math.pow(avatar.getX()
-        // - this.getX(), 2) + Math.pow(avatar.getY() - this.getY(), 2))));
         let distFromAvatar = calculateDistance({enemyX: avatar.getX(), enemyY: avatar.getY(), myX: this.getX(), myY: this.getY()});
         console.log(distFromAvatar);
-        // if(distFromAvatar > 5){
-        //   let walkData = this.getShortestPath();
-        // }
+        if(distFromAvatar > 5){
+          let walkData = this.getShortestPath(avatar);
+        }
         this.raiseMixinEvent('walkAttempt', {dx: 0, dy: 0});
       }
     }

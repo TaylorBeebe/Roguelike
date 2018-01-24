@@ -29,5 +29,6 @@ EntityFactory.learn({
   fg: '#c21515',
   maxHP: 5,
   strength: 10,
+  expGainedForKill: 20,
   mixinNames: ['Hitpoints', 'Stats', 'StrengthAttack']
 });

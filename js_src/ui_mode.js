@@ -37,11 +37,11 @@ export class StartupMode extends UIMode {
   }
 
   render(){
-    this.display.drawText(2,5, '   ______     ______     __   __   ______ ');
-    this.display.drawText(1,6, '  /\\  ___\    /\\  __ \\   /\\ \\ / /  /\\  ___\\');
-    this.display.drawText(1,7, '  \\ \\ \\____  \\ \\  __ \\  \\ \\ \\\'/   \\ \\  __\\');
-    this.display.drawText(2,8, '   \\ \\_____\\  \\ \\_\\ \\_\\  \\ \\__|    \\ \\_____\\ ');
-    this.display.drawText(3,9, '    \\/_____/   \\/_/\\/_/   \\/_/      \\/_____/')
+    this.display.drawText(18,5, '   ______     ______     __   __   ______ ');
+    this.display.drawText(17,6, '  /\\  ___\    /\\  __ \\   /\\ \\ / /  /\\  ___\\');
+    this.display.drawText(17,7, '  \\ \\ \\____  \\ \\  __ \\  \\ \\ \\\'/   \\ \\  __\\');
+    this.display.drawText(18,8, '   \\ \\_____\\  \\ \\_\\ \\_\\  \\ \\__|    \\ \\_____\\ ');
+    this.display.drawText(19,9, '    \\/_____/   \\/_/\\/_/   \\/_/      \\/_____/')
     this.display.drawText(2,10, '   ______     ______     ______     __     __     __         ______     ______');
     this.display.drawText(1,11, '  /\\  ___\\   /\\  == \\   /\\  __ \\   /\\ \\  _ \\ \\   /\\ \\       /\\  ___\\   /\\  == \\');
     this.display.drawText(1,12, '  \\ \\ \\____  \\ \\  __<   \\ \\  __ \\  \\ \\ \\/ ".\\ \\  \\ \\ \\____  \\ \\  __\\   \\ \\  __<');
@@ -69,7 +69,7 @@ export class PlayMode extends UIMode{
     console.log('creating avatar');
     let a = EntityFactory.create('avatar');
     console.log('avatar created');
-    let m = makeMap({xdim: 60, ydim:20});
+    let m = makeMap({xdim: 100, ydim: 40});
     a.setPos(m.getUnblockedPerimeterLocation());
     m.addEntity(a);
     for (let x = 0; x < 5; x++){
@@ -93,6 +93,12 @@ export class PlayMode extends UIMode{
     this.display.clear();
     if (this.checkGamestate()){ return; }
     DATASTORE.MAPS[this._GAMESTATE_.curMapId].renderOn(this.display, this._GAMESTATE_.cameraMapLoc.x, this._GAMESTATE_.cameraMapLoc.y);
+    this.display.drawText(2, 0, `%b{black}7  8  9`);
+    this.display.drawText(3, 1, `%b{black} ↖ ↑ ↗`);
+    this.display.drawText(1, 2, `%b{black}4 ← ᐅ → 6`);
+    this.display.drawText(3, 3, `%b{black} ↙ ↓ ↘`);
+    this.display.drawText(2, 4, `%b{black}1  2  3`);
+
     this.game.renderDisplayAvatar();
   }
 
@@ -318,7 +324,6 @@ export class AttackMode extends UIMode{
     display.drawText(3, 3, `${Color.DEFAULT} Press 1 to attempt a ${Color.STRENGTH}Strength${Color.DEFAULT} attack`);
     display.drawText(3, 5, `${Color.DEFAULT} Press 2 to attempt an ${Color.INTELLIGENCE}Intelligence${Color.DEFAULT} attack`);
     display.drawText(3, 7, `${Color.DEFAULT} Press 3 to attempt an ${Color.AGILITY}Agility${Color.DEFAULT} attack`);
-    console.dir(DATASTORE);
   }
 
   handleInput(inputType,inputData) {
@@ -356,7 +361,6 @@ export class LevelUpMode extends UIMode{
 
   render(){
     this.display.clear();
-    console.log(this.display);
     let strength = this.avatar.getStats().strength;
     let intelligence = this.avatar.getStats().intelligence;
     let agility = this.avatar.getStats().agility;

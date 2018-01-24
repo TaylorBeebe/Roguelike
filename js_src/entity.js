@@ -17,6 +17,7 @@ export class Entity extends MixableSymbol {
     this.attr.y = template.y || 1;
     this.attr.mapID = '';
     this.isDestroyed = false;
+    this.expGainedForKill = template.expGainedForKill || 0;
   }
 
   getName(){return this.name;}
@@ -50,7 +51,7 @@ export class Entity extends MixableSymbol {
   setX(x){this.attr.x = x;}
 
   setY(y){this.attr.y = y;}
-  
+
   toJSON(){
     return JSON.stringify(this.attr);
   }

@@ -114,7 +114,6 @@ export let PlayerMessage = {
     },
     'attackedMessage': function(evtData){
       let stringColor = getColor(evtData.attackType);
-      console.log(stringColor);
       Messenger.send(`${evtData.wasDamagedBy.name} hit ${evtData.victim.name} with a` + stringColor + ` ${evtData.attackType}${Color.DEFAULT} attack and dealt ${evtData.damageAmount} damage`);
     }
   }
@@ -204,8 +203,6 @@ export let Hitpoints = {
         curHP: 0
       },
       initialize: function(template) {
-        // console.log('initializing Hitpoints on entity -> ' + template.name);
-        // console.log(this.template);
         this.attr._Hitpoints.maxHP = template.maxHP || 10;
         this.attr._Hitpoints.curHP = template.curHP || this.attr._Hitpoints.maxHP;
       }
@@ -240,7 +237,7 @@ export let Hitpoints = {
   LISTENERS:{
     'damaged': function(evtData){
       this.loseHP(evtData.damageAmount);
-      console.log('Attack Successful! ' + evtData.victim.name + " now has " + evtData.victim.getCurHP() + ' HP');
+      // console.log('Attack Successful! ' + evtData.victim.name + " now has " + evtData.victim.getCurHP() + ' HP');
       this.raiseMixinEvent('damagedMessage', evtData);
 
       if (this.getCurHP() <= 0){
@@ -248,9 +245,10 @@ export let Hitpoints = {
       }
     },
     'killed': function(evtData){
-      console.log('entity killed mixin event');
+      // console.log('entity killed mixin event');
       Messenger.send(`${evtData.wasDamagedBy.name} killed ${evtData.victim.name}!`);
-      evtData.deltaExp = 20;
+      console.dir(evtData.victim);
+      evtData.deltaExp = evtData.victim.expGainedForKill;
       evtData.wasDamagedBy.raiseMixinEvent('deltaExp', evtData);
       this.destroy();
     }
@@ -283,7 +281,6 @@ export let StrengthAttack = {
     'strAttack': function(evtData){
       evtData.damageAmount = this.getStrengthAttackDamage();
       this.raiseMixinEvent('attackedMessage', evtData);
-      console.dir(evtData.victim);
       evtData.victim.raiseMixinEvent('damaged', evtData);
     }
   }
@@ -361,19 +358,75 @@ export let PlayerAttack = {
   },
   LISTENERS:{
     'chooseAttack': function(evtData){
-      console.log('choosing attack');
+      // console.log('choosing attack');
       DATASTORE.GAME.enterAttackMode(evtData);
     }
   }
 };
 
-// export let randomWalk = {
-//   META:{
-//     mixinName: 'randomWalk',
-//     mixinGroupName: 'randomWalk',
-//   },
-//   METHODS:{
-//     method1: function(p){
-//     }
-//   }
-// }
+export let Debuff = {
+  META:{
+    mixinName: 'Debuff',
+    mixinGroupName: 'Buffs',
+    stateNamespace: '_Debuff',
+    stateModel: {
+
+    },
+    initialize: function() {
+      // do any initialization
+
+    }
+  },
+  METHODS:{
+    method1: function(p){
+
+    }
+  }
+};
+
+export let RandomWalk = {
+  META:{
+    mixinName: 'randomWalk',
+    mixinGroupName: 'randomWalk',
+  },
+  METHODS:{
+    method1: function(p){
+    }
+  }
+};
+
+export let AggressiveAI = {
+  META:{
+    mixinName: 'AggressiveAI',
+    mixinGroupName: 'AI',
+    stateNamespace: '_AggressiveAI',
+    stateModel: {
+    },
+    initialize: function() {
+
+    }
+  },
+  METHODS:{
+    method1: function(p){
+
+    }
+  }
+};
+
+export let PassiveAI = {
+  META:{
+    mixinName: 'PassiveAI',
+    mixinGroupName: 'AI',
+    stateNamespace: '_PassiveAI',
+    stateModel: {
+    },
+    initialize: function() {
+
+    }
+  },
+  METHODS:{
+    method1: function(p){
+
+    }
+  }
+};

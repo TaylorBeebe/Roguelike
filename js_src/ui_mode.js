@@ -5,6 +5,7 @@ import {DisplaySymbol} from './display_symbol.js';
 import {DATASTORE,initializeDatastore} from './datastore.js';
 import {EntityFactory} from './entities.js';
 import {Messenger} from './messenger.js';
+import {TIMING, SCHEDULE, initializeTurns} from './turnbased.js';
 
 class UIMode {
 
@@ -66,6 +67,7 @@ export class PlayMode extends UIMode{
   }
 
   newGame(){
+    initializeTurns();
     console.log('creating avatar');
     let a = EntityFactory.create('avatar');
     console.log('avatar created');
@@ -77,6 +79,7 @@ export class PlayMode extends UIMode{
       b.setPos(m.getRandomUnblockedPosition());
       m.addEntity(b);
     }
+
     this._GAMESTATE_ = {};
     this._GAMESTATE_.avatarId = a.getID();
     this._GAMESTATE_.curMapId = m.getID();
@@ -153,6 +156,9 @@ export class PlayMode extends UIMode{
     display.drawText(0,8, `${Color.INTELLIGENCE}Int${Color.DEFAULT}: ` + this.getAvatar().getStats().intelligence);
     display.drawText(0,10, `${Color.AGILITY}Agil${Color.DEFAULT}: ` + this.getAvatar().getStats().agility);
     display.drawText(0,12, `${Color.EXP}Exp${Color.DEFAULT}: ` + this.getAvatar().getExp());
+    console.dir(this.getAvatar());
+    display.drawText(0, 14, `${Color.ENERGY}Energy${Color.DEFAULT}: ` + this.getAvatar().getCurrentEnergy() + `/` + this.getAvatar().getBaseEnergy());
+
   }
 
   move(x, y){

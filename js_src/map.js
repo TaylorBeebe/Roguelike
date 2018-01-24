@@ -168,7 +168,7 @@ class Map{
 
    fov.compute(camX, camY, DATASTORE.MAPS[m].attr.visibilityRange, function(x, y, r, visibility){
      visibleTiles[`${x},${y}`] = true;
-     DATASTORE.MAPS[m].attr.lastSeenGrid[`${x},${y}`] = DATASTORE.MAPS[m].getDisplaySymbolAtMapLocation(x, y);
+     DATASTORE.MAPS[m].attr.lastSeenGrid[`${x},${y}`] = true;
    })
 
    for (let x=0;x<o.width;x++) {
@@ -179,7 +179,7 @@ class Map{
          if (!visibleTiles[`${xIndex},${yIndex}`]){
            if(this.attr.lastSeenGrid[`${xIndex},${yIndex}`]){
              // console.log('tile being rendered has been seen before');
-             this.attr.lastSeenGrid[`${xIndex},${yIndex}`].drawOnGrey(display,x,y);
+            DATASTORE.MAPS[m].getDisplaySymbolAtMapLocation(x, y).drawOnGrey(display,x,y);
            }
          } else {
            this.getDisplaySymbolAtMapLocation(x+xStart, y+yStart).drawOn(display,x,y);

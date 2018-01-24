@@ -2,7 +2,7 @@ import {Messenger} from './messenger.js';
 import {DATASTORE} from './datastore.js';
 import {Color} from './colors.js';
 import {getColor} from './util.js';
-
+import {TIMING, SCHEDULE} from './turnbased.js';
 
 let _exampleMixin = {
   META:{
@@ -68,6 +68,7 @@ export let WalkerCorporeal = {
         this.getMap().moveEntityTo(this, newX, newY);
         this.raiseMixinEvent('turnTaken', {timeUsed: 1});
         // console.log(this.getTime());
+        this.raiseMixinEvent('actionDone', {});
         return true;
       } else if(this.getMap().getEntityAtMapLocation(newX, newY)){
         // console.log('entity at desired position');
@@ -253,7 +254,7 @@ export let Hitpoints = {
     'killed': function(evtData){
       // console.log('entity killed mixin event');
       Messenger.send(`${evtData.wasDamagedBy.name} killed ${evtData.victim.name}!`);
-      console.dir(evtData.victim);
+      // console.dir(evtData.victim);
       evtData.deltaExp = evtData.victim.expGainedForKill;
       evtData.wasDamagedBy.raiseMixinEvent('deltaExp', evtData);
       this.destroy();
@@ -405,37 +406,40 @@ export let PlayerActor = {
     mixinGroupName: 'Player',
     stateNamespace: '_PlayerActor',
     stateModel: {
-      defaultActionDuration: 1000,
-      currentActionDuration: 1000,
-      isActing: false
+      defaultActionDuration: 100,
+      currentActionDuration: 100,
+      actingState: false
+    },
+    initialize: function(template) {
+      SCHEDULE.add(this, true);
     }
   },
   METHODS:{
 
-    getdefaultActionDuration: function(){
-      return this.attr._ActorPlayer.defaultActionDuration;
+    getDefaultActionDuration: function(){
+      return this.attr._PlayerActor.defaultActionDuration;
     },
-    setdefaultActionDuration: function(duration){
-      this.attr._ActorPlayer.defaultActionDuration = duration;
+    setDefaultActionDuration: function(duration){
+      this.attr._PlayerActor.defaultActionDuration = duration;
     },
     getCurrentActionDuration: function(){
-      return this.attr._ActorPlayer.currentActionDuration;
+      return this.attr._PlayerActor.currentActionDuration;
     },
     setCurrentActionDuration: function(duration){
-      this.attr._ActorPlayer.currentActionDuration = duration;
+      this.attr._PlayerActor.currentActionDuration = duration;
     },
     isActing: function(state){
       if(state !== undefined){
-        this.attr._ActorPlayer.actingState = state;
+        this.attr._PlayerActor.actingState = state;
       }
-      return this.attr._ActorPlayer.actingState;
+      return this.attr._PlayerActor.actingState;
     },
     act: function(){
       if(this.isActing()){
         return;
       }
       this.isActing(true);
-      TIME_ENGINE.lock();
+      TIMING.lock();
       DATASTORE.GAME.render();
       //console.log("player is acting");
     }
@@ -443,9 +447,14 @@ export let PlayerActor = {
   LISTENERS: {
     actionDone: function(evtData){
       this.isActing(false);
-      SCHEDULER.setDuration(this.getdefaultActionDuration());
+      console.dir(SCHEDULE);
+      if(this.getCurrentActionDuration() != null){
+        SCHEDULE.setDuration(this.getCurrentActionDuration());
+      } else {
+        SCHEDULE.setDuration(this.getDefaultActionDuration());
+      }
       setTimeout(function(){
-        TIME_ENGINE.unlock();
+        TIMING.unlock();
       }, 1);
       //console.log("end player acting");
     }
@@ -480,15 +489,21 @@ export let PassiveAIActor = {
   META:{
     mixinName: 'PassiveAIActor',
     mixinGroupName: 'AI',
-    stateNamespace: '_PassiveAIActor',
+    stateNamespace: '_AIActor',
     stateModel: {
+      defaultActionDuration: 100,
+      currentActionDuration: 100,
+      actingState: false
+    },
+    initialize: function(template) {
+      SCHEDULE.add(this, true);
     }
   },
   METHODS:{
-    getdefaultActionDuration: function(){
+    getDefaultActionDuration: function(){
       return this.attr._AIActor.defaultActionDuration;
     },
-    setdefaultActionDuration: function(duration){
+    setDefaultActionDuration: function(duration){
       this.attr._AIActor.defaultActionDuration = duration;
     },
     getCurrentActionDuration: function(){
@@ -504,11 +519,49 @@ export let PassiveAIActor = {
       return this.attr._AIActor.actingState;
     },
     act: function(){
+      console.log('AI is acting');
       if(this.isActing()){
         return false;
       }
-      setTimedUnlocker(true);
+      // setTimedUnlocker(true);
+
       this.isActing(true);
+      SCHEDULE.setDuration(this.getDefaultActionDuration());
+      this.isActing(false);
     },
+  }
+};
+
+export let PlayerEnergy = {
+  META:{
+    mixinName: 'PlayerEnergy',
+    mixinGroupName: 'PlayerEnergy',
+    stateNamespace: '_PlayerEnergy',
+    stateModel: {
+      baseEnergy: 100,
+      curEnergy: 100
+    },
+    initialize: function(template) {
+      // do any initialization
+      this.attr._PlayerEnergy.baseEnergy = template.baseEnergy || 100;
+      this.attr._PlayerEnergy.curEnergy = template.curEnergy || this.attr._PlayerEnergy.baseEnergy
+    }
+  },
+  METHODS:{
+    getCurrentEnergy: function(){
+      return this.attr._PlayerEnergy.curEnergy;
+    },
+    deltaCurrentEnergy: function(delta){
+      this.attr._PlayerEnergy.curEnergy += delta;
+    },
+    setCurrentEnergy: function(set){
+      this.attr._PlayerEnergy.curEnergy = set;
+    },
+    getBaseEnergy: function(){
+      return this.attr._PlayerEnergy.baseEnergy;
+    },
+    setBaseEnergy: function(set){
+      this.attr._PlayerEnergy.baseEnergy = set;
+    }
   }
 };

@@ -18,17 +18,19 @@ EntityFactory.learn({
     'StrengthAttack',
     'IntelligenceAttack',
     'AgilityAttack',
-    'PlayerAttack'
+    'PlayerAttack',
+    'PlayerActor',
+    'PlayerEnergy'
   ]
 });
 
 EntityFactory.learn({
-  templateName: 'ogre',
+  name: 'ogre',
   descr: 'A mighty ogre',
   chr: '&',
   fg: '#c21515',
   maxHP: 5,
   strength: 10,
   expGainedForKill: 20,
-  mixinNames: ['Hitpoints', 'Stats', 'StrengthAttack']
+  mixinNames: ['Hitpoints', 'Stats', 'StrengthAttack', 'PassiveAIActor']
 });

@@ -31,6 +31,8 @@ EntityFactory.learn({
   fg: '#c21515',
   maxHP: 5,
   strength: 10,
+  intelligence: 0,
+  agility: 0.5,
   expGainedForKill: 20,
   // isAgressive: true,
   mixinNames: [

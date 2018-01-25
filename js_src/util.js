@@ -43,3 +43,12 @@ export function uniqueID() {
 export function calculateDistance(data){
   return (Math.abs(Math.sqrt(Math.pow(data.enemyX - data.myX, 2) + Math.pow(data.enemyY - data.myY, 2))));
 }
+
+export function damageRoll(data){
+  let getRandomInt = function(min, max){
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+  }
+  return getRandomInt(1, 101) <= (50 + data);
+}

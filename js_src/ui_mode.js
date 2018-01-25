@@ -6,6 +6,7 @@ import {DATASTORE,initializeDatastore} from './datastore.js';
 import {EntityFactory} from './entities.js';
 import {Messenger} from './messenger.js';
 import {TIMING, SCHEDULE, initializeTurns} from './turnbased.js';
+import {Char} from './getchar.js'
 
 class UIMode {
 
@@ -64,6 +65,7 @@ export class PlayMode extends UIMode{
   enter(){
     super.enter();
     this.game.isPlaying = true;
+    this.infoChar == '';
   }
 
   newGame(){
@@ -139,15 +141,26 @@ export class PlayMode extends UIMode{
         this.move(1,-1);
       } else if (inputData.key == '-'){
         this.game.switchMode('levelup');
+      } else if (inputData.key == '&'){
+        this.renderAvatar(this.game.getDisplay('avatar'), Char.OGRE);
+      } else if (inputData.key == '#'){
+        this.renderAvatar(this.game.getDisplay('avatar'), Char.WALL);
+      } else if (inputData.key == '.'){
+        this.renderAvatar(this.game.getDisplay('avatar'), Char.FLOOR);
+      } else if (inputData.key == '@'){
+        this.renderAvatar(this.game.getDisplay('avatar'), Char.AVATAR);
       } else{
         return false;
       } return true;
     }
   }
 
-  renderAvatar(display){
+  renderAvatar(display, char){
     // console.log('in PlayMode.renderAvatar()');
     display.clear();
+    if(char){
+      this.infoChar = char;
+    }
     display.drawText(0, 0.5,"Time: " + this.getAvatar().getTime());
     display.drawText(0, 2, `${Color.HP}HP${Color.DEFAULT}: ` + this.getAvatar().getCurHP());
 
@@ -155,9 +168,18 @@ export class PlayMode extends UIMode{
     display.drawText(0, 5, `${Color.INTELLIGENCE}Int${Color.DEFAULT}: ` + this.getAvatar().getStats().intelligence);
     display.drawText(0, 6.5, `${Color.AGILITY}Agil${Color.DEFAULT}: ` + this.getAvatar().getStats().agility);
     display.drawText(0, 8, `${Color.EXP}Exp${Color.DEFAULT}: ` + this.getAvatar().getExp());
-    
+
     display.drawText(0, 9.5, `${Color.ENERGY}Energy${Color.DEFAULT}: ` + this.getAvatar().getCurrentEnergy() + `/` + this.getAvatar().getBaseEnergy());
-    display.drawText(0, 10.5, `--------------------`)
+    display.drawText(0, 10.5, `--------------------`);
+    if(this.infoChar){
+      display.drawText(.5,11.5, this.infoChar);
+    } else{
+      display.drawText(.5, 11.5, 'Type any char you see on screen to view information about it.');
+    }
+  }
+
+  renderInformation(character){
+    let information = getCharInfo(character);
   }
 
   move(x, y){
@@ -329,7 +351,7 @@ export class AttackMode extends UIMode{
   render(){
     let display = this.game.getDisplay('main')
     display.clear();
-    display.drawText(3, 3, `${Color.DEFAULT} Press 1 to attempt a ${Color.STRENGTH}Strength${Color.DEFAULT} attack`);
+    display.drawText(3, 3, `${Color.DEFAULT} Press 1 to attempt a ${Color.STRENGTH}Strength${Color.DEFAULT} attack <- Action will use ` + this.getStrengthAttackSpeed() + `${Color.ENERGY}Energy${Color.DEFAULT} points`);
     display.drawText(3, 5, `${Color.DEFAULT} Press 2 to attempt an ${Color.INTELLIGENCE}Intelligence${Color.DEFAULT} attack`);
     display.drawText(3, 7, `${Color.DEFAULT} Press 3 to attempt an ${Color.AGILITY}Agility${Color.DEFAULT} attack`);
   }
@@ -554,83 +576,78 @@ export class LevelUpMode extends UIMode{
     this.display.drawText(43, 23, '|     /\` \`-----\'  \`Y88888888888888888');
   }
 
-//                   __.------.
-//                  (__  ___   )
-//                   .)e  )\ /
-//                  /_.------
-//                  _/_    _/
-//              __.'  / '   `-.__
-//             / <.--'           `\
-//            /   \   \c           |
-//           /    /    )       x    \
-//          |   /\    |c     / \.-  \
-//          \__/  )  /(     (   \   <>'\
-//               / _/ _\-    `-. \/_|_ /<>
-//              / /--/,-\     _ \     <>.`.
-//              \/`--\_._) - /   `-/\    `.\
-//              /        `.     /   )     `\
-//              \      \   \___/----'
-//              |      /    `(
-//              \    ./\_   _ \
-//             /     |  )    '|
-//            |     /   \     \
-//           /     |     |____.)
-//          /      \  a88a\___/88888a.
-//          \_      :)8888888888888888888a.
-//         /` `-----'  `Y88888888888888888
-//         \____|         `88888888888P'
-  renderPeaChar(){
-    this.display.drawText(43, 0, '|                .I.');
-    this.display.drawText(43, 1, '|               / : \\');
-    this.display.drawText(43, 2, '|               / : \\');
-    this.display.drawText(43, 3, '|               |===|');
-    this.display.drawText(43, 4, '|               >._.<');
-    this.display.drawText(43, 5, '|           .=-<     >-=.');
-    this.display.drawText(43, 6, '|          /.\'\`(\`-+-\')\'\`.\\');
-    this.display.drawText(43, 7, '|         /\`.__/  :  \\__.\'\\');
-    this.display.drawText(43, 8, '|        /\`._/\\\`. : .\'/\\_.\'\\ ');
-    this.display.drawText(43, 9, '|       ( - ) |\\ \`:\' /| ( - )');
-    this.display.drawText(43, 10, '|       \\ - | | \\___/ | \\ - /');
-    this.display.drawText(43, 11, '|        )^(  |.\' : \`.|  )^(');
-    this.display.drawText(43, 12, '|       |  / /\`-._:_.-\'\\ \\  |');
-    this.display.drawText(43, 13, '|       "-"  | :  |  : |  "-"');
-    this.display.drawText(43, 14, '|            | : / \\ : |');
-    this.display.drawText(43, 15, '|           (\'-:-| |-:-\')');
-    this.display.drawText(43, 16, '|            \\_:_/ \\_:_/');
-    this.display.drawText(43, 17, '|            |_:_| |_:_|');
-    this.display.drawText(43, 18, '|            (;__| |__;)');
-    this.display.drawText(43, 19, '|             |: | | :|');
-    this.display.drawText(43, 20, '|             |: | | :|');
-    this.display.drawText(43, 21, '|             |==| |==|');
-    this.display.drawText(43, 22, '|            /v-\'( )\`-v\\ ');
-    this.display.drawText(43, 23, '|');
-  }
+  //                   __.------.
+  //                  (__  ___   )
+  //                   .)e  )\ /
+  //                  /_.------
+  //                  _/_    _/
+  //              __.'  / '   `-.__
+  //             / <.--'           `\
+  //            /   \   \c           |
+  //           /    /    )       x    \
+  //          |   /\    |c     / \.-  \
+  //          \__/  )  /(     (   \   <>'\
+  //               / _/ _\-    `-. \/_|_ /<>
+  //              / /--/,-\     _ \     <>.`.
+  //              \/`--\_._) - /   `-/\    `.\
+  //              /        `.     /   )     `\
+  //              \      \   \___/----'
+  //              |      /    `(
+  //              \    ./\_   _ \
+  //             /     |  )    '|
+  //            |     /   \     \
+  //           /     |     |____.)
+  //          /      \  a88a\___/88888a.
+  //          \_      :)8888888888888888888a.
+  //         /` `-----'  `Y88888888888888888
+  //         \____|         `88888888888P'
+    renderPeaChar(){
+      this.display.drawText(43, 0, '|                .I.');
+      this.display.drawText(43, 1, '|               / : \\');
+      this.display.drawText(43, 2, '|               / : \\');
+      this.display.drawText(43, 3, '|               |===|');
+      this.display.drawText(43, 4, '|               >._.<');
+      this.display.drawText(43, 5, '|           .=-<     >-=.');
+      this.display.drawText(43, 6, '|          /.\'\`(\`-+-\')\'\`.\\');
+      this.display.drawText(43, 7, '|         /\`.__/  :  \\__.\'\\');
+      this.display.drawText(43, 8, '|        /\`._/\\\`. : .\'/\\_.\'\\ ');
+      this.display.drawText(43, 9, '|       ( - ) |\\ \`:\' /| ( - )');
+      this.display.drawText(43, 10, '|       \\ - | | \\___/ | \\ - /');
+      this.display.drawText(43, 11, '|        )^(  |.\' : \`.|  )^(');
+      this.display.drawText(43, 12, '|       |  / /\`-._:_.-\'\\ \\  |');
+      this.display.drawText(43, 13, '|       "-"  | :  |  : |  "-"');
+      this.display.drawText(43, 14, '|            | : / \\ : |');
+      this.display.drawText(43, 15, '|           (\'-:-| |-:-\')');
+      this.display.drawText(43, 16, '|            \\_:_/ \\_:_/');
+      this.display.drawText(43, 17, '|            |_:_| |_:_|');
+      this.display.drawText(43, 18, '|            (;__| |__;)');
+      this.display.drawText(43, 19, '|             |: | | :|');
+      this.display.drawText(43, 20, '|             |: | | :|');
+      this.display.drawText(43, 21, '|             |==| |==|');
+      this.display.drawText(43, 22, '|            /v-\'( )\`-v\\ ');
+      this.display.drawText(43, 23, '|');
+    }
 
-//          .I.
-//         / : \
-//         |===|
-//         >._.<
-//     .=-<     >-=.
-//    /.'`(`-+-')'`.\
-//   /`.__/  :  \__.'\
-//  /`._/\`. : .'/\_.'\
-// ( - ) |\ `:' /| ( - )
-// \ - / / \___/ \ \ - /
-//  )^( | .' : `. | )^(
-// |  / |`-._:_.-'| \  |
-// "-"  | :  |  : |  "-"
-//      | : / \ : |
-//     ('-:-| |-:-')
-//      \_:_/ \_:_/
-//      |_:_| |_:_|
-//      (;__| |__;)
-//       |: | | :|
-//       \: | | :/
-//       |==| |==|
-//      /v-'( )`-v\
-
-
-
-
-
+  //          .I.
+  //         / : \
+  //         |===|
+  //         >._.<
+  //     .=-<     >-=.
+  //    /.'`(`-+-')'`.\
+  //   /`.__/  :  \__.'\
+  //  /`._/\`. : .'/\_.'\
+  // ( - ) |\ `:' /| ( - )
+  // \ - / / \___/ \ \ - /
+  //  )^( | .' : `. | )^(
+  // |  / |`-._:_.-'| \  |
+  // "-"  | :  |  : |  "-"
+  //      | : / \ : |
+  //     ('-:-| |-:-')
+  //      \_:_/ \_:_/
+  //      |_:_| |_:_|
+  //      (;__| |__;)
+  //       |: | | :|
+  //       \: | | :/
+  //       |==| |==|
+  //      /v-'( )`-v\
 }

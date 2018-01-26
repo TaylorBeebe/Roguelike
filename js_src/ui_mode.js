@@ -358,18 +358,18 @@ export class AttackMode extends UIMode{
 
   handleInput(inputType,inputData) {
     if (inputType == 'keyup') {
-      //if (inputData.key == 'z' || inputData.key == 'Z')
       if (inputData.key == '1') {
         this.evtData.attackType = 'Strength';
         this.evtData.wasAttackedBy.raiseMixinEvent('strAttack', this.evtData);
+        // this.evtData.wasAttackedBy.setCurrentActionDuration(this.evtData.wasAttackedBy.getStrengthAttackSpeed());
+        // this.evtData.wasAttackedBy.raiseMixinEvent('actionDone', {});
         this.game.switchMode('play');
-      } //else if (inputData.key == 'x' || inputData.key == 'X')
-      else if (inputData.key == '2') {
+      } else if (inputData.key == '2') {
         this.evtData.attackType = 'Intelligence';
         this.evtData.wasAttackedBy.raiseMixinEvent('intelAttack', this.evtData);
+
         this.game.switchMode('play');
-      } //else if (inputData.key == 'c' || inputData.key == 'C')
-      else if (inputData.key == '3') {
+      } else if (inputData.key == '3') {
         this.evtData.attackType = 'Agility';
         this.evtData.wasAttackedBy.raiseMixinEvent('agilAttack', this.evtData);
         this.game.switchMode('play');
@@ -397,7 +397,7 @@ export class LevelUpMode extends UIMode{
 
     this.display.drawText(2, 0, 'You have ' + this.exp + ` ${Color.EXP}Experience${Color.DEFAULT} points to spend`);
     this.display.drawText(0, 1, '--------------------------------------------');
-    // this.display.drawText(42, 0,'|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|');
+
     this.display.drawText(15, 2, 'STATS');
     this.display.drawText(1, 4, `${Color.STRENGTH}Strength`);
     this.display.drawText(1, 5, `Level: ` + strength + ' (' + this.strExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
@@ -414,7 +414,6 @@ export class LevelUpMode extends UIMode{
     this.display.drawText(1, 17, `Level: ` + agility + ' (' + this.agilExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
     this.display.drawText(1, 18, `Attacks do: ` + agiDamage.min + '-' + agiDamage.max + ` ${Color.DAMAGE}damage`);
     this.display.drawText(1, 19, 'Attacks cost: ' + this.avatar.getAgilityAttackSpeed() + ` ${Color.ENERGY}energy`);
-
 
     if(strength >= 10 && strength >= intelligence && strength >= agility){
       this.renderStrChar();

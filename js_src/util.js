@@ -45,6 +45,7 @@ export function calculateDistance(data){
 }
 
 export function damageRoll(data){
+  console.log(data);
   let getRandomInt = function(min, max){
     min = Math.ceil(min);
     max = Math.floor(max);

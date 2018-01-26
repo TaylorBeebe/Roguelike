@@ -69,20 +69,26 @@ export let WalkerCorporeal = {
         this.getMap().moveEntityTo(this, newX, newY);
         this.raiseMixinEvent('turnTaken', {timeUsed: 1});
         // console.log(this.getTime());
-        this.setCurrentActionDuration(100);
+        this.setCurrentActionDuration(100 * (50 - this.getStats().agility + 1)/50);
+        console.log('setting current action duration in trywalk');
+        // console.log(this.getCurrentActionDuration());
         this.raiseMixinEvent('actionDone', {});
         return true;
       } else if(this.getMap().getEntityAtMapLocation(newX, newY)){
         // console.log('entity at desired position');
-        this.raiseMixinEvent('chooseAttack', {
-          wasAttackedBy: this,
-          victim: DATASTORE.ENTITIES[this.getMap().getEntityAtMapLocation(newX, newY)],
-        });
+        // console.dir(DATASTORE.ENTITIES[this.getMap().getEntityAtMapLocation(newX, newY)])
+        if(this.name == 'avatar' || DATASTORE.ENTITIES[this.getMap().getEntityAtMapLocation(newX, newY)].name == 'avatar'){
+          this.raiseMixinEvent('chooseAttack', {
+            wasAttackedBy: this,
+            victim: DATASTORE.ENTITIES[this.getMap().getEntityAtMapLocation(newX, newY)],
+          });
+        }
       } else {
         if(this.name == 'avatar'){
           this.raiseMixinEvent('walkBlocked', {reason: "there's something in the way"});
-          return false;
+          return true;
         } else{
+          this.setCurrentActionDuration(100 * (50 - this.getStats().agility + 1)/50);
           return true;
         }
     } } },
@@ -104,9 +110,9 @@ export let PlayerMessage = {
     },
     'damagedMessage': function(evtData){
       if(evtData.attackType != 'Strength'){
-      Messenger.send(`${evtData.wasAttackedBy} dealt ${evtData.damageAmount} ${Color.DAMAGE}damage ${Color.DEFAULT} to ${this.getName()} with an ${evtData.attackType} attack`);
+        Messenger.send(`${evtData.wasAttackedBy.name} dealt ${evtData.damageAmount}${Color.DAMAGE}damage ${Color.DEFAULT} to ${this.getName()} with an ${evtData.attackType} attack`);
       } else{
-        Messenger.send(`${evtData.wasAttackedBy} dealt ${evtData.damageAmount} ${Color.DAMAGE}damage ${Color.DEFAULT} to ${this.getName()} with a ${evtData.attackType} attack`);
+        Messenger.send(`${evtData.wasAttackedBy.name} dealt ${evtData.damageAmount} ${Color.DAMAGE}damage ${Color.DEFAULT} to ${this.getName()} with a ${evtData.attackType} attack`);
       }
     },
     'healedMessage': function (evtData){
@@ -304,14 +310,17 @@ export let StrengthAttack = {
   LISTENERS:{
     //evtData contains -> wasAttackedBy(attacker), attackType(Strenth), victim(victim of attack), damageAmount(amount of damage dealt)
     'strAttack': function(evtData){
+      // console.log('performing str attack');
       let hitMiss = damageRoll(this.getStats().strength);
       if(!hitMiss){
         this.raiseMixinEvent('missedAttackMessage', evtData);
+        evtData.victim.raiseMixinEvent('missedAttackMessage',evtData);
       } else{
         evtData.damageAmount = this.getStrengthAttackDamage();
         this.raiseMixinEvent('attackedMessage', evtData);
-        evtData.victim.raiseMixinEvent('damaged', evtData);
+        evtData.victim.raiseMixinEvent('attackedMessage', evtData);
       }
+      this.setCurrentActionDuration(this.getStrengthAttackSpeed());
     }
   }
 };
@@ -353,6 +362,7 @@ export let IntelligenceAttack = {
         this.raiseMixinEvent('attackedMessage', evtData);
         evtData.victim.raiseMixinEvent('damaged', evtData);
       }
+      this.setCurrentActionDuration(this.getIntelligenceAttackSpeed());
     }
   }
 };
@@ -373,10 +383,10 @@ export let AgilityAttack = {
   METHODS:{
     getAgilityAttackDamage: function(){
       // return Math.ceil(this.getStats().agility/2);
-      return this.getStats().intelligence/2 * (Math.random() + 0.5);
+      return Math.ceil(this.getStats().intelligence/2 * (Math.random() + 0.5));
     },
     getAgilityAttackSpeed: function(){
-      return (100 * (50 - this.getStats().agility + 1))/100;
+      return Math.ceil((100 * (50 - this.getStats().agility + 1))/100);
     },
     getMinMaxAgilityAttackDamage(){
       let min = Math.ceil(this.getStats().agility/2 * 0.5);
@@ -395,6 +405,7 @@ export let AgilityAttack = {
         this.raiseMixinEvent('attackedMessage', evtData);
         evtData.victim.raiseMixinEvent('damaged', evtData);
       }
+      this.setCurrentActionDuration(this.getCurrentActionDuration());
     }
   }
 };
@@ -405,11 +416,37 @@ export let PlayerAttack = {
     mixinGroupName: 'Combat',
     stateNamespace: '_PlayerAttack'
   },
+  METHODS:{
+    getAttackMethod(){
+      let possibleAttacks = [];
+      for (let x = 0; x < this.mixins.length; x++){
+        let mixinName = this.mixins[x].META.mixinName;
+        if (mixinName == 'StrengthAttack' || mixinName == 'IntelligenceAttack' || mixinName == 'AgilityAttack'){
+          possibleAttacks.push([this.mixins[x]]);
+        } }
+        return possibleAttacks;
+    }
+  },
   LISTENERS:{
     'chooseAttack': function(evtData){
-      // console.log('choosing attack');
+      console.log('choosing attack');
       if(this.name == 'avatar'){
         DATASTORE.GAME.enterAttackMode(evtData);
+      } else{
+        let mixins = this.getAttackMethod();
+
+        let chosenMixin = mixins[Math.floor(Math.random() * mixins.length)];
+
+        if (chosenMixin[0].META.mixinName == 'StrengthAttack'){
+          evtData.attackType = 'Strength';
+          this.raiseMixinEvent('strAttack', evtData);
+        } else if (chosenMixin[0].META.mixinName == 'IntelligenceAttack'){
+          evtData.attackType = 'Intelligence';
+          this.raiseMixinEvent('intelAttack', evtData);
+        } else if (chosenMixin[0].META.mixinName == 'AgilityAttack'){
+          evtData.attackType = 'Agility';
+          this.raiseMixinEvent('agilAttack', evtData);
+        }
       }
     }
   }
@@ -488,6 +525,8 @@ export let PlayerActor = {
       } else {
         SCHEDULE.setDuration(this.getDefaultActionDuration());
       }
+      console.log('just finished player action. currentActionDuration is' + this.getCurrentActionDuration());
+      console.dir(SCHEDULE);
       this.setCurrentActionDuration(null);
       setTimeout(function(){
         TIMING.unlock();
@@ -533,10 +572,13 @@ export let AggressiveAIActor = {
     act: function(){
       console.log('AI is acting');
       if(this.isActing()){
+        console.log('this.isActing was true');
         return false;
       }
       this.isActing(true);
       this.raiseMixinEvent('getAgressiveWalk');
+      console.log('just finished raising agressivewalk');
+      console.log(this.getCurrentActionDuration());
       SCHEDULE.setDuration(this.getDefaultActionDuration());
       this.isActing(false);
     },
@@ -645,9 +687,14 @@ export let AIWalk = {
     getShortestPath: function(avatar){
       let bestPos = {};
       let bestDist = Infinity;
+
       for(let myX = -1; myX < 2; myX++){
         for (let myY = -1; myY < 2; myY++){
           // console.log('testing: ' + myX + ',' + myY);
+          if(this.getMap().getEntityAtMapLocation(myX + this.getX(), myY + this.getY()) == avatar.getID()){
+            // console.log('entity will attack avatar by moving ' + myX + ',' + myY);
+            return{dx: myX, dy: myY};
+          }
           let currDistance = calculateDistance({
             enemyX: avatar.getX(), enemyY: avatar.getY(), myX: myX + this.getX(), myY: myY + this.getY()})
           if(currDistance<bestDist && !this.getMap().testLocationBlocked(this.getX() + myX, this.getY() + myY)){
@@ -658,7 +705,7 @@ export let AIWalk = {
           } } }
       // this.raiseMixinEvent('walkAttempt', {dx: bestPos.x, dy: bestPos.y});
       // console.log('Best move is: ' + bestPos.x + ',' + bestPos.y);
-      return {dx: bestPos.x, dy: bestPos.y};
+     return {dx: bestPos.x, dy: bestPos.y};
     }
   },
   LISTENERS: {
@@ -668,7 +715,6 @@ export let AIWalk = {
       this.raiseMixinEvent('walkAttempt', {dx, dy});
     },
     'getAgressiveWalk': function(evtData){
-      // console.log('getting agressive walk');
       // console.dir(this.getMap().attr.visibleTiles);
       // console.log('my pos is: ');
       // console.log(this.getxcy());
@@ -679,9 +725,9 @@ export let AIWalk = {
         // console.log('avatar within range');
         // console.log(distFromAvatar);
         if(distFromAvatar <= 10){
-          // let walkData = this.getShortestPath(avatar);
           this.raiseMixinEvent('walkAttempt', this.getShortestPath(avatar));
         }
+      } else {
         this.raiseMixinEvent('getRandomWalk', {});
       }
     }

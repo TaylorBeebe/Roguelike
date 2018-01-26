@@ -32,7 +32,7 @@ EntityFactory.learn({
   maxHP: 5,
   strength: 10,
   intelligence: 0,
-  agility: 0.5,
+  agility: -49,
   expGainedForKill: 20,
   // isAgressive: true,
   mixinNames: [
@@ -41,5 +41,6 @@ EntityFactory.learn({
     'StrengthAttack',
     'AggressiveAIActor',
     'WalkerCorporeal',
-    'AIWalk']
+    'AIWalk',
+    'PlayerAttack']
 });

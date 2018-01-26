@@ -351,9 +351,9 @@ export class AttackMode extends UIMode{
   render(){
     let display = this.game.getDisplay('main')
     display.clear();
-    display.drawText(3, 3, `${Color.DEFAULT} Press 1 to attempt a ${Color.STRENGTH}Strength${Color.DEFAULT} attack <- Action will use ` + this.getStrengthAttackSpeed() + `${Color.ENERGY}Energy${Color.DEFAULT} points`);
-    display.drawText(3, 5, `${Color.DEFAULT} Press 2 to attempt an ${Color.INTELLIGENCE}Intelligence${Color.DEFAULT} attack`);
-    display.drawText(3, 7, `${Color.DEFAULT} Press 3 to attempt an ${Color.AGILITY}Agility${Color.DEFAULT} attack`);
+    display.drawText(3, 3, `${Color.DEFAULT} Press 1 to attempt a ${Color.STRENGTH}Strength${Color.DEFAULT} attack <- Action will use ` + this.evtData.wasAttackedBy.getStrengthAttackSpeed() + `${Color.ENERGY} Energy`);
+    display.drawText(3, 5, `${Color.DEFAULT} Press 2 to attempt an ${Color.INTELLIGENCE}Intelligence${Color.DEFAULT} attack <- Action will use ` + this.evtData.wasAttackedBy.getIntelligenceAttackSpeed() + `${Color.ENERGY} Energy`);
+    display.drawText(3, 7, `${Color.DEFAULT} Press 3 to attempt an ${Color.AGILITY}Agility${Color.DEFAULT} attack <- Action will use ` + this.evtData.wasAttackedBy.getAgilityAttackSpeed() + `${Color.ENERGY} Energy`);
   }
 
   handleInput(inputType,inputData) {
@@ -361,17 +361,17 @@ export class AttackMode extends UIMode{
       //if (inputData.key == 'z' || inputData.key == 'Z')
       if (inputData.key == '1') {
         this.evtData.attackType = 'Strength';
-        DATASTORE.ENTITIES[this.evtData.avatarID].raiseMixinEvent('strAttack', this.evtData);
+        this.evtData.wasAttackedBy.raiseMixinEvent('strAttack', this.evtData);
         this.game.switchMode('play');
       } //else if (inputData.key == 'x' || inputData.key == 'X')
       else if (inputData.key == '2') {
         this.evtData.attackType = 'Intelligence';
-        DATASTORE.ENTITIES[this.evtData.avatarID].raiseMixinEvent('intelAttack', this.evtData);
+        this.evtData.wasAttackedBy.raiseMixinEvent('intelAttack', this.evtData);
         this.game.switchMode('play');
       } //else if (inputData.key == 'c' || inputData.key == 'C')
       else if (inputData.key == '3') {
         this.evtData.attackType = 'Agility';
-        DATASTORE.ENTITIES[this.evtData.avatarID].raiseMixinEvent('agilAttack', this.evtData);
+        this.evtData.wasAttackedBy.raiseMixinEvent('agilAttack', this.evtData);
         this.game.switchMode('play');
       } else {
         this.game.getDisplay('main').drawText(3, 0, "Invalid Input...");
@@ -396,14 +396,24 @@ export class LevelUpMode extends UIMode{
     let agility = this.avatar.getStats().agility;
 
     this.display.drawText(2, 0, 'You have ' + this.exp + ` ${Color.EXP}Experience${Color.DEFAULT} points to spend`);
-    this.display.drawText(0, 1, '-------------------------------------------');
-    this.display.drawText(42, 0,'|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|');
+    this.display.drawText(0, 1, '--------------------------------------------');
+    // this.display.drawText(42, 0,'|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|\n|');
     this.display.drawText(15, 2, 'STATS');
-    this.display.drawText(1, 4, `${Color.STRENGTH}Strength${Color.DEFAULT} lvl: ` + strength + ' (' + this.strExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
-    this.display.drawText(1, 7, `${Color.INTELLIGENCE}Intelligence${Color.DEFAULT} lvl: ` + intelligence + ' (' + this.intelExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
-    this.display.drawText(1, 10, `${Color.AGILITY}Agility${Color.DEFAULT} lvl: ` + agility + ' (' + this.agilExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
-
-    // this.display.drawText()
+    this.display.drawText(1, 4, `${Color.STRENGTH}Strength`);
+    this.display.drawText(1, 5, `Level: ` + strength + ' (' + this.strExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    let strDamage = this.avatar.getMinMaxStrengthAttackDamage();
+    this.display.drawText(1, 6, `Attacks do: ` + strDamage.min + '-' + strDamage.max + ` ${Color.DAMAGE}damage`);
+    this.display.drawText(1,7, 'Attacks cost: ' + this.avatar.getStrengthAttackSpeed() + ` ${Color.ENERGY}energy`);
+    let intDamage = this.avatar.getMinMaxIntelligenceAttackDamage();
+    this.display.drawText(1, 10, `${Color.INTELLIGENCE}Intelligence`);
+    this.display.drawText(1, 11, `Level: ` + intelligence + ' (' + this.intelExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    this.display.drawText(1, 12, `Attacks do: ` + intDamage.min + '-' + intDamage.max + ` ${Color.DAMAGE}damage`);
+    this.display.drawText(1, 13, 'Attacks cost: ' + this.avatar.getIntelligenceAttackSpeed() + ` ${Color.ENERGY}energy`);
+    let agiDamage = this.avatar.getMinMaxAgilityAttackDamage();
+    this.display.drawText(1, 16, `${Color.AGILITY}Agility`);
+    this.display.drawText(1, 17, `Level: ` + agility + ' (' + this.agilExpReq + ` ${Color.EXP}Exp${Color.DEFAULT} to upgrade)`);
+    this.display.drawText(1, 18, `Attacks do: ` + agiDamage.min + '-' + agiDamage.max + ` ${Color.DAMAGE}damage`);
+    this.display.drawText(1, 19, 'Attacks cost: ' + this.avatar.getAgilityAttackSpeed() + ` ${Color.ENERGY}energy`);
 
 
     if(strength >= 10 && strength >= intelligence && strength >= agility){
@@ -420,10 +430,10 @@ export class LevelUpMode extends UIMode{
 
     }
     if (this.intelExpReq <= this.exp){
-      this.display.drawText(1, 6, `${Color.UPGRADE}Press 2 to upgrade:`);
+      this.display.drawText(1, 9, `${Color.UPGRADE}Press 2 to upgrade:`);
     }
     if (this.agilExpReq <= this.exp){
-      this.display.drawText(1, 9, `${Color.UPGRADE}Press 3 to upgrade:`);
+      this.display.drawText(1, 15, `${Color.UPGRADE}Press 3 to upgrade:`);
     }
   }
 

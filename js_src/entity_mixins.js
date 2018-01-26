@@ -77,7 +77,6 @@ export let WalkerCorporeal = {
         this.raiseMixinEvent('chooseAttack', {
           wasAttackedBy: this,
           victim: DATASTORE.ENTITIES[this.getMap().getEntityAtMapLocation(newX, newY)],
-          avatarID: this.getID()
         });
       } else {
         if(this.name == 'avatar'){
@@ -105,9 +104,9 @@ export let PlayerMessage = {
     },
     'damagedMessage': function(evtData){
       if(evtData.attackType != 'Strength'){
-      Messenger.send(`${evtData.wasAttackedBy} damaged ${this.getName()} ${evtData.damageAmount} points with an ${evtData.attackType} attack`);
+      Messenger.send(`${evtData.wasAttackedBy} dealt ${evtData.damageAmount} ${Color.DAMAGE}damage ${Color.DEFAULT} to ${this.getName()} with an ${evtData.attackType} attack`);
       } else{
-      Messenger.send(`${evtData.wasAttackedBy} damaged ${this.getName()} ${evtData.damageAmount} points with a ${evtData.attackType} attack`);
+        Messenger.send(`${evtData.wasAttackedBy} dealt ${evtData.damageAmount} ${Color.DAMAGE}damage ${Color.DEFAULT} to ${this.getName()} with a ${evtData.attackType} attack`);
       }
     },
     'healedMessage': function (evtData){
@@ -123,23 +122,15 @@ export let PlayerMessage = {
     },
     'attackedMessage': function(evtData){
       let stringColor = getColor(evtData.attackType);
-      let name = ''
-      if (evtData.wasAttackedBy.name == 'avatar') {
-        name = 'You';
-      } else {
-        name = evtData.wasAttackedBy.name;
-      }
-      Messenger.send(name + ` hit ${evtData.victim.name} with a` + stringColor + ` ${evtData.attackType}${Color.DEFAULT} attack and dealt ${evtData.damageAmount} damage`);
+      let name = (evtData.wasAttackedBy.name == 'avatar') ? 'You' : 'The ' + evtData.wasAttackedBy.name;
+      let victimName = (evtData.victim.name == 'avatar') ? 'you' : 'the ' + evtData.victim.name;
+      Messenger.send(name  + ` hit ` + victimName + ` with a` + stringColor + ` ${evtData.attackType}${Color.DEFAULT} attack and dealt ${evtData.damageAmount} ${Color.DAMAGE}damage`);
     },
     'missedAttackMessage': function(evtData){
       let stringColor = getColor(evtData.attackType);
-      let name = ''
-      if (evtData.wasAttackedBy.name == 'avatar') {
-        name = 'You';
-      } else {
-        name = evtData.wasAttackedBy.name;
-      }
-      Messenger.send(name + ` attempted to hit ${evtData.victim.name} with a` + stringColor + ` ${evtData.attackType}${Color.DEFAULT} attack but missed`);
+      let name = (evtData.wasAttackedBy.name == 'avatar') ? 'You' : 'The ' + evtData.wasAttackedBy.name;
+      let victimName = (evtData.victim.name == 'avatar') ? 'you' : 'the ' + evtData.victim.name;
+      Messenger.send(name + ` attempted to hit ` + victimName + ` with a` + stringColor + ` ${evtData.attackType}${Color.DEFAULT} attack but missed`);
     }
   }
 }
@@ -271,7 +262,10 @@ export let Hitpoints = {
     },
     'killed': function(evtData){
       // console.log('entity killed mixin event');
-      Messenger.send(`${evtData.wasAttackedBy.name} killed ${evtData.victim.name}!`);
+      let name = (evtData.wasAttackedBy.name == 'avatar') ? 'You' : 'The ' + evtData.wasAttackedBy.name;
+      let victimName = (evtData.victim.name == 'avatar') ? 'you' : 'the ' + evtData.victim.name;
+
+      Messenger.send(name + ` killed ` + victimName + `!`);
       // console.dir(evtData.victim);
       evtData.deltaExp = evtData.victim.expGainedForKill;
       evtData.wasAttackedBy.raiseMixinEvent('deltaExp', evtData);
@@ -296,10 +290,15 @@ export let StrengthAttack = {
   },
   METHODS:{
     getStrengthAttackDamage: function(){
-      return this.getStats().strength * 2;
+      return Math.floor((this.getStats().strength * 2) * (Math.random() + 0.5));
+    },
+    getMinMaxStrengthAttackDamage: function(){
+      let min = this.getStats().strength* 2 * 0.5;
+      let max = this.getStats().strength* 2 * 1.5;
+      return {min, max};
     },
     getStrengthAttackSpeed: function(){
-      return 100 / this.getStats().agility
+      return (100 * (50 - this.getStats().agility + 1))/50;
     }
   },
   LISTENERS:{
@@ -332,10 +331,15 @@ export let IntelligenceAttack = {
   },
   METHODS:{
     getIntelligenceAttackDamage: function(){
-      return this.getStats().intelligence;
+      return Math.ceil(this.getStats().intelligence * (Math.random() + 0.5));
     },
     getIntelligenceAttackSpeed: function(){
-
+      return Math.ceil((100 * (50 - this.getStats().agility + 1))/75);
+    },
+    getMinMaxIntelligenceAttackDamage: function(){
+      let min = Math.ceil(this.getStats().intelligence * 0.5);
+      let max = Math.ceil(this.getStats().intelligence * 1.5);
+      return {min, max};
     }
   },
   LISTENERS:{
@@ -368,10 +372,16 @@ export let AgilityAttack = {
   },
   METHODS:{
     getAgilityAttackDamage: function(){
-      return Math.ceil(this.getStats().agility/2);
+      // return Math.ceil(this.getStats().agility/2);
+      return this.getStats().intelligence/2 * (Math.random() + 0.5);
     },
     getAgilityAttackSpeed: function(){
-
+      return (100 * (50 - this.getStats().agility + 1))/100;
+    },
+    getMinMaxAgilityAttackDamage(){
+      let min = Math.ceil(this.getStats().agility/2 * 0.5);
+      let max = Math.ceil(this.getStats().agility/2 * 1.5);
+      return {min, max};
     }
   },
   LISTENERS:{
@@ -398,7 +408,9 @@ export let PlayerAttack = {
   LISTENERS:{
     'chooseAttack': function(evtData){
       // console.log('choosing attack');
-      DATASTORE.GAME.enterAttackMode(evtData);
+      if(this.name == 'avatar'){
+        DATASTORE.GAME.enterAttackMode(evtData);
+      }
     }
   }
 };

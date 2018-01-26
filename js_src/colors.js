@@ -11,5 +11,6 @@ HP: '%c{#FF334C}',
 UPGRADE: '%c{#7CFC00}',
 ENERGY: '%c{#CEFF29}',
 OGRE:'%c{#C21515}',
-AVATAR: `%c{#eb4}`
+AVATAR: `%c{#eb4}`,
+DAMAGE: `%c{#EF7E25}`
 }

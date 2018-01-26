@@ -50,6 +50,7 @@ export class StartupMode extends UIMode {
     this.display.drawText(2,13, '   \\ \\_____\\  \\ \\_\\ \\_\\  \\ \\_\\ \\_\\  \\ \\__/".~\\_\\  \\ \\_____\\  \\ \\_____\\  \\ \\_\\ \\_\\ ');
     this.display.drawText(3,14, '    \\/_____/   \\/_/ /_/   \\/_/\\/_/   \\/_/   \\/_/   \\/_____/   \\/_____/   \\/_/ /_/ ');
     this.display.drawText(33, 1, "Press any key to advance");
+    this.display.drawText(23, 19, 'A Roguelike Game By Taylor Beebe')
     console.log("rendering StartupMode");
   }
 

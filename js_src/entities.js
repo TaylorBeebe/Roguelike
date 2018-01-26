@@ -21,7 +21,8 @@ EntityFactory.learn({
     'PlayerAttack',
     'PlayerActor',
     'PlayerEnergy'
-  ]
+  ],
+  // experience: 100
 });
 
 EntityFactory.learn({
@@ -34,7 +35,6 @@ EntityFactory.learn({
   intelligence: 0,
   agility: -49,
   expGainedForKill: 20,
-  // isAgressive: true,
   mixinNames: [
     'Hitpoints',
     'Stats',

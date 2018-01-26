@@ -120,7 +120,7 @@ export let PlayerMessage = {
     },
     'expChangedMessage': function(evtData){
       if(evtData.deltaExp > 0){
-        Messenger.send(`${this.getName()} gained ${evtData.deltaExp} ${Color.EXP}experience${Color.DEFAULT}.`);
+        Messenger.send(`You gained ${evtData.deltaExp} ${Color.EXP}experience${Color.DEFAULT}.`);
       }
     },
     'gainedStatsPointMessage': function(evtData){

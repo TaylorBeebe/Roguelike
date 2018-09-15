@@ -1,3 +1,3 @@
 # ROGUELIKE GAME
 
-For Williams College Winter Study
+Thrilling adventure game using ascii graphics and written in javascript

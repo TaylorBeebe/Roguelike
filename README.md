@@ -1,3 +1,3 @@
-# ROGUELIKE GAME
+# Cave Crawler
 
-Thrilling adventure game using ascii graphics and written in javascript
+A thrilling adventure game using ascii graphics and written in javascript
